@@ -248,7 +248,7 @@ const PortfolioPage = () => {
           >
             <div className="text-4xl mb-6">❝</div>
             <blockquote className="text-xl md:text-2xl mb-6">
-              AdiTeke transformed our business with their custom e-commerce platform. The solution increased our online sales by 75% within the first three months. Their team was professional, responsive, and delivered exactly what we needed.
+              <span className="font-bold">Adi<span className="text-blue-400">Teke</span></span> transformed our business with their custom e-commerce platform. The solution increased our online sales by 75% within the first three months. Their team was professional, responsive, and delivered exactly what we needed.
             </blockquote>
             <div className="flex items-center justify-center">
               <img 

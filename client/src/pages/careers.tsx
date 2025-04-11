@@ -492,7 +492,7 @@ const CareersPage = () => {
                   <i className="fas fa-star"></i>
                 </div>
                 <p className="mb-4">
-                  "The culture at AdiTeke is what sets it apart. The work-life balance is excellent, and management truly cares about your professional development and personal well-being."
+                  "The culture at <span className="font-bold">Adi<span className="text-blue-400">Teke</span></span> is what sets it apart. The work-life balance is excellent, and management truly cares about your professional development and personal well-being."
                 </p>
                 <div className="flex items-center">
                   <img 

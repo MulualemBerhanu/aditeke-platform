@@ -49,7 +49,7 @@ const BlogPage = () => {
     <>
       <Helmet>
         <title>Blog | AdiTeke Software Solutions</title>
-        <meta name="description" content="Read the latest articles, tutorials, and insights about software development, AI, cloud computing, and more from AdiTeke's experts." />
+        <meta name="description" content="Read the latest articles, tutorials, and insights about software development, AI, cloud computing, and more from our experts at AdiTeke." />
       </Helmet>
 
       {/* Hero Section */}
