@@ -95,7 +95,7 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-500 mb-4 md:mb-0">© {new Date().getFullYear()} AdiTeke Software Solutions. All rights reserved.</p>
+            <p className="text-gray-500 mb-4 md:mb-0">© {new Date().getFullYear()} <span className="font-bold">Adi<span className="text-blue-400">Teke</span></span> Software Solutions. All rights reserved.</p>
             <div className="flex space-x-6">
               {LEGAL_LINKS.map((link, index) => (
                 <Link key={index} href={link.href}>

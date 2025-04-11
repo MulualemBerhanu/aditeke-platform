@@ -181,7 +181,7 @@ const LoginPage = () => {
                   <div className="flex justify-center mb-4">
                     <div className="text-2xl font-bold font-accent">
                       <span className="text-primary">Adi</span>
-                      <span className="text-secondary">Teke</span>
+                      <span className="text-blue-600">Teke</span>
                     </div>
                   </div>
                   <CardTitle className="text-center text-2xl">Welcome</CardTitle>

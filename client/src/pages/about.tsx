@@ -123,7 +123,7 @@ const AboutPage = () => {
             >
               <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
               <p className="text-gray-700 mb-8">
-                At AdiTeke, our mission is to empower businesses through innovative software solutions that drive growth, efficiency, and competitive advantage. We are committed to delivering exceptional quality, maintaining strong client relationships, and staying at the forefront of technological advancements.
+                At <span className="font-bold">Adi<span className="text-blue-600">Teke</span></span>, our mission is to empower businesses through innovative software solutions that drive growth, efficiency, and competitive advantage. We are committed to delivering exceptional quality, maintaining strong client relationships, and staying at the forefront of technological advancements.
               </p>
               <h2 className="text-3xl font-bold mb-6">Our Vision</h2>
               <p className="text-gray-700">
