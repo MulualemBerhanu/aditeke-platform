@@ -48,10 +48,12 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center space-x-8">
           {NAV_ITEMS.map((item, index) => (
-            <Link key={index} href={item.href}>
-              <a className={`font-medium ${location === item.href ? 'text-primary' : 'text-dark hover:text-primary'} transition-colors`}>
-                {item.label}
-              </a>
+            <Link 
+              key={index} 
+              href={item.href}
+              className={`font-medium ${location === item.href ? 'text-primary' : 'text-dark hover:text-primary'} transition-colors`}
+            >
+              {item.label}
             </Link>
           ))}
         </div>
@@ -92,10 +94,12 @@ const Navbar = () => {
           >
             <div className="px-4 py-3 space-y-1 bg-white shadow-md">
               {NAV_ITEMS.map((item, index) => (
-                <Link key={index} href={item.href}>
-                  <a className={`block px-3 py-2 rounded-md text-base font-medium ${location === item.href ? 'text-primary bg-primary/10' : 'text-dark hover:bg-primary/10 hover:text-primary'} transition-colors`}>
-                    {item.label}
-                  </a>
+                <Link 
+                  key={index} 
+                  href={item.href}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${location === item.href ? 'text-primary bg-primary/10' : 'text-dark hover:bg-primary/10 hover:text-primary'} transition-colors`}
+                >
+                  {item.label}
                 </Link>
               ))}
               <div className="pt-4 flex flex-col space-y-2">
