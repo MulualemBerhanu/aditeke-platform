@@ -39,21 +39,23 @@ const Navbar = () => {
     <header className={`sticky top-0 z-50 bg-white ${isScrolled ? 'shadow-sm' : ''} transition-shadow`}>
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link href="/" className="flex flex-col leading-none">
+          <Link href="/" className="flex flex-col leading-none group">
             <div className="flex flex-col">
-              <div className="text-2xl font-bold font-accent tracking-tight relative">
-                <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/90">Adi</span>
-                <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-500">Teke</span>
-                <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
+              <div className="text-2xl font-bold font-accent tracking-tight relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-blue-600/90 group-hover:scale-105 transition-transform duration-300 inline-block">Adi</span>
+                <span className="relative bg-clip-text text-transparent bg-gradient-to-br from-blue-600 via-blue-500 to-primary/70 group-hover:scale-105 transition-transform duration-300 inline-block">Teke</span>
+                <div className="absolute -top-1 right-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-400/30 group-hover:animate-pulse"></div>
+                <div className="absolute -top-0.5 right-1 w-1 h-1 rounded-full bg-gradient-to-br from-primary to-blue-500 opacity-50 group-hover:animate-pulse"></div>
               </div>
-              <div className="flex items-center">
-                <div className="h-px w-5 bg-gradient-to-r from-transparent to-primary/30 mr-1"></div>
-                <span className="text-[9px] text-gray-600 font-semibold tracking-wider uppercase -mt-1 flex items-center">
-                  <span className="opacity-90">Software</span>
-                  <span className="mx-0.5 opacity-80">•</span>
-                  <span className="opacity-90">Solutions</span>
+              <div className="flex items-center mt-0.5 group-hover:translate-y-0.5 transition-transform duration-300">
+                <div className="h-[1px] w-7 bg-gradient-to-r from-transparent via-primary/30 to-transparent group-hover:via-primary/50 transition-colors duration-300"></div>
+                <span className="text-[9px] font-semibold tracking-wider uppercase mx-1.5 flex items-center px-1.5 py-0.5 bg-gradient-to-r from-primary/5 to-blue-600/5 rounded-full group-hover:from-primary/10 group-hover:to-blue-600/10 transition-colors duration-300">
+                  <span className="text-primary/80 group-hover:text-primary transition-colors duration-300">Software</span>
+                  <span className="mx-0.5 text-blue-500 group-hover:text-blue-400 transition-colors duration-300">•</span>
+                  <span className="text-blue-600/80 group-hover:text-blue-600 transition-colors duration-300">Solutions</span>
                 </span>
-                <div className="h-px w-5 bg-gradient-to-r from-primary/30 to-transparent ml-1"></div>
+                <div className="h-[1px] w-7 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent group-hover:via-blue-500/50 transition-colors duration-300"></div>
               </div>
             </div>
           </Link>
@@ -109,18 +111,19 @@ const Navbar = () => {
             <div className="px-4 py-3 space-y-1 bg-white shadow-md">
               <div className="flex flex-col mb-3 px-3">
                 <div className="text-xl font-bold font-accent tracking-tight relative">
-                  <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/90">Adi</span>
-                  <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-500">Teke</span>
-                  <div className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
+                  <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-blue-600/90">Adi</span>
+                  <span className="relative bg-clip-text text-transparent bg-gradient-to-br from-blue-600 via-blue-500 to-primary/70">Teke</span>
+                  <div className="absolute -top-1 right-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-400/30"></div>
+                  <div className="absolute -top-0.5 right-1 w-1 h-1 rounded-full bg-gradient-to-br from-primary to-blue-500 opacity-50"></div>
                 </div>
-                <div className="flex items-center">
-                  <div className="h-px w-4 bg-gradient-to-r from-transparent to-primary/30 mr-1"></div>
-                  <span className="text-[8px] text-gray-600 font-semibold tracking-wider uppercase -mt-0.5 flex items-center">
-                    <span className="opacity-90">Software</span>
-                    <span className="mx-0.5 opacity-80">•</span>
-                    <span className="opacity-90">Solutions</span>
+                <div className="flex items-center mt-0.5">
+                  <div className="h-[1px] w-6 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+                  <span className="text-[8px] font-semibold tracking-wider uppercase mx-1.5 flex items-center px-1.5 py-0.5 bg-gradient-to-r from-primary/5 to-blue-600/5 rounded-full">
+                    <span className="text-primary/80">Software</span>
+                    <span className="mx-0.5 text-blue-500">•</span>
+                    <span className="text-blue-600/80">Solutions</span>
                   </span>
-                  <div className="h-px w-4 bg-gradient-to-r from-primary/30 to-transparent ml-1"></div>
+                  <div className="h-[1px] w-6 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
                 </div>
               </div>
               {NAV_ITEMS.map((item, index) => (
