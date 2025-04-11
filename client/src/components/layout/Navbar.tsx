@@ -45,8 +45,6 @@ const Navbar = () => {
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 to-blue-600/10 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
                 <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-blue-600/90 group-hover:scale-105 transition-transform duration-300 inline-block">Adi</span>
                 <span className="relative bg-clip-text text-transparent bg-gradient-to-br from-blue-600 via-blue-500 to-primary/70 group-hover:scale-105 transition-transform duration-300 inline-block">Teke</span>
-                <div className="absolute -top-1 right-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-400/30 group-hover:animate-pulse"></div>
-                <div className="absolute -top-0.5 right-1 w-1 h-1 rounded-full bg-gradient-to-br from-primary to-blue-500 opacity-50 group-hover:animate-pulse"></div>
               </div>
               <div className="flex items-center mt-0.5 group-hover:translate-y-0.5 transition-transform duration-300">
                 <div className="h-[1px] w-7 bg-gradient-to-r from-transparent via-primary/30 to-transparent group-hover:via-primary/50 transition-colors duration-300"></div>
@@ -113,8 +111,6 @@ const Navbar = () => {
                 <div className="text-xl font-bold font-accent tracking-tight relative">
                   <span className="relative bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-blue-600/90">Adi</span>
                   <span className="relative bg-clip-text text-transparent bg-gradient-to-br from-blue-600 via-blue-500 to-primary/70">Teke</span>
-                  <div className="absolute -top-1 right-0 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-400/30"></div>
-                  <div className="absolute -top-0.5 right-1 w-1 h-1 rounded-full bg-gradient-to-br from-primary to-blue-500 opacity-50"></div>
                 </div>
                 <div className="flex items-center mt-0.5">
                   <div className="h-[1px] w-6 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
