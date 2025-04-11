@@ -4,6 +4,9 @@ import { eq, sql, like, ilike } from 'drizzle-orm';
 import postgres from 'postgres';
 import {
   users, type User, type InsertUser,
+  roles, type Role, type InsertRole,
+  permissions, type Permission, type InsertPermission,
+  rolePermissions, type RolePermission, type InsertRolePermission,
   projects, type Project, type InsertProject,
   testimonials, type Testimonial, type InsertTestimonial,
   services, type Service, type InsertService,
@@ -105,6 +108,9 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.roles = new Map();
+    this.permissions = new Map();
+    this.rolePermissions = new Map();
     this.projects = new Map();
     this.testimonials = new Map();
     this.services = new Map();
@@ -114,6 +120,9 @@ export class MemStorage implements IStorage {
     this.jobs = new Map();
     
     this.userIdCounter = 1;
+    this.roleIdCounter = 1;
+    this.permissionIdCounter = 1;
+    this.rolePermissionIdCounter = 1;
     this.projectIdCounter = 1;
     this.testimonialIdCounter = 1;
     this.serviceIdCounter = 1;
@@ -123,6 +132,7 @@ export class MemStorage implements IStorage {
     this.jobIdCounter = 1;
 
     // Add initial demo data
+    this.initializeRolesAndPermissions();
     this.initializeServices();
     this.initializeTestimonials();
     this.initializeProjects();
@@ -142,9 +152,256 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
-    const user: User = { ...insertUser, id };
+    const createdAt = new Date();
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      createdAt, 
+      updatedAt: null, 
+      lastLogin: null,
+      profilePicture: insertUser.profilePicture || null,
+      isActive: insertUser.isActive !== undefined ? insertUser.isActive : true
+    };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    
+    const updatedUser: User = {
+      ...user,
+      ...userData,
+      updatedAt: new Date(),
+      id
+    };
+    
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  // Role methods
+  async getRole(id: number): Promise<Role | undefined> {
+    return this.roles.get(id);
+  }
+  
+  async getRoleByName(name: string): Promise<Role | undefined> {
+    return Array.from(this.roles.values()).find(role => role.name === name);
+  }
+  
+  async getAllRoles(): Promise<Role[]> {
+    return Array.from(this.roles.values());
+  }
+  
+  async createRole(insertRole: InsertRole): Promise<Role> {
+    const id = this.roleIdCounter++;
+    const createdAt = new Date();
+    const role: Role = {
+      ...insertRole,
+      id,
+      createdAt,
+      updatedAt: null
+    };
+    this.roles.set(id, role);
+    return role;
+  }
+  
+  async updateRole(id: number, roleData: Partial<InsertRole>): Promise<Role> {
+    const role = this.roles.get(id);
+    if (!role) {
+      throw new Error(`Role with id ${id} not found`);
+    }
+    
+    const updatedRole: Role = {
+      ...role,
+      ...roleData,
+      updatedAt: new Date(),
+      id
+    };
+    
+    this.roles.set(id, updatedRole);
+    return updatedRole;
+  }
+  
+  async deleteRole(id: number): Promise<boolean> {
+    // Check if role is in use by any users
+    const usersWithRole = Array.from(this.users.values()).filter(user => user.roleId === id);
+    if (usersWithRole.length > 0) {
+      throw new Error(`Cannot delete role with id ${id} because it is assigned to ${usersWithRole.length} users`);
+    }
+    
+    return this.roles.delete(id);
+  }
+  
+  // Permission methods
+  async getPermission(id: number): Promise<Permission | undefined> {
+    return this.permissions.get(id);
+  }
+  
+  async getPermissionByName(name: string): Promise<Permission | undefined> {
+    return Array.from(this.permissions.values()).find(permission => permission.name === name);
+  }
+  
+  async getAllPermissions(): Promise<Permission[]> {
+    return Array.from(this.permissions.values());
+  }
+  
+  async getPermissionsByResource(resource: string): Promise<Permission[]> {
+    return Array.from(this.permissions.values()).filter(permission => permission.resource === resource);
+  }
+  
+  async createPermission(insertPermission: InsertPermission): Promise<Permission> {
+    const id = this.permissionIdCounter++;
+    const createdAt = new Date();
+    const permission: Permission = {
+      ...insertPermission,
+      id,
+      createdAt,
+      updatedAt: null
+    };
+    this.permissions.set(id, permission);
+    return permission;
+  }
+  
+  async updatePermission(id: number, permissionData: Partial<InsertPermission>): Promise<Permission> {
+    const permission = this.permissions.get(id);
+    if (!permission) {
+      throw new Error(`Permission with id ${id} not found`);
+    }
+    
+    const updatedPermission: Permission = {
+      ...permission,
+      ...permissionData,
+      updatedAt: new Date(),
+      id
+    };
+    
+    this.permissions.set(id, updatedPermission);
+    return updatedPermission;
+  }
+  
+  async deletePermission(id: number): Promise<boolean> {
+    // Check if permission is assigned to any roles
+    const rolePermissionsWithPermission = Array.from(this.rolePermissions.values()).filter(rp => rp.permissionId === id);
+    if (rolePermissionsWithPermission.length > 0) {
+      throw new Error(`Cannot delete permission with id ${id} because it is assigned to ${rolePermissionsWithPermission.length} roles`);
+    }
+    
+    return this.permissions.delete(id);
+  }
+  
+  // Role-Permission methods
+  async assignPermissionToRole(roleId: number, permissionId: number): Promise<RolePermission> {
+    // Check if role exists
+    const role = this.roles.get(roleId);
+    if (!role) {
+      throw new Error(`Role with id ${roleId} not found`);
+    }
+    
+    // Check if permission exists
+    const permission = this.permissions.get(permissionId);
+    if (!permission) {
+      throw new Error(`Permission with id ${permissionId} not found`);
+    }
+    
+    // Check if assignment already exists
+    const existingAssignment = Array.from(this.rolePermissions.values()).find(
+      rp => rp.roleId === roleId && rp.permissionId === permissionId
+    );
+    
+    if (existingAssignment) {
+      return existingAssignment; // If the assignment already exists, return it
+    }
+    
+    // Create new assignment
+    const id = this.rolePermissionIdCounter++;
+    const createdAt = new Date();
+    const rolePermission: RolePermission = {
+      id,
+      roleId,
+      permissionId,
+      createdAt
+    };
+    
+    this.rolePermissions.set(id, rolePermission);
+    return rolePermission;
+  }
+  
+  async removePermissionFromRole(roleId: number, permissionId: number): Promise<boolean> {
+    const rolePermissionToRemove = Array.from(this.rolePermissions.values()).find(
+      rp => rp.roleId === roleId && rp.permissionId === permissionId
+    );
+    
+    if (!rolePermissionToRemove) {
+      return false; // Nothing to remove
+    }
+    
+    return this.rolePermissions.delete(rolePermissionToRemove.id);
+  }
+  
+  async getPermissionsForRole(roleId: number): Promise<Permission[]> {
+    // Get all role-permission assignments for this role
+    const rolePermissionsForRole = Array.from(this.rolePermissions.values()).filter(
+      rp => rp.roleId === roleId
+    );
+    
+    // Get all permission IDs
+    const permissionIds = rolePermissionsForRole.map(rp => rp.permissionId);
+    
+    // Get all permissions with these IDs
+    return Array.from(this.permissions.values()).filter(
+      permission => permissionIds.includes(permission.id)
+    );
+  }
+  
+  async getRolesForPermission(permissionId: number): Promise<Role[]> {
+    // Get all role-permission assignments for this permission
+    const rolePermissionsForPermission = Array.from(this.rolePermissions.values()).filter(
+      rp => rp.permissionId === permissionId
+    );
+    
+    // Get all role IDs
+    const roleIds = rolePermissionsForPermission.map(rp => rp.roleId);
+    
+    // Get all roles with these IDs
+    return Array.from(this.roles.values()).filter(
+      role => roleIds.includes(role.id)
+    );
+  }
+  
+  // User-Role-Permission methods
+  async getUserWithPermissions(userId: number): Promise<{ user: User; role: Role; permissions: Permission[] }> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    
+    const role = this.roles.get(user.roleId);
+    if (!role) {
+      throw new Error(`Role with id ${user.roleId} not found for user ${userId}`);
+    }
+    
+    const permissions = await this.getPermissionsForRole(role.id);
+    
+    return { user, role, permissions };
+  }
+  
+  async hasPermission(userId: number, resource: string, action: string): Promise<boolean> {
+    try {
+      const { permissions } = await this.getUserWithPermissions(userId);
+      
+      // Check if user has a permission for this resource and action
+      return permissions.some(
+        permission => 
+          permission.resource === resource && 
+          (permission.action === action || permission.action === 'manage')
+      );
+    } catch (error) {
+      return false;
+    }
   }
 
   // Project methods
@@ -286,14 +543,207 @@ export class MemStorage implements IStorage {
   }
 
   // Initialize sample data methods
-  private initializeUsers() {
+  private async initializeRolesAndPermissions() {
+    // Create roles
+    const adminRole = await this.createRole({
+      name: "admin",
+      description: "Administrator with full access to all features"
+    });
+    
+    const managerRole = await this.createRole({
+      name: "manager",
+      description: "Manager with access to manage most resources except system settings"
+    });
+    
+    const clientRole = await this.createRole({
+      name: "client",
+      description: "Client with limited access to personal projects and services"
+    });
+    
+    const guestRole = await this.createRole({
+      name: "guest",
+      description: "Guest with minimal access to public information only"
+    });
+    
+    // Create permissions for different resources
+    
+    // User resource permissions
+    const viewUsers = await this.createPermission({
+      name: "view_users",
+      description: "View user profiles",
+      resource: "users",
+      action: "read"
+    });
+    
+    const manageUsers = await this.createPermission({
+      name: "manage_users",
+      description: "Create, update, and delete users",
+      resource: "users",
+      action: "manage"
+    });
+    
+    // Project resource permissions
+    const viewProjects = await this.createPermission({
+      name: "view_projects",
+      description: "View projects",
+      resource: "projects",
+      action: "read"
+    });
+    
+    const manageProjects = await this.createPermission({
+      name: "manage_projects",
+      description: "Create, update, and delete projects",
+      resource: "projects",
+      action: "manage"
+    });
+    
+    // Service resource permissions
+    const viewServices = await this.createPermission({
+      name: "view_services",
+      description: "View services",
+      resource: "services",
+      action: "read"
+    });
+    
+    const manageServices = await this.createPermission({
+      name: "manage_services",
+      description: "Create, update, and delete services",
+      resource: "services",
+      action: "manage"
+    });
+    
+    // Blog resource permissions
+    const viewBlogPosts = await this.createPermission({
+      name: "view_blog_posts",
+      description: "View blog posts",
+      resource: "blog_posts",
+      action: "read"
+    });
+    
+    const manageBlogPosts = await this.createPermission({
+      name: "manage_blog_posts",
+      description: "Create, update, and delete blog posts",
+      resource: "blog_posts",
+      action: "manage"
+    });
+    
+    // Job resource permissions
+    const viewJobs = await this.createPermission({
+      name: "view_jobs",
+      description: "View job listings",
+      resource: "jobs",
+      action: "read"
+    });
+    
+    const manageJobs = await this.createPermission({
+      name: "manage_jobs",
+      description: "Create, update, and delete job listings",
+      resource: "jobs",
+      action: "manage"
+    });
+    
+    // Contact message permissions
+    const viewContactMessages = await this.createPermission({
+      name: "view_contact_messages",
+      description: "View contact messages",
+      resource: "contact_messages",
+      action: "read"
+    });
+    
+    const manageContactMessages = await this.createPermission({
+      name: "manage_contact_messages",
+      description: "Manage contact messages",
+      resource: "contact_messages",
+      action: "manage"
+    });
+    
+    // Newsletter permissions
+    const manageNewsletterSubscribers = await this.createPermission({
+      name: "manage_newsletter_subscribers",
+      description: "Manage newsletter subscribers",
+      resource: "newsletter_subscribers",
+      action: "manage"
+    });
+    
+    // System permissions
+    const manageRoles = await this.createPermission({
+      name: "manage_roles",
+      description: "Create, update, and delete roles",
+      resource: "roles",
+      action: "manage"
+    });
+    
+    const managePermissions = await this.createPermission({
+      name: "manage_permissions",
+      description: "Create, update, and delete permissions",
+      resource: "permissions",
+      action: "manage"
+    });
+    
+    // Assign permissions to roles
+    
+    // Admin role - gets all permissions
+    await this.assignPermissionToRole(adminRole.id, viewUsers.id);
+    await this.assignPermissionToRole(adminRole.id, manageUsers.id);
+    await this.assignPermissionToRole(adminRole.id, viewProjects.id);
+    await this.assignPermissionToRole(adminRole.id, manageProjects.id);
+    await this.assignPermissionToRole(adminRole.id, viewServices.id);
+    await this.assignPermissionToRole(adminRole.id, manageServices.id);
+    await this.assignPermissionToRole(adminRole.id, viewBlogPosts.id);
+    await this.assignPermissionToRole(adminRole.id, manageBlogPosts.id);
+    await this.assignPermissionToRole(adminRole.id, viewJobs.id);
+    await this.assignPermissionToRole(adminRole.id, manageJobs.id);
+    await this.assignPermissionToRole(adminRole.id, viewContactMessages.id);
+    await this.assignPermissionToRole(adminRole.id, manageContactMessages.id);
+    await this.assignPermissionToRole(adminRole.id, manageNewsletterSubscribers.id);
+    await this.assignPermissionToRole(adminRole.id, manageRoles.id);
+    await this.assignPermissionToRole(adminRole.id, managePermissions.id);
+    
+    // Manager role - gets most management permissions except system
+    await this.assignPermissionToRole(managerRole.id, viewUsers.id);
+    await this.assignPermissionToRole(managerRole.id, viewProjects.id);
+    await this.assignPermissionToRole(managerRole.id, manageProjects.id);
+    await this.assignPermissionToRole(managerRole.id, viewServices.id);
+    await this.assignPermissionToRole(managerRole.id, manageServices.id);
+    await this.assignPermissionToRole(managerRole.id, viewBlogPosts.id);
+    await this.assignPermissionToRole(managerRole.id, manageBlogPosts.id);
+    await this.assignPermissionToRole(managerRole.id, viewJobs.id);
+    await this.assignPermissionToRole(managerRole.id, manageJobs.id);
+    await this.assignPermissionToRole(managerRole.id, viewContactMessages.id);
+    await this.assignPermissionToRole(managerRole.id, manageContactMessages.id);
+    await this.assignPermissionToRole(managerRole.id, manageNewsletterSubscribers.id);
+    
+    // Client role - gets view permissions and project management
+    await this.assignPermissionToRole(clientRole.id, viewUsers.id);
+    await this.assignPermissionToRole(clientRole.id, viewProjects.id);
+    await this.assignPermissionToRole(clientRole.id, viewServices.id);
+    await this.assignPermissionToRole(clientRole.id, viewBlogPosts.id);
+    await this.assignPermissionToRole(clientRole.id, viewJobs.id);
+    
+    // Guest role - gets only view permissions for public resources
+    await this.assignPermissionToRole(guestRole.id, viewServices.id);
+    await this.assignPermissionToRole(guestRole.id, viewBlogPosts.id);
+    await this.assignPermissionToRole(guestRole.id, viewJobs.id);
+  }
+  
+  private async initializeUsers() {
+    // Get roles
+    const adminRole = await this.getRoleByName("admin");
+    const clientRole = await this.getRoleByName("client");
+    
+    if (!adminRole || !clientRole) {
+      console.error("Roles not found. Make sure to initialize roles first.");
+      return;
+    }
+    
     const adminUser: InsertUser = {
       username: "admin",
       password: "password123", // in production this should be hashed
       email: "admin@aditeke.com",
       name: "Admin User",
-      role: "admin",
-      profilePicture: "https://randomuser.me/api/portraits/men/1.jpg"
+      roleId: adminRole.id,
+      profilePicture: "https://randomuser.me/api/portraits/men/1.jpg",
+      isActive: true
     };
     
     const clientUser: InsertUser = {
@@ -301,12 +751,13 @@ export class MemStorage implements IStorage {
       password: "password123", // in production this should be hashed
       email: "client@example.com",
       name: "Client User",
-      role: "client",
-      profilePicture: "https://randomuser.me/api/portraits/women/1.jpg"
+      roleId: clientRole.id,
+      profilePicture: "https://randomuser.me/api/portraits/women/1.jpg",
+      isActive: true
     };
     
-    this.createUser(adminUser);
-    this.createUser(clientUser);
+    await this.createUser(adminUser);
+    await this.createUser(clientUser);
   }
 
   private initializeServices() {

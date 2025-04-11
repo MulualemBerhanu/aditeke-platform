@@ -1,6 +1,7 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth } from "./auth";
 import { z } from "zod";
 import {
   insertUserSchema,
@@ -14,8 +15,90 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication
+  setupAuth(app);
+  
   // API endpoints
   // ===============
+
+  // Get the helper middleware for authorization
+  const { requirePermission } = app.locals;
+  
+  // Role and permission admin routes
+  // Role management (protected by system permissions)
+  app.get("/api/roles", requirePermission("roles", "read"), async (req, res) => {
+    try {
+      const roles = await storage.getAllRoles();
+      return res.json(roles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.post("/api/roles", requirePermission("roles", "manage"), async (req, res) => {
+    try {
+      // In a real app, we would use a proper Zod schema for role validation
+      const { name, description } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Role name is required" });
+      }
+      
+      // Check if role already exists
+      const existingRole = await storage.getRoleByName(name);
+      if (existingRole) {
+        return res.status(400).json({ message: "Role with this name already exists" });
+      }
+      
+      const role = await storage.createRole({ name, description: description || null });
+      return res.status(201).json(role);
+    } catch (error) {
+      console.error("Error creating role:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Permission management
+  app.get("/api/permissions", requirePermission("permissions", "read"), async (req, res) => {
+    try {
+      const permissions = await storage.getAllPermissions();
+      return res.json(permissions);
+    } catch (error) {
+      console.error("Error fetching permissions:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Role-Permission assignments
+  app.post("/api/roles/:roleId/permissions", requirePermission("roles", "manage"), async (req, res) => {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { permissionId } = req.body;
+      
+      if (isNaN(roleId) || !permissionId) {
+        return res.status(400).json({ message: "Valid roleId and permissionId are required" });
+      }
+      
+      // Check if role exists
+      const role = await storage.getRole(roleId);
+      if (!role) {
+        return res.status(404).json({ message: "Role not found" });
+      }
+      
+      // Check if permission exists
+      const permission = await storage.getPermission(permissionId);
+      if (!permission) {
+        return res.status(404).json({ message: "Permission not found" });
+      }
+      
+      const rolePermission = await storage.assignPermissionToRole(roleId, permissionId);
+      return res.status(201).json(rolePermission);
+    } catch (error) {
+      console.error("Error assigning permission to role:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // User routes
   app.get("/api/users/:id", async (req, res) => {
@@ -38,46 +121,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-
-  app.post("/api/users/register", async (req, res) => {
+  
+  // Get all users (protected with permission)
+  app.get("/api/users", requirePermission("users", "read"), async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(userData);
+      // In a real application, you would implement pagination here
+      const users = await Promise.all(
+        Array.from({ length: 10 }, (_, i) => storage.getUser(i + 1))
+      );
       
-      // Don't return the password
-      const { password, ...userWithoutPassword } = user;
+      // Filter out null values and remove passwords
+      const filteredUsers = users
+        .filter(user => user !== undefined)
+        .map(user => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { password, ...userWithoutPassword } = user!;
+          return userWithoutPassword;
+        });
       
-      return res.status(201).json(userWithoutPassword);
+      return res.json(filteredUsers);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid user data", errors: error.errors });
-      }
-      console.error("Error creating user:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Authentication route (simple for demo)
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
-      }
-      
-      const user = await storage.getUserByUsername(username);
-      
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      
-      // Don't return the password
-      const { password: userPassword, ...userWithoutPassword } = user;
-      
-      return res.json(userWithoutPassword);
-    } catch (error) {
-      console.error("Error during login:", error);
+      console.error("Error fetching users:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -119,6 +183,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(services);
     } catch (error) {
       console.error("Error fetching services:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Create service (protected)
+  app.post("/api/services", requirePermission("services", "manage"), async (req, res) => {
+    try {
+      const serviceData = insertServiceSchema.parse(req.body);
+      const service = await storage.createService(serviceData);
+      return res.status(201).json(service);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+      }
+      console.error("Error creating service:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -175,6 +254,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
+  
+  // Create blog post (protected)
+  app.post("/api/blog", requirePermission("blog_posts", "manage"), async (req, res) => {
+    try {
+      // If the user is authenticated, we can access req.user
+      if (!req.user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Set the author ID to the current user
+      const blogPostData = {
+        ...insertBlogPostSchema.parse(req.body),
+        authorId: req.user.id
+      };
+      
+      const blogPost = await storage.createBlogPost(blogPostData);
+      return res.status(201).json(blogPost);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid blog post data", errors: error.errors });
+      }
+      console.error("Error creating blog post:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Jobs/Careers
   app.get("/api/jobs", async (req, res) => {
@@ -183,6 +287,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(jobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Create job posting (protected)
+  app.post("/api/jobs", requirePermission("jobs", "manage"), async (req, res) => {
+    try {
+      const jobData = insertJobSchema.parse(req.body);
+      const job = await storage.createJob(jobData);
+      return res.status(201).json(job);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid job data", errors: error.errors });
+      }
+      console.error("Error creating job:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Protected route for viewing contact messages
+  app.get("/api/contact-messages", requirePermission("contact_messages", "read"), async (req, res) => {
+    try {
+      // This would be implemented in a real application with pagination
+      // For now, let's simulate a basic response
+      const messages = []; // This would come from storage.getAllContactMessages() in a real implementation
+      return res.json(messages);
+    } catch (error) {
+      console.error("Error fetching contact messages:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Protected route for viewing newsletter subscribers
+  app.get("/api/newsletter-subscribers", requirePermission("newsletter_subscribers", "manage"), async (req, res) => {
+    try {
+      // This would be implemented in a real application with pagination
+      // For now, let's simulate a basic response
+      const subscribers = []; // This would come from storage.getAllNewsletterSubscribers() in a real implementation
+      return res.json(subscribers);
+    } catch (error) {
+      console.error("Error fetching newsletter subscribers:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
