@@ -15,6 +15,8 @@ import Blog from "./pages/blog";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
+import { AuthProvider } from "./components/auth/AuthContext";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 function Router() {
   return (
@@ -27,7 +29,11 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/contact" component={Contact} />
       <Route path="/login" component={Login} />
-      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/dashboard">
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -36,13 +42,15 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="font-sans text-dark bg-light">
-        <Navbar />
-        <Router />
-        <Footer />
-        <Chatbot />
-        <Toaster />
-      </div>
+      <AuthProvider>
+        <div className="font-sans text-dark bg-light">
+          <Navbar />
+          <Router />
+          <Footer />
+          <Chatbot />
+          <Toaster />
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
