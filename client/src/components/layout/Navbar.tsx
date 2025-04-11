@@ -41,11 +41,20 @@ const Navbar = () => {
         <div className="flex items-center">
           <Link href="/" className="flex flex-col leading-none">
             <div className="flex flex-col">
-              <div className="text-2xl font-bold font-accent tracking-tight">
-                <span className="text-primary">Adi</span>
-                <span className="text-blue-600">Teke</span>
+              <div className="text-2xl font-bold font-accent tracking-tight relative">
+                <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/90">Adi</span>
+                <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-500">Teke</span>
+                <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
               </div>
-              <span className="text-[9px] text-gray-600 font-semibold tracking-wider uppercase -mt-1">Software Solutions</span>
+              <div className="flex items-center">
+                <div className="h-px w-5 bg-gradient-to-r from-transparent to-primary/30 mr-1"></div>
+                <span className="text-[9px] text-gray-600 font-semibold tracking-wider uppercase -mt-1 flex items-center">
+                  <span className="opacity-90">Software</span>
+                  <span className="mx-0.5 opacity-80">•</span>
+                  <span className="opacity-90">Solutions</span>
+                </span>
+                <div className="h-px w-5 bg-gradient-to-r from-primary/30 to-transparent ml-1"></div>
+              </div>
             </div>
           </Link>
         </div>
@@ -99,11 +108,20 @@ const Navbar = () => {
           >
             <div className="px-4 py-3 space-y-1 bg-white shadow-md">
               <div className="flex flex-col mb-3 px-3">
-                <div className="text-xl font-bold font-accent tracking-tight">
-                  <span className="text-primary">Adi</span>
-                  <span className="text-blue-600">Teke</span>
+                <div className="text-xl font-bold font-accent tracking-tight relative">
+                  <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/90">Adi</span>
+                  <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-500">Teke</span>
+                  <div className="absolute -top-1 -right-2 w-1.5 h-1.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
                 </div>
-                <span className="text-[8px] text-gray-600 font-semibold tracking-wider uppercase -mt-0.5">Software Solutions</span>
+                <div className="flex items-center">
+                  <div className="h-px w-4 bg-gradient-to-r from-transparent to-primary/30 mr-1"></div>
+                  <span className="text-[8px] text-gray-600 font-semibold tracking-wider uppercase -mt-0.5 flex items-center">
+                    <span className="opacity-90">Software</span>
+                    <span className="mx-0.5 opacity-80">•</span>
+                    <span className="opacity-90">Solutions</span>
+                  </span>
+                  <div className="h-px w-4 bg-gradient-to-r from-primary/30 to-transparent ml-1"></div>
+                </div>
               </div>
               {NAV_ITEMS.map((item, index) => (
                 <Link 
