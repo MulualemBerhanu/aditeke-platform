@@ -1,0 +1,84 @@
+**AdiTeke Software Solutions – Website & Web Application**
+==========================================================
+ 
+ 
+**1. Core Functionalities & Features**
+---------------------------------------
+ 
+### **Website (Frontend - React.js)**
+ 
+✅ **Home Page (Landing Page)**
+- Modern UI with **hero section animation**
+- CTA buttons for **"Get a Quote" & "Contact Us"**
+- AI-powered chatbot integration
+- Client testimonials slider
+- Newsletter subscription (using Firebase)
+ 
+✅ **About Us Page**
+- Company mission, vision, values
+- Team members section
+- Timeline animation for company history
+ 
+✅ **Services Page**
+- List of software solutions offered
+- Interactive UI with hover effects
+- Pricing plans (if applicable)
+ 
+✅ **Portfolio / Case Studies**
+- Showcase past projects with filters
+- Before & After comparisons
+- Video testimonials
+ 
+✅ **Careers Page**
+- Job listings with easy application form
+- AI-based resume screening (free API integration)
+ 
+✅ **Blog & Knowledge Hub**
+- Articles, tutorials, and guides
+- Categorization and search functionality
+- Commenting system using Firebase
+ 
+✅ **Contact Us Page**
+- Multi-channel contact options
+- Inquiry form with Firebase backend
+ 
+---
+ 
+### **Web Application (Backend - Node.js & Express.js)**
+ 
+✅ **User Authentication & Role Management**
+- Google Login, Email/Password Login (via Firebase Auth)
+- Role-based access (Admin, Clients, Staff)
+ 
+✅ **Client Dashboard (Admin Panel & Client Panel)**
+- Project tracking & status updates
+- File sharing (using Firebase Storage)
+- Task management (Kanban board style UI)
+- Secure messaging system
+ 
+✅ **AI-Driven Features**
+- AI chatbot (Rasa or Hugging Face free model)
+- Automated project insights & reports
+ 
+✅ **E-Commerce Integration (if needed)**
+- Online payment system (Free tier PayPal or Stripe)
+- Software license subscription management
+ 
+✅ **Analytics & Reports**
+- Google Analytics for website tracking (Free)
+- AI-generated reports for clients (basic insights)
+ 
+---
+ 
+**2. Technology Stack (Free Tier Services Only)**
+--------------------------------------------------
+ 
+### **Frontend - React.js (Deployed on Replit)**
+- React.js with Tailwind CSS
+- Framer Motion for animations
+- Firebase Firestore (for blog & portfolio storage)
+ 
+### **Backend - Node.js & Express.js (Deployed on Replit)**
+- Node.js with Express.js framework
+- Firebase Authentication & Firestore
+- Supabase for PostgreSQL (if needed)
