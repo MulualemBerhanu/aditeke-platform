@@ -46,12 +46,12 @@ const Navbar = () => {
         </div>
         
         {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
           {NAV_ITEMS.map((item, index) => (
             <Link 
               key={index} 
               href={item.href}
-              className={`font-medium ${location === item.href ? 'text-primary' : 'text-dark hover:text-primary'} transition-colors`}
+              className={`font-medium ${location === item.href ? 'text-primary' : 'text-dark hover:text-primary'} transition-colors text-sm lg:text-base`}
             >
               {item.label}
             </Link>
@@ -59,14 +59,14 @@ const Navbar = () => {
         </div>
         
         {/* Desktop CTA Buttons */}
-        <div className="hidden lg:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
           <Link href="/login">
-            <Button variant="ghost" className="text-primary hover:bg-primary/10">
+            <Button variant="ghost" className="text-primary hover:bg-primary/10 text-sm lg:text-base py-1 px-2 lg:px-4 lg:py-2">
               Log In
             </Button>
           </Link>
           <Link href="/contact">
-            <Button className="bg-primary text-white hover:bg-primary/90">
+            <Button className="bg-primary text-white hover:bg-primary/90 text-sm lg:text-base py-1 px-2 lg:px-4 lg:py-2">
               Get a Quote
             </Button>
           </Link>
@@ -74,7 +74,7 @@ const Navbar = () => {
         
         {/* Mobile Menu Button */}
         <button 
-          className="lg:hidden text-dark hover:text-primary focus:outline-none"
+          className="md:hidden text-dark hover:text-primary focus:outline-none"
           onClick={toggleMobileMenu}
           aria-label="Toggle mobile menu"
         >
@@ -86,7 +86,7 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
-            className="lg:hidden"
+            className="md:hidden"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
