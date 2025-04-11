@@ -150,11 +150,12 @@ const TestimonialsSection = () => {
         </div>
         
         <div className="flex justify-center mt-10">
-          <Link href="/testimonials">
-            <a className="inline-flex items-center text-primary font-medium hover:text-accent transition-colors">
-              View all testimonials
-              <i className="fas fa-arrow-right ml-2"></i>
-            </a>
+          <Link 
+            href="/testimonials"
+            className="inline-flex items-center text-primary font-medium hover:text-accent transition-colors"
+          >
+            View all testimonials
+            <i className="fas fa-arrow-right ml-2"></i>
           </Link>
         </div>
       </div>
