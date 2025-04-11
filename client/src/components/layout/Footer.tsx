@@ -42,10 +42,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {FOOTER_QUICK_LINKS.map((link, index) => (
                 <li key={index}>
-                  <Link href={link.href}>
-                    <a className="text-gray-400 hover:text-white transition-colors">
-                      {link.label}
-                    </a>
+                  <Link href={link.href} className="text-gray-400 hover:text-white transition-colors">
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -58,10 +56,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {FOOTER_SERVICE_LINKS.map((link, index) => (
                 <li key={index}>
-                  <Link href={link.href}>
-                    <a className="text-gray-400 hover:text-white transition-colors">
-                      {link.label}
-                    </a>
+                  <Link href={link.href} className="text-gray-400 hover:text-white transition-colors">
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -98,10 +94,8 @@ const Footer = () => {
             <p className="text-gray-500 mb-4 md:mb-0">© {new Date().getFullYear()} <span className="font-bold">Adi<span className="text-blue-400">Teke</span></span> Software Solutions. All rights reserved.</p>
             <div className="flex space-x-6">
               {LEGAL_LINKS.map((link, index) => (
-                <Link key={index} href={link.href}>
-                  <a className="text-gray-500 hover:text-white transition-colors">
-                    {link.label}
-                  </a>
+                <Link key={index} href={link.href} className="text-gray-500 hover:text-white transition-colors">
+                  {link.label}
                 </Link>
               ))}
             </div>
