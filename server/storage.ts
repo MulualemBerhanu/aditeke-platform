@@ -132,11 +132,23 @@ export class MemStorage implements IStorage {
     this.jobIdCounter = 1;
 
     // Add initial demo data
-    this.initializeRolesAndPermissions();
-    this.initializeServices();
-    this.initializeTestimonials();
-    this.initializeProjects();
-    this.initializeUsers();
+    try {
+      // Initialize roles first since other entities depend on them
+      this.initializeRolesAndPermissions()
+        .then(() => {
+          // Then initialize the rest of the data
+          this.initializeServices();
+          this.initializeTestimonials();
+          this.initializeProjects();
+          this.initializeUsers();
+          console.log("Demo data initialized successfully");
+        })
+        .catch(error => {
+          console.error("Error initializing demo data:", error);
+        });
+    } catch (error) {
+      console.error("Error in initialization:", error);
+    }
   }
 
   // User methods
@@ -1082,12 +1094,21 @@ export class PostgresStorage implements IStorage {
 
   // Sample data initialization methods
   private async initializeUsers() {
+    // First, get the roles by name
+    const adminRole = await this.db.select().from(roles).where(eq(roles.name, "admin")).limit(1);
+    const clientRole = await this.db.select().from(roles).where(eq(roles.name, "client")).limit(1);
+    
+    if (adminRole.length === 0 || clientRole.length === 0) {
+      console.error("Roles not found. Make sure to initialize roles first.");
+      return;
+    }
+    
     const adminUser: InsertUser = {
       username: "admin",
       password: "password123", // in production this should be hashed
       email: "admin@aditeke.com",
       name: "Admin User",
-      role: "admin",
+      roleId: adminRole[0].id,
       profilePicture: "https://randomuser.me/api/portraits/men/1.jpg"
     };
     
@@ -1096,12 +1117,21 @@ export class PostgresStorage implements IStorage {
       password: "password123", // in production this should be hashed
       email: "client@example.com",
       name: "Client User",
-      role: "client",
+      roleId: clientRole[0].id,
       profilePicture: "https://randomuser.me/api/portraits/women/1.jpg"
     };
     
-    await this.createUser(adminUser);
-    await this.createUser(clientUser);
+    // Check if users already exist
+    const existingAdmin = await this.db.select().from(users).where(eq(users.username, "admin")).limit(1);
+    const existingClient = await this.db.select().from(users).where(eq(users.username, "client")).limit(1);
+    
+    if (existingAdmin.length === 0) {
+      await this.createUser(adminUser);
+    }
+    
+    if (existingClient.length === 0) {
+      await this.createUser(clientUser);
+    }
   }
 
   private async initializeServices() {
