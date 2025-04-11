@@ -15,7 +15,7 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <div className="text-2xl font-bold mb-6 font-accent">
-              <span>Adi</span><span className="text-secondary">Teke</span>
+              <span className="text-white">Adi</span><span className="text-blue-400">Teke</span>
             </div>
             <p className="text-gray-400 mb-6">
               Innovative software solutions designed to transform your business and enhance your digital presence.

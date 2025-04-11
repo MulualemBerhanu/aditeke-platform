@@ -104,7 +104,7 @@ const AboutPage = () => {
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Our Story</h1>
             <p className="text-xl text-gray-700 mb-8">
-              Get to know the team and vision behind AdiTeke Software Solutions
+              Get to know the team and vision behind <span className="font-bold">Adi<span className="text-blue-600">Teke</span></span> Software Solutions
             </p>
           </motion.div>
         </div>
@@ -198,7 +198,7 @@ const AboutPage = () => {
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Team</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Our talented professionals are the heart of AdiTeke. We bring together expertise from diverse backgrounds to deliver exceptional results.
+              Our talented professionals are the heart of <span className="font-bold">Adi<span className="text-blue-600">Teke</span></span>. We bring together expertise from diverse backgrounds to deliver exceptional results.
             </p>
           </motion.div>
           
