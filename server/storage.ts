@@ -18,6 +18,34 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, userData: Partial<InsertUser>): Promise<User>;
+  
+  // Role methods
+  getRole(id: number): Promise<Role | undefined>;
+  getRoleByName(name: string): Promise<Role | undefined>;
+  getAllRoles(): Promise<Role[]>;
+  createRole(role: InsertRole): Promise<Role>;
+  updateRole(id: number, roleData: Partial<InsertRole>): Promise<Role>;
+  deleteRole(id: number): Promise<boolean>;
+  
+  // Permission methods
+  getPermission(id: number): Promise<Permission | undefined>;
+  getPermissionByName(name: string): Promise<Permission | undefined>;
+  getAllPermissions(): Promise<Permission[]>;
+  getPermissionsByResource(resource: string): Promise<Permission[]>;
+  createPermission(permission: InsertPermission): Promise<Permission>;
+  updatePermission(id: number, permissionData: Partial<InsertPermission>): Promise<Permission>;
+  deletePermission(id: number): Promise<boolean>;
+  
+  // Role-Permission methods
+  assignPermissionToRole(roleId: number, permissionId: number): Promise<RolePermission>;
+  removePermissionFromRole(roleId: number, permissionId: number): Promise<boolean>;
+  getPermissionsForRole(roleId: number): Promise<Permission[]>;
+  getRolesForPermission(permissionId: number): Promise<Role[]>;
+  
+  // User-Role-Permission methods
+  getUserWithPermissions(userId: number): Promise<{ user: User; role: Role; permissions: Permission[] }>;
+  hasPermission(userId: number, resource: string, action: string): Promise<boolean>;
   
   // Project methods
   getAllProjects(category?: string): Promise<Project[]>;
@@ -52,6 +80,9 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private roles: Map<number, Role>;
+  private permissions: Map<number, Permission>;
+  private rolePermissions: Map<number, RolePermission>;
   private projects: Map<number, Project>;
   private testimonials: Map<number, Testimonial>;
   private services: Map<number, Service>;
@@ -61,6 +92,9 @@ export class MemStorage implements IStorage {
   private jobs: Map<number, Job>;
   
   private userIdCounter: number;
+  private roleIdCounter: number;
+  private permissionIdCounter: number;
+  private rolePermissionIdCounter: number;
   private projectIdCounter: number;
   private testimonialIdCounter: number;
   private serviceIdCounter: number;
