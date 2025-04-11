@@ -39,9 +39,21 @@ const Navbar = () => {
     <header className={`sticky top-0 z-50 bg-white ${isScrolled ? 'shadow-sm' : ''} transition-shadow`}>
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <Link href="/" className="text-2xl font-bold font-accent">
-            <span className="text-primary">Adi</span>
-            <span className="text-blue-600">Teke</span>
+          <Link href="/" className="flex flex-col leading-none">
+            <div className="flex items-center">
+              <div className="mr-1.5 w-7 h-7 rounded-md bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm relative overflow-hidden">
+                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(255,255,255,0.3), transparent 70%)' }}></div>
+                <span className="relative z-10">AT</span>
+              </div>
+              <div className="text-2xl font-bold font-accent tracking-tight">
+                <span className="text-primary">Adi</span>
+                <span className="text-blue-600">Teke</span>
+              </div>
+            </div>
+            <div className="flex items-center -mt-1 ml-9">
+              <span className="text-[9px] text-gray-600 font-semibold tracking-wider uppercase">Software Solutions</span>
+              <div className="ml-1 w-1 h-1 rounded-full bg-primary"></div>
+            </div>
           </Link>
         </div>
         
@@ -93,6 +105,22 @@ const Navbar = () => {
             transition={{ duration: 0.3 }}
           >
             <div className="px-4 py-3 space-y-1 bg-white shadow-md">
+              <div className="flex flex-col mb-3 px-3">
+                <div className="flex items-center">
+                  <div className="mr-1.5 w-6 h-6 rounded-md bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(255,255,255,0.3), transparent 70%)' }}></div>
+                    <span className="relative z-10">AT</span>
+                  </div>
+                  <div className="text-xl font-bold font-accent tracking-tight">
+                    <span className="text-primary">Adi</span>
+                    <span className="text-blue-600">Teke</span>
+                  </div>
+                </div>
+                <div className="flex items-center -mt-0.5 ml-8">
+                  <span className="text-[8px] text-gray-600 font-semibold tracking-wider uppercase">Software Solutions</span>
+                  <div className="ml-1 w-1 h-1 rounded-full bg-primary"></div>
+                </div>
+              </div>
               {NAV_ITEMS.map((item, index) => (
                 <Link 
                   key={index} 
