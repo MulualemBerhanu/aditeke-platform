@@ -2,46 +2,46 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { COMPANY_STATS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
+import backgroundVideo from "@assets/background.mp4";
+import { useEffect, useRef } from "react";
 
-const SimpleGradientBackground = () => {
+const VideoBackground = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Ensure the video plays automatically and loops
+    if (videoRef.current) {
+      videoRef.current.play().catch(error => {
+        console.error("Video autoplay failed:", error);
+      });
+    }
+  }, []);
+
   return (
-    <div className="absolute inset-0 z-0">
-      {/* Main background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#040b29] via-[#0a1a44] to-[#071336]"></div>
+    <div className="absolute inset-0 z-0 overflow-hidden">
+      {/* Video background */}
+      <video 
+        ref={videoRef}
+        className="absolute w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source src={backgroundVideo} type="video/mp4" />
+      </video>
       
-      {/* Subtle animated gradients */}
-      <motion.div 
-        className="absolute top-0 left-0 w-full h-full opacity-30"
-        animate={{ 
-          background: [
-            'radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 60%)',
-            'radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.3) 0%, transparent 65%)',
-            'radial-gradient(circle at 22% 27%, rgba(59, 130, 246, 0.3) 0%, transparent 60%)'
-          ]
-        }}
-        transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
-      />
-      
-      <motion.div 
-        className="absolute top-0 right-0 w-full h-full opacity-20" 
-        animate={{ 
-          background: [
-            'radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.3) 0%, transparent 55%)',
-            'radial-gradient(circle at 75% 25%, rgba(6, 182, 212, 0.3) 0%, transparent 60%)',
-            'radial-gradient(circle at 82% 22%, rgba(6, 182, 212, 0.3) 0%, transparent 55%)'
-          ]
-        }}
-        transition={{ duration: 12, repeat: Infinity, repeatType: "reverse" }}
-      />
-      
-      {/* Subtle particle dots */}
-      <div className="absolute inset-0 opacity-40" style={{ 
-        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', 
-        backgroundSize: '30px 30px' 
-      }}></div>
+      {/* Overlay to darken video and add blue tint */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#040b29]/70 via-[#0a1a44]/70 to-[#071336]/70"></div>
       
       {/* Glass-like layer for depth */}
       <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-transparent backdrop-blur-[1px]"></div>
+      
+      {/* Subtle particle dots */}
+      <div className="absolute inset-0 opacity-30" style={{ 
+        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', 
+        backgroundSize: '30px 30px' 
+      }}></div>
     </div>
   );
 };
@@ -205,8 +205,8 @@ const VirtualWhiteboard = () => {
 const HeroSection = () => {
   return (
     <section id="home" className="relative overflow-hidden py-24 lg:py-32 text-white min-h-[90vh] flex items-center">
-      {/* Simple elegant background */}
-      <SimpleGradientBackground />
+      {/* Video background */}
+      <VideoBackground />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12">
