@@ -388,7 +388,7 @@ const Dashboard = () => {
                       <tbody>
                         {[
                           { name: 'project_requirements.pdf', project: 'E-commerce Platform', date: '2023-06-10', size: '2.4 MB' },
-                          { name: 'design_mockups.zip', project: 'Mobile Banking App', date: '2023-06-08', size: '15.7 MB' },
+                          { name: 'design_mockups.zip', project: 'AdiTeke Business App', date: '2023-06-08', size: '15.7 MB' },
                           { name: 'api_documentation.docx', project: 'E-commerce Platform', date: '2023-06-05', size: '1.2 MB' },
                           { name: 'presentation.pptx', project: 'Analytics Dashboard', date: '2023-06-01', size: '8.5 MB' },
                         ].map((file, index) => (

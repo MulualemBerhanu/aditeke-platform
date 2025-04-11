@@ -368,8 +368,8 @@ export class MemStorage implements IStorage {
         status: "completed"
       },
       {
-        title: "Mobile Banking App",
-        description: "Secure financial management application with real-time analytics",
+        title: "AdiTeke Business App",
+        description: "Enterprise business management solution with real-time analytics",
         thumbnail: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80",
         category: "mobile",
         clientId: 2,
@@ -716,8 +716,8 @@ export class PostgresStorage implements IStorage {
         status: "completed"
       },
       {
-        title: "Mobile Banking App",
-        description: "Secure financial management application with real-time analytics",
+        title: "AdiTeke Business App",
+        description: "Enterprise business management solution with real-time analytics",
         thumbnail: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80",
         category: "mobile",
         clientId: 2,
