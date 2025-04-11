@@ -2,160 +2,47 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { COMPANY_STATS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
 
-const TechGridBackground = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    let animationId: number;
-    
-    // Configuration
-    const gridSize = 40;
-    const lineWidth = 1;
-    const lineColor = 'rgba(13, 110, 253, 0.3)';
-    const highlightColor = 'rgba(77, 171, 247, 0.8)';
-    
-    // Perspective lines
-    const perspectiveLines: { x1: number; y1: number; x2: number; y2: number; highlight: boolean; highlightProgress: number; }[] = [];
-    
-    // Set canvas size
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      initPerspectiveLines();
-    };
-    
-    // Initialize perspective grid lines
-    const initPerspectiveLines = () => {
-      perspectiveLines.length = 0;
-      
-      // Create grid lines
-      for (let y = 0; y < canvas.height; y += gridSize) {
-        perspectiveLines.push({
-          x1: 0,
-          y1: y,
-          x2: canvas.width,
-          y2: y,
-          highlight: Math.random() < 0.15,
-          highlightProgress: Math.random()
-        });
-      }
-      
-      for (let x = 0; x < canvas.width; x += gridSize) {
-        perspectiveLines.push({
-          x1: x,
-          y1: 0,
-          x2: x,
-          y2: canvas.height,
-          highlight: Math.random() < 0.15,
-          highlightProgress: Math.random()
-        });
-      }
-      
-      // Add diagonal perspective lines
-      const diagonalCount = 15;
-      for (let i = 0; i < diagonalCount; i++) {
-        const startX = canvas.width * Math.random();
-        const startY = canvas.height * Math.random();
-        const angle = Math.random() * Math.PI * 2;
-        const length = Math.max(canvas.width, canvas.height);
-        
-        perspectiveLines.push({
-          x1: startX,
-          y1: startY,
-          x2: startX + Math.cos(angle) * length,
-          y2: startY + Math.sin(angle) * length,
-          highlight: Math.random() < 0.3,
-          highlightProgress: Math.random()
-        });
-      }
-    };
-    
-    // Draw glowing effect
-    const drawGlow = (x1: number, y1: number, x2: number, y2: number, color: string, width: number) => {
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = color;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = width;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      
-      // Reset shadow
-      ctx.shadowBlur = 0;
-    };
-    
-    // Draw perspective grid
-    const drawPerspectiveGrid = () => {
-      perspectiveLines.forEach(line => {
-        if (line.highlight) {
-          // Draw glowing effect for highlighted lines
-          drawGlow(line.x1, line.y1, line.x2, line.y2, highlightColor, 2);
-          
-          // Update highlight progress
-          line.highlightProgress += 0.01;
-          if (line.highlightProgress > 1) {
-            line.highlightProgress = 0;
-            line.highlight = Math.random() < 0.1;
-          }
-        } else {
-          // Draw regular grid line
-          ctx.strokeStyle = lineColor;
-          ctx.lineWidth = lineWidth;
-          ctx.beginPath();
-          ctx.moveTo(line.x1, line.y1);
-          ctx.lineTo(line.x2, line.y2);
-          ctx.stroke();
-          
-          // Small chance to start highlight
-          if (Math.random() < 0.001) {
-            line.highlight = true;
-            line.highlightProgress = 0;
-          }
-        }
-      });
-    };
-    
-    // Animation loop
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Add dark background
-      ctx.fillStyle = 'rgba(0, 2, 18, 0.97)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw tech grid elements
-      drawPerspectiveGrid();
-      
-      animationId = requestAnimationFrame(animate);
-    };
-    
-    // Handle window resize
-    window.addEventListener('resize', resizeCanvas);
-    
-    resizeCanvas();
-    animate();
-    
-    // Cleanup
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-  
+const SimpleGradientBackground = () => {
   return (
-    <canvas 
-      ref={canvasRef} 
-      className="absolute inset-0 z-0"
-    />
+    <div className="absolute inset-0 z-0">
+      {/* Main background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#040b29] via-[#0a1a44] to-[#071336]"></div>
+      
+      {/* Subtle animated gradients */}
+      <motion.div 
+        className="absolute top-0 left-0 w-full h-full opacity-30"
+        animate={{ 
+          background: [
+            'radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 60%)',
+            'radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.3) 0%, transparent 65%)',
+            'radial-gradient(circle at 22% 27%, rgba(59, 130, 246, 0.3) 0%, transparent 60%)'
+          ]
+        }}
+        transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
+      />
+      
+      <motion.div 
+        className="absolute top-0 right-0 w-full h-full opacity-20" 
+        animate={{ 
+          background: [
+            'radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.3) 0%, transparent 55%)',
+            'radial-gradient(circle at 75% 25%, rgba(6, 182, 212, 0.3) 0%, transparent 60%)',
+            'radial-gradient(circle at 82% 22%, rgba(6, 182, 212, 0.3) 0%, transparent 55%)'
+          ]
+        }}
+        transition={{ duration: 12, repeat: Infinity, repeatType: "reverse" }}
+      />
+      
+      {/* Subtle particle dots */}
+      <div className="absolute inset-0 opacity-40" style={{ 
+        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', 
+        backgroundSize: '30px 30px' 
+      }}></div>
+      
+      {/* Glass-like layer for depth */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-transparent backdrop-blur-[1px]"></div>
+    </div>
   );
 };
 
@@ -318,8 +205,8 @@ const VirtualWhiteboard = () => {
 const HeroSection = () => {
   return (
     <section id="home" className="relative overflow-hidden py-24 lg:py-32 text-white min-h-[90vh] flex items-center">
-      {/* Tech background with animation */}
-      <TechGridBackground />
+      {/* Simple elegant background */}
+      <SimpleGradientBackground />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12">
