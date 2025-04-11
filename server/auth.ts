@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import firebaseAdmin from "./firebase-admin";
 
 declare global {
   namespace Express {
@@ -30,6 +31,97 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// Verify Firebase ID token and get corresponding user
+async function verifyFirebaseToken(token: string) {
+  try {
+    if (!firebaseAdmin) {
+      throw new Error("Firebase Admin SDK not initialized");
+    }
+    
+    const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
+    return decodedToken;
+  } catch (error) {
+    console.error("Error verifying Firebase token:", error);
+    throw error;
+  }
+}
+
+// Find or create user from Firebase user data
+async function findOrCreateFirebaseUser(firebaseUser: any) {
+  try {
+    // Find if user already exists by email
+    let user = await storage.getUserByUsername(firebaseUser.email);
+    
+    if (!user) {
+      // User doesn't exist, create a new one
+      // Get the client role
+      const clientRole = await storage.getRoleByName("client");
+      if (!clientRole) {
+        throw new Error("Client role not found");
+      }
+      
+      // Create a random password for the user (they'll use Firebase authentication)
+      const randomPassword = randomBytes(16).toString("hex");
+      const hashedPassword = await hashPassword(randomPassword);
+      
+      // Create the user
+      user = await storage.createUser({
+        username: firebaseUser.email, // Use email as username for Firebase users
+        email: firebaseUser.email,
+        name: firebaseUser.name || firebaseUser.email.split("@")[0], // Use name if available, or extract from email
+        password: hashedPassword,
+        roleId: clientRole.id,
+        profilePicture: firebaseUser.picture || null,
+        isActive: true
+      });
+    }
+    
+    return user;
+  } catch (error) {
+    console.error("Error finding or creating Firebase user:", error);
+    throw error;
+  }
+}
+
+// Firebase authentication middleware
+function authenticateFirebaseToken() {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return next(); // No Firebase token, proceed to next middleware
+      }
+      
+      const idToken = authHeader.split("Bearer ")[1];
+      if (!idToken) {
+        return next();
+      }
+      
+      // Verify the token
+      const decodedToken = await verifyFirebaseToken(idToken);
+      
+      // Find or create the user in our database
+      const user = await findOrCreateFirebaseUser({
+        uid: decodedToken.uid,
+        email: decodedToken.email,
+        name: decodedToken.name,
+        picture: decodedToken.picture
+      });
+      
+      // Log the user in (using Passport.js)
+      req.login(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        next();
+      });
+    } catch (error) {
+      // Don't send an error - just proceed without authentication
+      next();
+    }
+  };
+}
+
 export function setupAuth(app: Express) {
   // Session configuration
   const sessionSettings: session.SessionOptions = {
@@ -46,6 +138,9 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Apply Firebase authentication middleware to all requests
+  app.use(authenticateFirebaseToken());
 
   // Configure local strategy for username/password authentication
   passport.use(
@@ -138,6 +233,45 @@ export function setupAuth(app: Express) {
         res.status(200).json(userWithoutPassword);
       });
     })(req, res, next);
+  });
+
+  // Firebase login endpoint - converts a Firebase ID token to a session
+  app.post("/api/firebase/login", async (req, res, next) => {
+    try {
+      const { idToken } = req.body;
+      
+      if (!idToken) {
+        return res.status(400).json({ message: "ID token is required" });
+      }
+      
+      // Verify the token
+      const decodedToken = await verifyFirebaseToken(idToken);
+      
+      // Find or create the user in our database
+      const user = await findOrCreateFirebaseUser({
+        uid: decodedToken.uid,
+        email: decodedToken.email,
+        name: decodedToken.name || decodedToken.email?.split("@")[0],
+        picture: decodedToken.picture
+      });
+      
+      // Log the user in
+      req.login(user, (err) => {
+        if (err) return next(err);
+        
+        // Update last login time
+        const now = new Date();
+        storage.updateUser(user.id, { lastLogin: now })
+          .catch(error => console.error("Error updating last login time:", error));
+        
+        // Return user without sensitive information
+        const { password, ...userWithoutPassword } = user;
+        res.status(200).json(userWithoutPassword);
+      });
+    } catch (error) {
+      console.error("Firebase login error:", error);
+      res.status(401).json({ message: "Invalid ID token" });
+    }
   });
 
   // Logout endpoint
