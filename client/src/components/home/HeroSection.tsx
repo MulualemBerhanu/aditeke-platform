@@ -2,7 +2,6 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { COMPANY_STATS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import backgroundVideo from "@assets/background.mp4";
 import { useEffect, useRef } from "react";
 
 const VideoBackground = () => {
@@ -28,7 +27,7 @@ const VideoBackground = () => {
         muted
         playsInline
       >
-        <source src={backgroundVideo} type="video/mp4" />
+        <source src="/assets/background.mp4" type="video/mp4" />
       </video>
       
       {/* Overlay to darken video and add blue tint */}
