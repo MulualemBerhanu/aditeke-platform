@@ -15,116 +15,184 @@ const TechGridBackground = () => {
     if (!ctx) return;
     
     let animationId: number;
-    let particles: { x: number; y: number; vx: number; vy: number; size: number; }[] = [];
-    const particleCount = 50;
-    const gridSize = 30;
-    const particleSpeed = 0.3;
-    const lineMaxDistance = 200;
+    
+    // Configuration
+    const gridSize = 40;
+    const perspectiveDepth = 5;
+    const lineWidth = 1;
+    const lineColor = 'rgba(13, 110, 253, 0.3)';
+    const highlightColor = 'rgba(77, 171, 247, 0.8)';
+    const movementSpeed = 0.5;
+    
+    // Perspective lines
+    const perspectiveLines: { x1: number; y1: number; x2: number; y2: number; highlight: boolean; highlightProgress: number; }[] = [];
     
     // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      initPerspectiveLines();
     };
     
-    // Initialize particles
-    const initParticles = () => {
-      particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * particleSpeed,
-          vy: (Math.random() - 0.5) * particleSpeed,
-          size: Math.random() * 2 + 1
+    // Initialize perspective grid lines
+    const initPerspectiveLines = () => {
+      perspectiveLines.length = 0;
+      
+      // Create horizontal lines that move towards the center creating perspective
+      const centerY = canvas.height / 2;
+      const centerX = canvas.width / 2;
+      
+      // Create grid lines
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        perspectiveLines.push({
+          x1: 0,
+          y1: y,
+          x2: canvas.width,
+          y2: y,
+          highlight: Math.random() < 0.15, // Randomly highlight some lines
+          highlightProgress: Math.random()
+        });
+      }
+      
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        perspectiveLines.push({
+          x1: x,
+          y1: 0,
+          x2: x,
+          y2: canvas.height,
+          highlight: Math.random() < 0.15, // Randomly highlight some lines
+          highlightProgress: Math.random()
+        });
+      }
+      
+      // Add diagonal perspective lines
+      const diagonalCount = 10;
+      for (let i = 0; i < diagonalCount; i++) {
+        const startX = canvas.width * Math.random();
+        const startY = canvas.height * Math.random();
+        const angle = Math.random() * Math.PI * 2;
+        const length = Math.max(canvas.width, canvas.height);
+        
+        perspectiveLines.push({
+          x1: startX,
+          y1: startY,
+          x2: startX + Math.cos(angle) * length,
+          y2: startY + Math.sin(angle) * length,
+          highlight: Math.random() < 0.3, // Higher chance to highlight these
+          highlightProgress: Math.random()
         });
       }
     };
     
-    // Draw grid lines
-    const drawGrid = () => {
-      ctx.strokeStyle = 'rgba(0, 120, 255, 0.15)';
-      ctx.lineWidth = 1;
+    // Draw glowing effect
+    const drawGlow = (x1: number, y1: number, x2: number, y2: number, color: string, width: number) => {
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = color;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
       
-      // Vertical lines
-      for (let x = 0; x < canvas.width; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
-      }
-      
-      // Horizontal lines
-      for (let y = 0; y < canvas.height; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
-      }
+      // Reset shadow
+      ctx.shadowBlur = 0;
     };
     
-    // Draw particles and connections
-    const drawParticles = () => {
-      particles.forEach(particle => {
-        // Draw particle
-        ctx.fillStyle = 'rgba(0, 170, 255, 0.6)';
+    // Draw perspective grid
+    const drawPerspectiveGrid = () => {
+      perspectiveLines.forEach(line => {
+        if (line.highlight) {
+          // Draw glowing effect for highlighted lines
+          drawGlow(line.x1, line.y1, line.x2, line.y2, highlightColor, 2);
+          
+          // Update highlight progress
+          line.highlightProgress += 0.01;
+          if (line.highlightProgress > 1) {
+            line.highlightProgress = 0;
+            line.highlight = Math.random() < 0.1; // Chance to continue highlight
+          }
+        } else {
+          // Draw regular grid line
+          ctx.strokeStyle = lineColor;
+          ctx.lineWidth = lineWidth;
+          ctx.beginPath();
+          ctx.moveTo(line.x1, line.y1);
+          ctx.lineTo(line.x2, line.y2);
+          ctx.stroke();
+          
+          // Small chance to start highlight
+          if (Math.random() < 0.001) {
+            line.highlight = true;
+            line.highlightProgress = 0;
+          }
+        }
+      });
+    };
+    
+    // Create light pulse effect at intervals
+    let pulseTime = 0;
+    let pulsing = false;
+    let pulseRadius = 0;
+    const maxPulseRadius = Math.max(canvas.width, canvas.height);
+    
+    const drawPulse = () => {
+      pulseTime++;
+      
+      if (pulseTime > 120 && !pulsing) { // Every 120 frames, start a new pulse
+        pulsing = true;
+        pulseRadius = 0;
+        pulseTime = 0;
+      }
+      
+      if (pulsing) {
+        // Draw expanding circular pulse
+        const gradient = ctx.createRadialGradient(
+          canvas.width / 2, 
+          canvas.height / 2, 
+          0, 
+          canvas.width / 2, 
+          canvas.height / 2, 
+          pulseRadius
+        );
+        
+        gradient.addColorStop(0, 'rgba(30, 144, 255, 0)');
+        gradient.addColorStop(0.7, 'rgba(30, 144, 255, 0.05)');
+        gradient.addColorStop(0.9, 'rgba(30, 144, 255, 0.1)');
+        gradient.addColorStop(1, 'rgba(30, 144, 255, 0)');
+        
+        ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.arc(canvas.width / 2, canvas.height / 2, pulseRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw connections between particles
-        particles.forEach(otherParticle => {
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < lineMaxDistance) {
-            ctx.strokeStyle = `rgba(0, 150, 255, ${(1 - distance / lineMaxDistance) * 0.3})`;
-            ctx.lineWidth = (1 - distance / lineMaxDistance) * 2;
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.stroke();
-          }
-        });
-      });
-    };
-    
-    // Update particle positions
-    const updateParticles = () => {
-      particles.forEach(particle => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+        pulseRadius += 10;
         
-        // Bounce off edges
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
-      });
+        if (pulseRadius > maxPulseRadius) {
+          pulsing = false;
+        }
+      }
     };
     
     // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Add a dark background
-      ctx.fillStyle = 'rgba(0, 0, 20, 0.95)';
+      // Add dark background
+      ctx.fillStyle = 'rgba(0, 0, 15, 0.97)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      drawGrid();
-      drawParticles();
-      updateParticles();
+      // Draw tech grid elements
+      drawPerspectiveGrid();
+      drawPulse();
       
       animationId = requestAnimationFrame(animate);
     };
     
     // Handle window resize
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      initParticles();
-    });
+    window.addEventListener('resize', resizeCanvas);
     
     resizeCanvas();
-    initParticles();
     animate();
     
     // Cleanup
