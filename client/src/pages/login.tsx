@@ -139,14 +139,37 @@ export default function LoginPage() {
       console.log('User authenticated:', user);
       console.log('Redirecting based on roleId:', user.roleId);
       
-      // Add a slight delay to allow the toast to show
+      // Force a hard redirect to the correct URL
       setTimeout(() => {
+        let targetUrl = '';
         if (user.roleId === 1) {
-          window.location.href = '/admin/project-management';
+          targetUrl = '/admin/project-management';
         } else if (user.roleId === 2) {
-          window.location.href = '/manager/dashboard';
+          targetUrl = '/manager/dashboard';
         } else {
-          window.location.href = '/client/dashboard';
+          targetUrl = '/client/dashboard';
+        }
+        
+        console.log('Redirecting to:', targetUrl);
+        
+        // Try different redirect methods to ensure it works
+        try {
+          // Method 1: Direct window location assign
+          window.location.assign(targetUrl);
+          
+          // Method 2: Fallback to href if the above doesn't work
+          setTimeout(() => {
+            window.location.href = targetUrl;
+            
+            // Method 3: Use replace as a final fallback
+            setTimeout(() => {
+              window.location.replace(targetUrl);
+            }, 100);
+          }, 100);
+        } catch (e) {
+          console.error('Redirect error:', e);
+          // Fallback to simple href
+          window.location.href = targetUrl;
         }
       }, 500);
     } catch (error) {
@@ -182,14 +205,37 @@ export default function LoginPage() {
       console.log('User registered:', user);
       console.log('Redirecting based on roleId:', user.roleId);
       
-      // Add a slight delay to allow the toast to show
+      // Force a hard redirect to the correct URL
       setTimeout(() => {
+        let targetUrl = '';
         if (user.roleId === 1) {
-          window.location.href = '/admin/dashboard';
+          targetUrl = '/admin/dashboard';
         } else if (user.roleId === 2) {
-          window.location.href = '/manager/dashboard';
+          targetUrl = '/manager/dashboard';
         } else {
-          window.location.href = '/client/dashboard';
+          targetUrl = '/client/dashboard';
+        }
+        
+        console.log('Redirecting to:', targetUrl);
+        
+        // Try different redirect methods to ensure it works
+        try {
+          // Method 1: Direct window location assign
+          window.location.assign(targetUrl);
+          
+          // Method 2: Fallback to href if the above doesn't work
+          setTimeout(() => {
+            window.location.href = targetUrl;
+            
+            // Method 3: Use replace as a final fallback
+            setTimeout(() => {
+              window.location.replace(targetUrl);
+            }, 100);
+          }, 100);
+        } catch (e) {
+          console.error('Redirect error:', e);
+          // Fallback to simple href
+          window.location.href = targetUrl;
         }
       }, 500);
     } catch (error: any) {
