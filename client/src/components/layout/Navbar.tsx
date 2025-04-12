@@ -11,6 +11,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Define USER_ROLES for navigation login options
+const USER_ROLES = [
+  {
+    id: 1,
+    name: 'Admin',
+    icon: <UserCog className="h-5 w-5" />,
+    description: 'Full access to all features and settings',
+    emailPattern: 'admin@aditeke.com', // Add this for compatibility with login page
+    username: 'admin',
+    password: 'password123',
+  },
+  {
+    id: 2,
+    name: 'Manager',
+    icon: <Building2 className="h-5 w-5" />,
+    description: 'Manage projects and team members',
+    emailPattern: 'manager@aditeke.com', // Add this for compatibility with login page
+    username: 'manager',
+    password: 'password123',
+  },
+  {
+    id: 3,
+    name: 'Client',
+    icon: <Users className="h-5 w-5" />,
+    description: 'View and track project progress',
+    emailPattern: 'client@aditeke.com', // Add this for compatibility with login page
+    username: 'client',
+    password: 'password123',
+  },
+];
+
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -89,22 +120,46 @@ const Navbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               <DropdownMenuItem asChild>
-                <Link href="/login?role=admin" className="flex items-center">
+                <a 
+                  href="/login?role=admin" 
+                  className="flex items-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    localStorage.setItem('selectedRole', JSON.stringify(USER_ROLES[0])); // Admin role
+                    window.location.href = "/login?role=admin";
+                  }}
+                >
                   <UserCog className="mr-2 h-4 w-4" />
                   <span>Admin Login</span>
-                </Link>
+                </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/login?role=manager" className="flex items-center">
+                <a 
+                  href="/login?role=manager" 
+                  className="flex items-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    localStorage.setItem('selectedRole', JSON.stringify(USER_ROLES[1])); // Manager role
+                    window.location.href = "/login?role=manager";
+                  }}
+                >
                   <Building2 className="mr-2 h-4 w-4" />
                   <span>Manager Login</span>
-                </Link>
+                </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/login?role=client" className="flex items-center">
+                <a 
+                  href="/login?role=client" 
+                  className="flex items-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    localStorage.setItem('selectedRole', JSON.stringify(USER_ROLES[2])); // Client role
+                    window.location.href = "/login?role=client";
+                  }}
+                >
                   <Users className="mr-2 h-4 w-4" />
                   <span>Client Login</span>
-                </Link>
+                </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -163,24 +218,39 @@ const Navbar = () => {
               <div className="pt-4 flex flex-col space-y-2">
                 <div className="space-y-2 mb-2">
                   <h3 className="text-sm font-medium text-muted-foreground ml-1">Login as:</h3>
-                  <Link href="/login?role=admin">
-                    <Button variant="outline" className="w-full justify-start text-primary">
-                      <UserCog className="mr-2 h-4 w-4" />
-                      Admin Login
-                    </Button>
-                  </Link>
-                  <Link href="/login?role=manager">
-                    <Button variant="outline" className="w-full justify-start text-primary">
-                      <Building2 className="mr-2 h-4 w-4" />
-                      Manager Login
-                    </Button>
-                  </Link>
-                  <Link href="/login?role=client">
-                    <Button variant="outline" className="w-full justify-start text-primary">
-                      <Users className="mr-2 h-4 w-4" />
-                      Client Login
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-primary"
+                    onClick={() => {
+                      localStorage.setItem('selectedRole', JSON.stringify(USER_ROLES[0])); // Admin role
+                      window.location.href = "/login?role=admin";
+                    }}
+                  >
+                    <UserCog className="mr-2 h-4 w-4" />
+                    Admin Login
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-primary"
+                    onClick={() => {
+                      localStorage.setItem('selectedRole', JSON.stringify(USER_ROLES[1])); // Manager role
+                      window.location.href = "/login?role=manager";
+                    }}
+                  >
+                    <Building2 className="mr-2 h-4 w-4" />
+                    Manager Login
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-primary"
+                    onClick={() => {
+                      localStorage.setItem('selectedRole', JSON.stringify(USER_ROLES[2])); // Client role
+                      window.location.href = "/login?role=client";
+                    }}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Client Login
+                  </Button>
                 </div>
                 <Link href="/contact">
                   <Button className="w-full justify-center bg-primary text-white hover:bg-primary/90">
