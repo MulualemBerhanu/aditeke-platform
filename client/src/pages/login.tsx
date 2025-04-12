@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { UsersRound, Building2, UserCog, User } from 'lucide-react';
+import { UsersRound, Building2, UserCog, User, ArrowLeft } from 'lucide-react';
 
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
 // User role type
@@ -84,44 +83,18 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoginView, setIsLoginView] = useState<boolean>(true);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("login");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: selectedRole?.credentials.username || '',
-      password: selectedRole?.credentials.password || '',
+      username: '',
+      password: '',
     },
   });
-
-  // Set role from URL parameter if available
-  useEffect(() => {
-    // Use URLSearchParams for standard browser compatibility
-    const urlParams = new URLSearchParams(window.location.search);
-    const roleParam = urlParams.get('role');
-    
-    if (roleParam) {
-      const foundRole = USER_ROLES.find(role => 
-        role.name.toLowerCase() === roleParam.toLowerCase()
-      );
-      
-      if (foundRole) {
-        setSelectedRole(foundRole);
-        setActiveTab('login');
-      }
-    }
-  }, []);
-
-  // Update form values when selected role changes
-  useEffect(() => {
-    if (selectedRole) {
-      loginForm.setValue('username', selectedRole.credentials.username);
-      loginForm.setValue('password', selectedRole.credentials.password);
-    }
-  }, [selectedRole, loginForm]);
 
   // Register form
   const registerForm = useForm<RegisterFormValues>({
@@ -132,18 +105,42 @@ export default function LoginPage() {
       email: '',
       password: '',
       confirmPassword: '',
-      roleId: selectedRole?.id || 3, // Default to client role
+      roleId: 3, // Default to client role
     },
   });
 
-  // Handle role selection
-  const handleRoleSelect = (role: UserRole) => {
-    setSelectedRole(role);
-    setActiveTab('login');
-  };
+  // Set role from URL parameter if available
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roleParam = urlParams.get('role');
+    
+    if (roleParam) {
+      const foundRole = USER_ROLES.find(role => 
+        role.name.toLowerCase() === roleParam.toLowerCase()
+      );
+      
+      if (foundRole) {
+        setSelectedRole(foundRole);
+        // Auto-fill credentials for demo convenience
+        loginForm.setValue('username', foundRole.credentials.username);
+        loginForm.setValue('password', foundRole.credentials.password);
+        registerForm.setValue('roleId', foundRole.id);
+      }
+    }
+  }, []);
 
   // Handle login form submission
   const onLoginSubmit = async (data: LoginFormValues) => {
+    if (!selectedRole) {
+      toast({
+        title: "Role selection required",
+        description: "Please select a user role from the navbar dropdown",
+        variant: "destructive",
+      });
+      window.location.href = "/";
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await apiRequest('POST', '/api/login', data);
@@ -159,14 +156,15 @@ export default function LoginPage() {
       // Store user in localStorage
       localStorage.setItem('currentUser', JSON.stringify(user));
       
-      // Show success message with manual redirect option
-      toast({
-        title: "Login successful!",
-        description: "You will be redirected to your dashboard shortly.",
-      });
-      
-      // Auto-navigate to dashboard tab on success
-      setActiveTab("dashboard");
+      // Redirect to appropriate dashboard based on role
+      const dashboardUrl = selectedRole.name.toLowerCase() === 'admin' 
+        ? '/admin/dashboard'
+        : selectedRole.name.toLowerCase() === 'manager'
+          ? '/manager/dashboard'
+          : '/client/dashboard';
+          
+      // Redirect immediately
+      window.location.href = dashboardUrl;
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -181,13 +179,20 @@ export default function LoginPage() {
 
   // Handle register form submission
   const onRegisterSubmit = async (data: RegisterFormValues) => {
+    if (!selectedRole) {
+      toast({
+        title: "Role selection required",
+        description: "Please select a user role from the navbar dropdown",
+        variant: "destructive",
+      });
+      window.location.href = "/";
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Remove the confirmPassword field as it's not needed in the API request
       const { confirmPassword, ...registerData } = data;
-      
-      // Add the role ID
-      registerData.roleId = selectedRole?.id || 3; // Default to client if not selected
+      registerData.roleId = selectedRole.id;
       
       const response = await apiRequest('POST', '/api/register', registerData);
       const user = await response.json();
@@ -196,20 +201,19 @@ export default function LoginPage() {
         title: "Registration successful",
         description: "Your account has been created successfully.",
       });
-
-      console.log('User registered:', user);
       
       // Store user in localStorage
       localStorage.setItem('currentUser', JSON.stringify(user));
       
-      // Show success message with manual redirect option
-      toast({
-        title: "Registration successful!",
-        description: "You can now access your dashboard.",
-      });
-      
-      // Auto-navigate to dashboard tab on success
-      setActiveTab("dashboard");
+      // Redirect to appropriate dashboard based on role
+      const dashboardUrl = selectedRole.name.toLowerCase() === 'admin' 
+        ? '/admin/dashboard'
+        : selectedRole.name.toLowerCase() === 'manager'
+          ? '/manager/dashboard'
+          : '/client/dashboard';
+          
+      // Redirect immediately
+      window.location.href = dashboardUrl;
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
@@ -222,315 +226,230 @@ export default function LoginPage() {
     }
   };
 
+  // If no role is selected, show message and redirect back
+  if (!selectedRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-primary">AdiTeke</CardTitle>
+            <CardDescription>Role Selection Required</CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="my-6 flex flex-col items-center">
+              <div className="h-12 w-12 rounded-full bg-amber-100 mb-4 flex items-center justify-center">
+                <ArrowLeft className="h-6 w-6 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Please select a role first</h3>
+              <p className="text-muted-foreground mb-6">
+                You need to select a user role from the navbar dropdown menu before accessing this page.
+              </p>
+              <Button 
+                onClick={() => window.location.href = "/"}
+                className="w-full"
+              >
+                Go Back Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
-      
       {/* Left side: Auth form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-primary">AdiTeke</CardTitle>
             <CardDescription>
-              Welcome
+              {isLoginView ? 'Sign in to your account' : 'Create a new account'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="role-select">
+            {/* Role indicator */}
+            <div className="bg-muted/50 p-3 rounded-lg mb-6 flex items-center">
+              <div className="text-primary mr-3">{selectedRole.icon}</div>
+              <div>
+                <h3 className="font-medium">{selectedRole.name}</h3>
+                <p className="text-xs text-muted-foreground">
+                  {isLoginView ? `Logging in as ${selectedRole.name.toLowerCase()}` : `Registering as ${selectedRole.name.toLowerCase()}`}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto"
+                onClick={() => window.location.href = "/"}
+              >
+                Change
+              </Button>
+            </div>
+
+            {isLoginView ? (
+              // Login Form
+              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
                 <div className="space-y-4">
-                  <p className="text-sm text-center mb-4">
-                    Select your user role to continue:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {USER_ROLES.map((role) => (
-                      <button
-                        key={role.id}
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input 
+                      id="username"
+                      type="text"
+                      placeholder="Enter your username"
+                      {...loginForm.register('username')}
+                    />
+                    {loginForm.formState.errors.username && (
+                      <p className="text-sm text-red-500">
+                        {loginForm.formState.errors.username.message}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <Button 
+                        variant="link" 
+                        className="px-0 text-sm"
                         type="button"
-                        onClick={() => handleRoleSelect(role)}
-                        className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-muted hover:border-primary hover:bg-primary/5 transition-colors"
+                        onClick={() => toast({
+                          title: "Password Reset",
+                          description: "This feature is not available in the demo version."
+                        })}
                       >
-                        <div className="text-primary">{role.icon}</div>
-                        <h3 className="font-medium">{role.name}</h3>
-                        <p className="text-xs text-center text-muted-foreground mt-1">
-                          {role.description}
-                        </p>
-                      </button>
-                    ))}
+                        Forgot password?
+                      </Button>
+                    </div>
+                    <Input 
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      {...loginForm.register('password')}
+                    />
+                    {loginForm.formState.errors.password && (
+                      <p className="text-sm text-red-500">
+                        {loginForm.formState.errors.password.message}
+                      </p>
+                    )}
                   </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Logging in...' : 'Login'}
+                  </Button>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="login">
-                {!selectedRole ? (
-                  <div className="text-center p-4">
-                    <p className="mb-4">Please select a user role from the navbar dropdown</p>
-                    <Button onClick={() => window.location.href = "/"}>
-                      Go Home
-                    </Button>
+              </form>
+            ) : (
+              // Register Form
+              <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-name">Full Name</Label>
+                    <Input 
+                      id="register-name"
+                      type="text"
+                      placeholder="Enter your name"
+                      {...registerForm.register('name')}
+                    />
+                    {registerForm.formState.errors.name && (
+                      <p className="text-sm text-red-500">
+                        {registerForm.formState.errors.name.message}
+                      </p>
+                    )}
                   </div>
-                ) : (
-                  <>
-                    <div className="bg-muted/50 p-3 rounded-lg mb-4 flex items-center">
-                      <div className="text-primary mr-3">{selectedRole.icon}</div>
-                      <div>
-                        <h3 className="font-medium">{selectedRole.name}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Logging in as {selectedRole.name.toLowerCase()}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-auto"
-                        onClick={() => window.location.href = "/"}
-                      >
-                        Change
-                      </Button>
-                    </div>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="username">Username</Label>
-                          <Input 
-                            id="username"
-                            type="text"
-                            placeholder="Enter your username"
-                            {...loginForm.register('username')}
-                          />
-                          {loginForm.formState.errors.username && (
-                            <p className="text-sm text-red-500">
-                              {loginForm.formState.errors.username.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="password">Password</Label>
-                            <Button 
-                              variant="link" 
-                              className="px-0 text-sm"
-                              type="button"
-                              onClick={() => toast({
-                                title: "Password Reset",
-                                description: "This feature is not available in the demo version."
-                              })}
-                            >
-                              Forgot password?
-                            </Button>
-                          </div>
-                          <Input 
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            {...loginForm.register('password')}
-                          />
-                          {loginForm.formState.errors.password && (
-                            <p className="text-sm text-red-500">
-                              {loginForm.formState.errors.password.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <Button 
-                          type="submit" 
-                          className="w-full"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? 'Logging in...' : 'Login'}
-                        </Button>
-                      </div>
-                    </form>
-                  </>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="dashboard">
-                {/* Dashboard content after successful login */}
-                <div className="space-y-6">
-                  <div className="bg-primary/10 rounded-lg p-6 text-center">
-                    <div className="mb-4">
-                      <div className="h-20 w-20 rounded-full bg-primary text-white mx-auto flex items-center justify-center text-3xl">
-                        <User className="h-10 w-10" />
-                      </div>
-                    </div>
-                    
-                    <h2 className="text-xl font-bold mb-1">Welcome!</h2>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      You're now logged in. Choose your destination below.
-                    </p>
-                    
-                    <div className="grid gap-4">
-                      <Button 
-                        onClick={() => {
-                          // Simple direct navigation - no complex logic
-                          window.location.href = "/admin/dashboard";
-                        }}
-                        className="w-full bg-primary text-white p-6 rounded-md hover:bg-primary/90 transition-colors text-center font-medium"
-                      >
-                        Go to Admin Dashboard
-                      </Button>
-                      
-                      <Button 
-                        onClick={() => {
-                          // Simple direct navigation - no complex logic
-                          window.location.href = "/manager/dashboard";
-                        }}
-                        variant="outline"
-                        className="w-full border border-primary text-primary p-6 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
-                      >
-                        Go to Manager Dashboard
-                      </Button>
-                      
-                      <Button 
-                        onClick={() => {
-                          // Simple direct navigation - no complex logic
-                          window.location.href = "/client/dashboard";
-                        }}
-                        variant="outline"
-                        className="w-full border border-primary text-primary p-6 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
-                      >
-                        Go to Client Dashboard
-                      </Button>
-                      
-                      <Button
-                        variant="link"
-                        onClick={() => window.location.href = '/'}
-                        className="text-sm text-muted-foreground hover:underline text-center mt-2"
-                      >
-                        Go to Home Page
-                      </Button>
-                    </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-username">Username</Label>
+                    <Input 
+                      id="register-username"
+                      type="text"
+                      placeholder="Choose a username"
+                      {...registerForm.register('username')}
+                    />
+                    {registerForm.formState.errors.username && (
+                      <p className="text-sm text-red-500">
+                        {registerForm.formState.errors.username.message}
+                      </p>
+                    )}
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">Email</Label>
+                    <Input 
+                      id="register-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      {...registerForm.register('email')}
+                    />
+                    {registerForm.formState.errors.email && (
+                      <p className="text-sm text-red-500">
+                        {registerForm.formState.errors.email.message}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Password</Label>
+                    <Input 
+                      id="register-password"
+                      type="password"
+                      placeholder="Create a password"
+                      {...registerForm.register('password')}
+                    />
+                    {registerForm.formState.errors.password && (
+                      <p className="text-sm text-red-500">
+                        {registerForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                    <Input 
+                      id="register-confirm-password"
+                      type="password"
+                      placeholder="Confirm your password"
+                      {...registerForm.register('confirmPassword')}
+                    />
+                    {registerForm.formState.errors.confirmPassword && (
+                      <p className="text-sm text-red-500">
+                        {registerForm.formState.errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Creating account...' : 'Create Account'}
+                  </Button>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="register">
-                {!selectedRole ? (
-                  <div className="text-center p-4">
-                    <p className="mb-4">Please select a user role from the navbar dropdown</p>
-                    <Button onClick={() => window.location.href = "/"}>
-                      Go Home
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="bg-muted/50 p-3 rounded-lg mb-4 flex items-center">
-                      <div className="text-primary mr-3">{selectedRole.icon}</div>
-                      <div>
-                        <h3 className="font-medium">{selectedRole.name}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          Registering as {selectedRole.name.toLowerCase()}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-auto"
-                        onClick={() => window.location.href = "/"}
-                      >
-                        Change
-                      </Button>
-                    </div>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="register-name">Full Name</Label>
-                          <Input 
-                            id="register-name"
-                            type="text"
-                            placeholder="Enter your name"
-                            {...registerForm.register('name')}
-                          />
-                          {registerForm.formState.errors.name && (
-                            <p className="text-sm text-red-500">
-                              {registerForm.formState.errors.name.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="register-username">Username</Label>
-                          <Input 
-                            id="register-username"
-                            type="text"
-                            placeholder="Choose a username"
-                            {...registerForm.register('username')}
-                          />
-                          {registerForm.formState.errors.username && (
-                            <p className="text-sm text-red-500">
-                              {registerForm.formState.errors.username.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="register-email">Email</Label>
-                          <Input 
-                            id="register-email"
-                            type="email"
-                            placeholder="Enter your email"
-                            {...registerForm.register('email')}
-                          />
-                          {registerForm.formState.errors.email && (
-                            <p className="text-sm text-red-500">
-                              {registerForm.formState.errors.email.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="register-password">Password</Label>
-                          <Input 
-                            id="register-password"
-                            type="password"
-                            placeholder="Create a password"
-                            {...registerForm.register('password')}
-                          />
-                          {registerForm.formState.errors.password && (
-                            <p className="text-sm text-red-500">
-                              {registerForm.formState.errors.password.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="register-confirm-password">Confirm Password</Label>
-                          <Input 
-                            id="register-confirm-password"
-                            type="password"
-                            placeholder="Confirm your password"
-                            {...registerForm.register('confirmPassword')}
-                          />
-                          {registerForm.formState.errors.confirmPassword && (
-                            <p className="text-sm text-red-500">
-                              {registerForm.formState.errors.confirmPassword.message}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <Button 
-                          type="submit" 
-                          className="w-full"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? 'Creating account...' : 'Create Account'}
-                        </Button>
-                      </div>
-                    </form>
-                  </>
-                )}
-              </TabsContent>
-            </Tabs>
+              </form>
+            )}
+
+            {/* Toggle between login and register */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                {isLoginView ? "Don't have an account?" : "Already have an account?"}
+                <Button 
+                  variant="link" 
+                  className="ml-1 p-0"
+                  onClick={() => setIsLoginView(!isLoginView)}
+                >
+                  {isLoginView ? "Sign up" : "Sign in"}
+                </Button>
+              </p>
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col items-center justify-between">
-            <div className="w-full my-4">
+            <div className="w-full my-2">
               <Separator />
             </div>
             <p className="text-sm text-muted-foreground text-center">
