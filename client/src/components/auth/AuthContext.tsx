@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { auth, loginWithGoogle, logoutUser } from '@/lib/firebase';
+import { Auth } from 'firebase/auth';
 
 // Define the shape of the user object
 interface User {

@@ -15,6 +15,10 @@ import Blog from "./pages/blog";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
+import AdminDashboard from "./pages/admin/dashboard";
+import UserManagement from "./pages/admin/user-management";
+import ManagerDashboard from "./pages/manager/dashboard";
+import ClientDashboard from "./pages/client/dashboard";
 import { AuthProvider } from "./components/auth/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
@@ -29,11 +33,39 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/contact" component={Contact} />
       <Route path="/login" component={Login} />
+      
+      {/* Legacy dashboard - will redirect to the appropriate role-based dashboard */}
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
       </Route>
+      
+      {/* Role-based dashboards */}
+      <Route path="/admin/dashboard">
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/admin/users">
+        <ProtectedRoute>
+          <UserManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/manager/dashboard">
+        <ProtectedRoute>
+          <ManagerDashboard />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/dashboard">
+        <ProtectedRoute>
+          <ClientDashboard />
+        </ProtectedRoute>
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );
