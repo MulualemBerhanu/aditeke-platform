@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { UsersRound, Building2, UserCog } from 'lucide-react';
+import { UsersRound, Building2, UserCog, User } from 'lucide-react';
 
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
@@ -137,36 +137,18 @@ export default function LoginPage() {
       });
       
       console.log('User authenticated:', user);
-      console.log('Redirecting based on roleId:', user.roleId);
       
-          // Complete hard reload approach
-      setTimeout(() => {
-        console.log('Using window.location.replace for hard page reload/navigation');
-        
-        try {
-          // Force a complete page reload with the target URL
-          if (user.roleId === 1) {
-            console.log('Admin user - redirecting to project management');
-            // Use absolute URL to force reload
-            const fullUrl = window.location.origin + '/admin/project-management';
-            console.log('Full redirect URL:', fullUrl);
-            window.location.replace(fullUrl);
-          } else if (user.roleId === 2) {
-            console.log('Manager user - redirecting to dashboard');
-            const fullUrl = window.location.origin + '/manager/dashboard';
-            console.log('Full redirect URL:', fullUrl);
-            window.location.replace(fullUrl);
-          } else {
-            console.log('Client user - redirecting to dashboard');
-            const fullUrl = window.location.origin + '/client/dashboard';
-            console.log('Full redirect URL:', fullUrl);
-            window.location.replace(fullUrl);
-          }
-        } catch (e) {
-          console.error('Error during redirect:', e);
-          alert('Error redirecting to dashboard. Please try again.');
-        }
-      }, 200);
+      // Store user in localStorage
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      
+      // Show success message with manual redirect option
+      toast({
+        title: "Login successful!",
+        description: "You will be redirected to your dashboard shortly.",
+      });
+      
+      // Auto-navigate to dashboard tab on success
+      setActiveTab("dashboard");
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -198,36 +180,18 @@ export default function LoginPage() {
       });
 
       console.log('User registered:', user);
-      console.log('Redirecting based on roleId:', user.roleId);
       
-      // Complete hard reload approach
-      setTimeout(() => {
-        console.log('Using window.location.replace for hard page reload/navigation');
-        
-        try {
-          // Force a complete page reload with the target URL
-          if (user.roleId === 1) {
-            console.log('Admin user - redirecting to dashboard');
-            // Use absolute URL to force reload
-            const fullUrl = window.location.origin + '/admin/dashboard';
-            console.log('Full redirect URL:', fullUrl);
-            window.location.replace(fullUrl);
-          } else if (user.roleId === 2) {
-            console.log('Manager user - redirecting to dashboard');
-            const fullUrl = window.location.origin + '/manager/dashboard';
-            console.log('Full redirect URL:', fullUrl);
-            window.location.replace(fullUrl);
-          } else {
-            console.log('Client user - redirecting to dashboard');
-            const fullUrl = window.location.origin + '/client/dashboard';
-            console.log('Full redirect URL:', fullUrl);
-            window.location.replace(fullUrl);
-          }
-        } catch (e) {
-          console.error('Error during redirect:', e);
-          alert('Error redirecting to dashboard. Please try again.');
-        }
-      }, 200);
+      // Store user in localStorage
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      
+      // Show success message with manual redirect option
+      toast({
+        title: "Registration successful!",
+        description: "You can now access your dashboard.",
+      });
+      
+      // Auto-navigate to dashboard tab on success
+      setActiveTab("dashboard");
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
@@ -254,10 +218,11 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="role-select" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="role-select">Select Role</TabsTrigger>
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               </TabsList>
               
               <TabsContent value="role-select">
@@ -367,6 +332,54 @@ export default function LoginPage() {
                     </form>
                   </>
                 )}
+              </TabsContent>
+              
+              <TabsContent value="dashboard">
+                {/* Dashboard content after successful login */}
+                <div className="space-y-6">
+                  <div className="bg-primary/10 rounded-lg p-6 text-center">
+                    <div className="mb-4">
+                      <div className="h-20 w-20 rounded-full bg-primary text-white mx-auto flex items-center justify-center text-3xl">
+                        <User className="h-10 w-10" />
+                      </div>
+                    </div>
+                    
+                    <h2 className="text-xl font-bold mb-1">Welcome!</h2>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You're now logged in. Choose your destination below.
+                    </p>
+                    
+                    <div className="grid gap-4">
+                      <a 
+                        href="/admin/project-management" 
+                        className="bg-primary text-white p-4 rounded-md hover:bg-primary/90 transition-colors text-center font-medium"
+                      >
+                        Go to Admin Dashboard
+                      </a>
+                      
+                      <a 
+                        href="/manager/dashboard" 
+                        className="border border-primary text-primary p-4 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
+                      >
+                        Go to Manager Dashboard
+                      </a>
+                      
+                      <a 
+                        href="/client/dashboard" 
+                        className="border border-primary text-primary p-4 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
+                      >
+                        Go to Client Dashboard
+                      </a>
+                      
+                      <a 
+                        href="/" 
+                        className="text-sm text-muted-foreground hover:underline text-center mt-2"
+                      >
+                        Go to Home Page
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </TabsContent>
               
               <TabsContent value="register">
