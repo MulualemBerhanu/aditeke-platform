@@ -15,10 +15,24 @@ import Blog from "./pages/blog";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
+
+// Admin pages
 import AdminDashboard from "./pages/admin/dashboard";
 import UserManagement from "./pages/admin/user-management";
+import AdminContentManagement from "./pages/admin/content-management";
+import BlogManagement from "./pages/admin/content-management/blog";
+import ServiceManagement from "./pages/admin/content-management/services";
+import TestimonialManagement from "./pages/admin/content-management/testimonials";
+import ProjectManagement from "./pages/admin/project-management";
+import CreateProject from "./pages/admin/project-management/create";
+import AdminSettings from "./pages/admin/settings";
+
+// Manager pages
 import ManagerDashboard from "./pages/manager/dashboard";
+
+// Client pages
 import ClientDashboard from "./pages/client/dashboard";
+
 import { AuthProvider } from "./components/auth/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
@@ -48,18 +62,65 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      <Route path="/admin/users">
+      <Route path="/admin/user-management">
         <ProtectedRoute>
           <UserManagement />
         </ProtectedRoute>
       </Route>
       
+      {/* Content Management Routes */}
+      <Route path="/admin/content-management">
+        <ProtectedRoute>
+          <AdminContentManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/admin/content-management/blog">
+        <ProtectedRoute>
+          <BlogManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/admin/content-management/services">
+        <ProtectedRoute>
+          <ServiceManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/admin/content-management/testimonials">
+        <ProtectedRoute>
+          <TestimonialManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      {/* Project Management Routes */}
+      <Route path="/admin/project-management">
+        <ProtectedRoute>
+          <ProjectManagement />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/admin/project-management/create">
+        <ProtectedRoute>
+          <CreateProject />
+        </ProtectedRoute>
+      </Route>
+      
+      {/* Settings */}
+      <Route path="/admin/settings">
+        <ProtectedRoute>
+          <AdminSettings />
+        </ProtectedRoute>
+      </Route>
+      
+      {/* Manager Routes */}
       <Route path="/manager/dashboard">
         <ProtectedRoute>
           <ManagerDashboard />
         </ProtectedRoute>
       </Route>
       
+      {/* Client Routes */}
       <Route path="/client/dashboard">
         <ProtectedRoute>
           <ClientDashboard />
