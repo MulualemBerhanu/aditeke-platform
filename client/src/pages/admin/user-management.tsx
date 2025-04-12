@@ -92,7 +92,7 @@ export default function UserManagement() {
   const [showEditUser, setShowEditUser] = useState<number | null>(null);
   
   // Form for adding a new user
-  const newUserForm = useForm<NewUserFormData>({
+  const newUserForm = useForm<z.infer<typeof newUserSchema>>({
     resolver: zodResolver(newUserSchema),
     defaultValues: {
       name: '',
@@ -105,7 +105,7 @@ export default function UserManagement() {
   });
   
   // Form for editing a user
-  const editUserForm = useForm<EditUserFormData>({
+  const editUserForm = useForm<EditUserFormValues>({
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       name: '',
@@ -115,6 +115,30 @@ export default function UserManagement() {
     }
   });
   
+  // Redirect if not logged in or not an admin
+  React.useEffect(() => {
+    if (!user) {
+      setLocation('/login');
+    } else if (user.roleId !== 1) { // Assuming 1 is Admin role ID
+      setLocation('/admin/dashboard');
+    }
+  }, [user, setLocation]);
+
+  // Fetch users
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery<User[]>({
+    queryKey: ['/api/users'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/users');
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+      }
+    },
+    enabled: !!user && user.roleId === 1,
+  });
+
   // Reset form when the dialog opens/closes
   React.useEffect(() => {
     if (showAddUser) {
@@ -144,30 +168,6 @@ export default function UserManagement() {
     }
   }, [showEditUser, users, editUserForm]);
 
-  // Redirect if not logged in or not an admin
-  React.useEffect(() => {
-    if (!user) {
-      setLocation('/login');
-    } else if (user.roleId !== 1) { // Assuming 1 is Admin role ID
-      setLocation('/admin/dashboard');
-    }
-  }, [user, setLocation]);
-
-  // Fetch users
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery<User[]>({
-    queryKey: ['/api/users'],
-    queryFn: async () => {
-      try {
-        const response = await apiRequest('GET', '/api/users');
-        return await response.json();
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        return [];
-      }
-    },
-    enabled: !!user && user.roleId === 1,
-  });
-
   // Fetch roles
   const { data: roles = [], isLoading: isLoadingRoles } = useQuery<Role[]>({
     queryKey: ['/api/roles'],
@@ -185,7 +185,12 @@ export default function UserManagement() {
 
   // Create user mutation
   const createUserMutation = useMutation({
-    mutationFn: async (userData: NewUserFormData) => {
+    mutationFn: async (formData: z.infer<typeof newUserSchema>) => {
+      // Transform the roleId from string to number before sending to the API
+      const userData: NewUserFormData = {
+        ...formData,
+        roleId: parseInt(formData.roleId as string)
+      };
       const response = await apiRequest('POST', '/api/register', userData);
       return await response.json();
     },
@@ -208,8 +213,15 @@ export default function UserManagement() {
 
   // Update user mutation
   const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, userData }: { userId: number; userData: Partial<EditUserFormData> }) => {
-      const response = await apiRequest('PATCH', `/api/users/${userId}`, userData);
+    mutationFn: async ({ userId, userData }: { userId: number; userData: EditUserFormValues }) => {
+      // Transform the form values to the correct types
+      const transformedData: EditUserFormData = {
+        name: userData.name,
+        email: userData.email,
+        roleId: parseInt(userData.roleId),
+        isActive: userData.isActive === 'active'
+      };
+      const response = await apiRequest('PATCH', `/api/users/${userId}`, transformedData);
       return await response.json();
     },
     onSuccess: () => {
@@ -403,83 +415,65 @@ export default function UserManagement() {
               Create a new user account and assign a role.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">Full Name</label>
-              <Input id="name" placeholder="John Doe" />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <Input id="email" type="email" placeholder="john.doe@example.com" />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium">Username</label>
-              <Input id="username" placeholder="johndoe" />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium">Role</label>
-              <Select defaultValue="3"> {/* Default to Client role */}
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Roles</SelectLabel>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id.toString()}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button>Create User</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit User Dialog */}
-      <Dialog open={!!showEditUser} onOpenChange={() => setShowEditUser(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
-              Update user information and access level.
-            </DialogDescription>
-          </DialogHeader>
-          {showEditUser && (
+          <form onSubmit={newUserForm.handleSubmit((data) => createUserMutation.mutate(data))}>
             <div className="space-y-4 py-4">
-              {/* Here we would pre-fill with the selected user's data */}
               <div className="space-y-2">
-                <label htmlFor="edit-name" className="text-sm font-medium">Full Name</label>
-                <Input id="edit-name" defaultValue={users.find(u => u.id === showEditUser)?.name || ''} />
+                <label htmlFor="name" className="text-sm font-medium">Full Name</label>
+                <Input 
+                  id="name" 
+                  placeholder="John Doe" 
+                  {...newUserForm.register('name')}
+                  aria-invalid={!!newUserForm.formState.errors.name}
+                />
+                {newUserForm.formState.errors.name && (
+                  <p className="text-sm text-red-500">{newUserForm.formState.errors.name.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <label htmlFor="edit-email" className="text-sm font-medium">Email</label>
-                <Input id="edit-email" type="email" defaultValue={users.find(u => u.id === showEditUser)?.email || ''} />
+                <label htmlFor="email" className="text-sm font-medium">Email</label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="john.doe@example.com" 
+                  {...newUserForm.register('email')}
+                  aria-invalid={!!newUserForm.formState.errors.email}
+                />
+                {newUserForm.formState.errors.email && (
+                  <p className="text-sm text-red-500">{newUserForm.formState.errors.email.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <label htmlFor="edit-status" className="text-sm font-medium">Status</label>
-                <Select defaultValue={users.find(u => u.id === showEditUser)?.isActive ? 'active' : 'inactive'}>
-                  <SelectTrigger id="edit-status">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label htmlFor="username" className="text-sm font-medium">Username</label>
+                <Input 
+                  id="username" 
+                  placeholder="johndoe" 
+                  {...newUserForm.register('username')}
+                  aria-invalid={!!newUserForm.formState.errors.username}
+                />
+                {newUserForm.formState.errors.username && (
+                  <p className="text-sm text-red-500">{newUserForm.formState.errors.username.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <label htmlFor="edit-role" className="text-sm font-medium">Role</label>
-                <Select defaultValue={users.find(u => u.id === showEditUser)?.roleId.toString() || '3'}>
-                  <SelectTrigger id="edit-role">
+                <label htmlFor="password" className="text-sm font-medium">Password</label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="••••••••" 
+                  {...newUserForm.register('password')}
+                  aria-invalid={!!newUserForm.formState.errors.password}
+                />
+                {newUserForm.formState.errors.password && (
+                  <p className="text-sm text-red-500">{newUserForm.formState.errors.password.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="roleId" className="text-sm font-medium">Role</label>
+                <Select 
+                  defaultValue="3" 
+                  onValueChange={(value) => newUserForm.setValue('roleId', value)}
+                >
+                  <SelectTrigger id="roleId">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
@@ -495,13 +489,117 @@ export default function UserManagement() {
                 </Select>
               </div>
             </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" type="button">Cancel</Button>
+              </DialogClose>
+              <Button type="submit" disabled={createUserMutation.isPending}>
+                {createUserMutation.isPending ? (
+                  <>
+                    <span className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : 'Create User'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!showEditUser} onOpenChange={() => setShowEditUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information and access level.
+            </DialogDescription>
+          </DialogHeader>
+          {showEditUser && (
+            <form onSubmit={editUserForm.handleSubmit((data) => {
+              if (showEditUser) {
+                updateUserMutation.mutate({
+                  userId: showEditUser,
+                  userData: data
+                });
+              }
+            })}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium">Full Name</label>
+                  <Input 
+                    id="name" 
+                    {...editUserForm.register('name')}
+                    aria-invalid={!!editUserForm.formState.errors.name}
+                  />
+                  {editUserForm.formState.errors.name && (
+                    <p className="text-sm text-red-500">{editUserForm.formState.errors.name.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">Email</label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    {...editUserForm.register('email')}
+                    aria-invalid={!!editUserForm.formState.errors.email}
+                  />
+                  {editUserForm.formState.errors.email && (
+                    <p className="text-sm text-red-500">{editUserForm.formState.errors.email.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="isActive" className="text-sm font-medium">Status</label>
+                  <Select 
+                    onValueChange={(value) => editUserForm.setValue('isActive', value)}
+                    defaultValue={editUserForm.getValues('isActive')}
+                  >
+                    <SelectTrigger id="isActive">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="roleId" className="text-sm font-medium">Role</label>
+                  <Select 
+                    onValueChange={(value) => editUserForm.setValue('roleId', value)}
+                    defaultValue={editUserForm.getValues('roleId')}
+                  >
+                    <SelectTrigger id="roleId">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Roles</SelectLabel>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline" type="button">Cancel</Button>
+                </DialogClose>
+                <Button type="submit" disabled={updateUserMutation.isPending}>
+                  {updateUserMutation.isPending ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
           )}
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button>Save Changes</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
