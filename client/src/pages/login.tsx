@@ -370,7 +370,7 @@ export default function LoginPage() {
                       <Button 
                         onClick={() => {
                           // Simple direct navigation - no complex logic
-                          window.location.href = "/admin/project-management";
+                          window.location.href = "/admin/dashboard";
                         }}
                         className="w-full bg-primary text-white p-6 rounded-md hover:bg-primary/90 transition-colors text-center font-medium"
                       >
@@ -416,7 +416,7 @@ export default function LoginPage() {
                   <div className="text-center p-4">
                     <p className="mb-4">Please select a user role from the navbar dropdown</p>
                     <Button onClick={() => window.location.href = "/"}>
-                      Select Role
+                      Go Home
                     </Button>
                   </div>
                 ) : (

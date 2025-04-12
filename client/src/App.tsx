@@ -55,22 +55,66 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      {/* Role-based dashboards - direct components instead of protected routes for testing */}
-      <Route path="/admin/dashboard" component={AdminDashboard} />
-      <Route path="/admin/user-management" component={UserManagement} />
-      <Route path="/admin/content-management" component={AdminContentManagement} />
-      <Route path="/admin/content-management/blog" component={BlogManagement} />
-      <Route path="/admin/content-management/services" component={ServiceManagement} />
-      <Route path="/admin/content-management/testimonials" component={TestimonialManagement} />
-      <Route path="/admin/project-management" component={ProjectManagement} />
-      <Route path="/admin/project-management/create" component={CreateProject} />
-      <Route path="/admin/settings" component={AdminSettings} />
+      {/* Admin Routes - Protected with ProtectedRoute */}
+      <Route path="/admin/dashboard">
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/user-management">
+        <ProtectedRoute>
+          <UserManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/content-management">
+        <ProtectedRoute>
+          <AdminContentManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/content-management/blog">
+        <ProtectedRoute>
+          <BlogManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/content-management/services">
+        <ProtectedRoute>
+          <ServiceManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/content-management/testimonials">
+        <ProtectedRoute>
+          <TestimonialManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/project-management">
+        <ProtectedRoute>
+          <ProjectManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/project-management/create">
+        <ProtectedRoute>
+          <CreateProject />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/settings">
+        <ProtectedRoute>
+          <AdminSettings />
+        </ProtectedRoute>
+      </Route>
       
       {/* Manager Routes */}
-      <Route path="/manager/dashboard" component={ManagerDashboard} />
+      <Route path="/manager/dashboard">
+        <ProtectedRoute>
+          <ManagerDashboard />
+        </ProtectedRoute>
+      </Route>
       
       {/* Client Routes */}
-      <Route path="/client/dashboard" component={ClientDashboard} />
+      <Route path="/client/dashboard">
+        <ProtectedRoute>
+          <ClientDashboard />
+        </ProtectedRoute>
+      </Route>
       
       <Route component={NotFound} />
     </Switch>
