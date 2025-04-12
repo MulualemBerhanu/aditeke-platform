@@ -23,6 +23,9 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Users, ChevronLeft, Search, Plus, UserPlus, Edit, Trash2, ShieldAlert 
 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 // This is a simplified model of a user for the admin panel
 interface User {
@@ -41,6 +44,43 @@ interface Role {
   description: string | null;
 }
 
+// Form schema for adding a new user
+const newUserSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  username: z.string().min(3, { message: "Username must be at least 3 characters" })
+    .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain letters, numbers, and underscores" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  roleId: z.string().transform(val => parseInt(val)),
+  isActive: z.boolean().default(true)
+});
+
+type NewUserFormData = z.infer<typeof newUserSchema>;
+
+// Form schema for editing a user
+const editUserSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  roleId: z.string().transform(val => parseInt(val)),
+  isActive: z.string().transform(val => val === 'active')
+});
+
+// Raw type without transformations
+type EditUserFormValues = {
+  name: string;
+  email: string;
+  roleId: string;
+  isActive: string;
+};
+
+// Final type after transformations
+type EditUserFormData = {
+  name: string;
+  email: string;
+  roleId: number;
+  isActive: boolean;
+};
+
 export default function UserManagement() {
   const { user } = useAuth();
   const [_, setLocation] = useLocation();
@@ -50,6 +90,59 @@ export default function UserManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddUser, setShowAddUser] = useState(false);
   const [showEditUser, setShowEditUser] = useState<number | null>(null);
+  
+  // Form for adding a new user
+  const newUserForm = useForm<NewUserFormData>({
+    resolver: zodResolver(newUserSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      username: '',
+      password: '',
+      roleId: '3', // Default to Client role
+      isActive: true
+    }
+  });
+  
+  // Form for editing a user
+  const editUserForm = useForm<EditUserFormData>({
+    resolver: zodResolver(editUserSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      roleId: '3',
+      isActive: 'active'
+    }
+  });
+  
+  // Reset form when the dialog opens/closes
+  React.useEffect(() => {
+    if (showAddUser) {
+      newUserForm.reset({
+        name: '',
+        email: '',
+        username: '',
+        password: '',
+        roleId: '3',
+        isActive: true
+      });
+    }
+  }, [showAddUser, newUserForm]);
+
+  // Set initial values for edit form when a user is selected
+  React.useEffect(() => {
+    if (showEditUser && users) {
+      const selectedUser = users.find(u => u.id === showEditUser);
+      if (selectedUser) {
+        editUserForm.reset({
+          name: selectedUser.name,
+          email: selectedUser.email,
+          roleId: selectedUser.roleId.toString(),
+          isActive: selectedUser.isActive ? 'active' : 'inactive'
+        });
+      }
+    }
+  }, [showEditUser, users, editUserForm]);
 
   // Redirect if not logged in or not an admin
   React.useEffect(() => {
@@ -62,10 +155,10 @@ export default function UserManagement() {
 
   // Fetch users
   const { data: users = [], isLoading: isLoadingUsers } = useQuery<User[]>({
-    queryKey: ['/api/admin/users'],
+    queryKey: ['/api/users'],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', '/api/admin/users');
+        const response = await apiRequest('GET', '/api/users');
         return await response.json();
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -77,10 +170,10 @@ export default function UserManagement() {
 
   // Fetch roles
   const { data: roles = [], isLoading: isLoadingRoles } = useQuery<Role[]>({
-    queryKey: ['/api/admin/roles'],
+    queryKey: ['/api/roles'],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', '/api/admin/roles');
+        const response = await apiRequest('GET', '/api/roles');
         return await response.json();
       } catch (error) {
         console.error('Error fetching roles:', error);
@@ -90,10 +183,56 @@ export default function UserManagement() {
     enabled: !!user && user.roleId === 1,
   });
 
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: async (userData: NewUserFormData) => {
+      const response = await apiRequest('POST', '/api/register', userData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'User Created',
+        description: 'New user has been created successfully',
+      });
+      setShowAddUser(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Creation Failed',
+        description: error.message || 'Failed to create user',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: number; userData: Partial<EditUserFormData> }) => {
+      const response = await apiRequest('PATCH', `/api/users/${userId}`, userData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'User Updated',
+        description: 'User information has been updated successfully',
+      });
+      setShowEditUser(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update user',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Update user role mutation
   const updateUserRoleMutation = useMutation({
     mutationFn: async ({ userId, roleId }: { userId: number; roleId: number }) => {
-      const response = await apiRequest('PATCH', `/api/admin/users/${userId}`, { roleId });
+      const response = await apiRequest('PATCH', `/api/users/${userId}`, { roleId });
       return await response.json();
     },
     onSuccess: () => {
@@ -101,7 +240,7 @@ export default function UserManagement() {
         title: 'Role Updated',
         description: 'User role has been updated successfully',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
     },
     onError: (error: any) => {
       toast({
