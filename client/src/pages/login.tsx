@@ -86,6 +86,26 @@ export default function LoginPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const roleParam = urlParams.get('role');
     
+    // First, try to load from localStorage (for persistence across refreshes)
+    const savedRole = localStorage.getItem('selectedRole');
+    if (savedRole) {
+      try {
+        const parsedRole = JSON.parse(savedRole) as UserRole;
+        // Only use saved role if there's no URL parameter
+        if (!roleParam) {
+          console.log("⚠️ Using saved role from localStorage:", parsedRole.name);
+          setSelectedRole(parsedRole);
+          form.setValue('username', parsedRole.username);
+          form.setValue('password', parsedRole.password);
+          return; // Exit early
+        }
+      } catch (e) {
+        console.error("Error parsing saved role:", e);
+        localStorage.removeItem('selectedRole'); // Clear invalid data
+      }
+    }
+    
+    // If URL parameter exists, use it (overrides localStorage)
     if (roleParam) {
       console.log("⚠️ URL param detected:", roleParam);
       
