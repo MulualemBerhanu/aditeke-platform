@@ -117,22 +117,29 @@ export default function LoginPage() {
       const userData = await login(data.username, data.password);
       console.log("Login successful, redirecting user:", userData);
       
-      // Hard redirect based on role - this is a failsafe approach that should work
+      // Hard redirect using window.location.replace which forces navigation
+      const roleType = selectedRole.name.toLowerCase();
+      
+      // Create the redirect URL
+      let redirectUrl = '/dashboard';
+      if (roleType === 'admin') {
+        redirectUrl = '/admin/dashboard';
+      } else if (roleType === 'manager') {
+        redirectUrl = '/manager/dashboard';
+      } else if (roleType === 'client') {
+        redirectUrl = '/client/dashboard';
+      }
+      
+      console.log("⚠️ REDIRECTING TO:", redirectUrl);
+      
+      // Force hard navigation - this should bypass any React router issues
+      window.location.replace(redirectUrl);
+      
+      // Fallback in case the above doesn't trigger
       setTimeout(() => {
-        // Use a short timeout to ensure state updates happen first
-        const roleType = selectedRole.name.toLowerCase();
-        
-        if (roleType === 'admin') {
-          document.location.href = '/admin/dashboard';
-        } else if (roleType === 'manager') {
-          document.location.href = '/manager/dashboard';
-        } else if (roleType === 'client') {
-          document.location.href = '/client/dashboard';
-        } else {
-          // Default fallback
-          document.location.href = '/dashboard';
-        }
-      }, 100);
+        console.log("⚠️ FALLBACK REDIRECT TRIGGERED");
+        window.location.href = redirectUrl;
+      }, 500);
       
     } catch (error) {
       console.error('Login error:', error);
@@ -161,22 +168,29 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
-      // Force redirect using document.location.href which should work more reliably
+      // Hard redirect using window.location.replace which forces navigation
+      const roleType = selectedRole.name.toLowerCase();
+      
+      // Create the redirect URL
+      let redirectUrl = '/dashboard';
+      if (roleType === 'admin') {
+        redirectUrl = '/admin/dashboard';
+      } else if (roleType === 'manager') {
+        redirectUrl = '/manager/dashboard';
+      } else if (roleType === 'client') {
+        redirectUrl = '/client/dashboard';
+      }
+      
+      console.log("⚠️ GOOGLE AUTH REDIRECTING TO:", redirectUrl);
+      
+      // Force hard navigation - this should bypass any React router issues
+      window.location.replace(redirectUrl);
+      
+      // Fallback in case the above doesn't trigger
       setTimeout(() => {
-        // Use a short timeout to ensure state updates happen first
-        const roleType = selectedRole.name.toLowerCase();
-        
-        if (roleType === 'admin') {
-          document.location.href = '/admin/dashboard';
-        } else if (roleType === 'manager') {
-          document.location.href = '/manager/dashboard';
-        } else if (roleType === 'client') {
-          document.location.href = '/client/dashboard';
-        } else {
-          // Default fallback
-          document.location.href = '/dashboard';
-        }
-      }, 100);
+        console.log("⚠️ GOOGLE AUTH FALLBACK REDIRECT TRIGGERED");
+        window.location.href = redirectUrl;
+      }, 500);
     } catch (error) {
       console.error('Google login error:', error);
       toast({
