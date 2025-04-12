@@ -139,48 +139,34 @@ export default function LoginPage() {
       console.log('User authenticated:', user);
       console.log('Redirecting based on roleId:', user.roleId);
       
-          // Use the hard-coded redirect links
+          // Complete hard reload approach
       setTimeout(() => {
-        console.log('Attempting redirect using pre-existing link elements');
+        console.log('Using window.location.replace for hard page reload/navigation');
         
         try {
-          let redirectElem;
+          // Force a complete page reload with the target URL
           if (user.roleId === 1) {
-            console.log('Clicking admin redirect link');
-            redirectElem = document.getElementById('admin-redirect');
+            console.log('Admin user - redirecting to project management');
+            // Use absolute URL to force reload
+            const fullUrl = window.location.origin + '/admin/project-management';
+            console.log('Full redirect URL:', fullUrl);
+            window.location.replace(fullUrl);
           } else if (user.roleId === 2) {
-            console.log('Clicking manager redirect link');
-            redirectElem = document.getElementById('manager-redirect');
+            console.log('Manager user - redirecting to dashboard');
+            const fullUrl = window.location.origin + '/manager/dashboard';
+            console.log('Full redirect URL:', fullUrl);
+            window.location.replace(fullUrl);
           } else {
-            console.log('Clicking client redirect link');
-            redirectElem = document.getElementById('client-redirect');
+            console.log('Client user - redirecting to dashboard');
+            const fullUrl = window.location.origin + '/client/dashboard';
+            console.log('Full redirect URL:', fullUrl);
+            window.location.replace(fullUrl);
           }
-          
-          if (redirectElem) {
-            console.log('Found redirect link, clicking it...');
-            redirectElem.click();
-          } else {
-            console.error('Redirect element not found in DOM');
-          }
-          
-          // Fallback to traditional methods
-          setTimeout(() => {
-            let targetUrl;
-            if (user.roleId === 1) {
-              targetUrl = '/admin/project-management';
-            } else if (user.roleId === 2) {
-              targetUrl = '/manager/dashboard';
-            } else {
-              targetUrl = '/client/dashboard';
-            }
-            
-            console.log('Fallback: Using window.location.href to', targetUrl);
-            window.location.href = targetUrl;
-          }, 200);
         } catch (e) {
           console.error('Error during redirect:', e);
+          alert('Error redirecting to dashboard. Please try again.');
         }
-      }, 500);
+      }, 200);
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -214,48 +200,34 @@ export default function LoginPage() {
       console.log('User registered:', user);
       console.log('Redirecting based on roleId:', user.roleId);
       
-      // Use the hard-coded redirect links
+      // Complete hard reload approach
       setTimeout(() => {
-        console.log('Attempting redirect using pre-existing link elements');
+        console.log('Using window.location.replace for hard page reload/navigation');
         
         try {
-          let redirectElem;
+          // Force a complete page reload with the target URL
           if (user.roleId === 1) {
-            console.log('Clicking admin redirect link');
-            redirectElem = document.getElementById('admin-redirect');
+            console.log('Admin user - redirecting to dashboard');
+            // Use absolute URL to force reload
+            const fullUrl = window.location.origin + '/admin/dashboard';
+            console.log('Full redirect URL:', fullUrl);
+            window.location.replace(fullUrl);
           } else if (user.roleId === 2) {
-            console.log('Clicking manager redirect link');
-            redirectElem = document.getElementById('manager-redirect');
+            console.log('Manager user - redirecting to dashboard');
+            const fullUrl = window.location.origin + '/manager/dashboard';
+            console.log('Full redirect URL:', fullUrl);
+            window.location.replace(fullUrl);
           } else {
-            console.log('Clicking client redirect link');
-            redirectElem = document.getElementById('client-redirect');
+            console.log('Client user - redirecting to dashboard');
+            const fullUrl = window.location.origin + '/client/dashboard';
+            console.log('Full redirect URL:', fullUrl);
+            window.location.replace(fullUrl);
           }
-          
-          if (redirectElem) {
-            console.log('Found redirect link, clicking it...');
-            redirectElem.click();
-          } else {
-            console.error('Redirect element not found in DOM');
-          }
-          
-          // Fallback to traditional methods
-          setTimeout(() => {
-            let targetUrl;
-            if (user.roleId === 1) {
-              targetUrl = '/admin/dashboard';
-            } else if (user.roleId === 2) {
-              targetUrl = '/manager/dashboard';
-            } else {
-              targetUrl = '/client/dashboard';
-            }
-            
-            console.log('Fallback: Using window.location.href to', targetUrl);
-            window.location.href = targetUrl;
-          }, 200);
         } catch (e) {
           console.error('Error during redirect:', e);
+          alert('Error redirecting to dashboard. Please try again.');
         }
-      }, 500);
+      }, 200);
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
@@ -268,17 +240,8 @@ export default function LoginPage() {
     }
   };
 
-  // For direct navigation - will be triggered by JS
-  const adminRedirectPath = '/admin/project-management';
-  const managerRedirectPath = '/manager/dashboard';
-  const clientRedirectPath = '/client/dashboard';
-  
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Hidden redirect links that we can click programmatically */}
-      <a href={adminRedirectPath} id="admin-redirect" style={{ display: 'none' }}>Admin Redirect</a>
-      <a href={managerRedirectPath} id="manager-redirect" style={{ display: 'none' }}>Manager Redirect</a>
-      <a href={clientRedirectPath} id="client-redirect" style={{ display: 'none' }}>Client Redirect</a>
       
       {/* Left side: Auth form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
