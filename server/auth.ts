@@ -25,6 +25,12 @@ async function hashPassword(password: string) {
 
 // Password verification function
 async function comparePasswords(supplied: string, stored: string) {
+  // Handle the case where the password is stored in plain text (for demo purposes only)
+  if (!stored.includes('.')) {
+    return supplied === stored;
+  }
+  
+  // Normal password comparison for properly hashed passwords
   const [hashed, salt] = stored.split(".");
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
@@ -158,10 +164,6 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: "Invalid username or password" });
         }
         
-        // Update last login time
-        const now = new Date();
-        await storage.updateUser(user.id, { lastLogin: now });
-        
         // Return user without sensitive information
         return done(null, user);
       } catch (error) {
@@ -265,11 +267,6 @@ export function setupAuth(app: Express) {
       // Log the user in
       req.login(user, (err) => {
         if (err) return next(err);
-        
-        // Update last login time
-        const now = new Date();
-        storage.updateUser(user.id, { lastLogin: now })
-          .catch(error => console.error("Error updating last login time:", error));
         
         // Return user without sensitive information
         const { password, ...userWithoutPassword } = user;
