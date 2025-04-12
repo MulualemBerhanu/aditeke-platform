@@ -139,37 +139,46 @@ export default function LoginPage() {
       console.log('User authenticated:', user);
       console.log('Redirecting based on roleId:', user.roleId);
       
-      // Force a hard redirect to the correct URL
+          // Use the hard-coded redirect links
       setTimeout(() => {
-        let targetUrl = '';
-        if (user.roleId === 1) {
-          targetUrl = '/admin/project-management';
-        } else if (user.roleId === 2) {
-          targetUrl = '/manager/dashboard';
-        } else {
-          targetUrl = '/client/dashboard';
-        }
+        console.log('Attempting redirect using pre-existing link elements');
         
-        console.log('Redirecting to:', targetUrl);
-        
-        // Try different redirect methods to ensure it works
         try {
-          // Method 1: Direct window location assign
-          window.location.assign(targetUrl);
+          let redirectElem;
+          if (user.roleId === 1) {
+            console.log('Clicking admin redirect link');
+            redirectElem = document.getElementById('admin-redirect');
+          } else if (user.roleId === 2) {
+            console.log('Clicking manager redirect link');
+            redirectElem = document.getElementById('manager-redirect');
+          } else {
+            console.log('Clicking client redirect link');
+            redirectElem = document.getElementById('client-redirect');
+          }
           
-          // Method 2: Fallback to href if the above doesn't work
+          if (redirectElem) {
+            console.log('Found redirect link, clicking it...');
+            redirectElem.click();
+          } else {
+            console.error('Redirect element not found in DOM');
+          }
+          
+          // Fallback to traditional methods
           setTimeout(() => {
-            window.location.href = targetUrl;
+            let targetUrl;
+            if (user.roleId === 1) {
+              targetUrl = '/admin/project-management';
+            } else if (user.roleId === 2) {
+              targetUrl = '/manager/dashboard';
+            } else {
+              targetUrl = '/client/dashboard';
+            }
             
-            // Method 3: Use replace as a final fallback
-            setTimeout(() => {
-              window.location.replace(targetUrl);
-            }, 100);
-          }, 100);
+            console.log('Fallback: Using window.location.href to', targetUrl);
+            window.location.href = targetUrl;
+          }, 200);
         } catch (e) {
-          console.error('Redirect error:', e);
-          // Fallback to simple href
-          window.location.href = targetUrl;
+          console.error('Error during redirect:', e);
         }
       }, 500);
     } catch (error) {
@@ -205,37 +214,46 @@ export default function LoginPage() {
       console.log('User registered:', user);
       console.log('Redirecting based on roleId:', user.roleId);
       
-      // Force a hard redirect to the correct URL
+      // Use the hard-coded redirect links
       setTimeout(() => {
-        let targetUrl = '';
-        if (user.roleId === 1) {
-          targetUrl = '/admin/dashboard';
-        } else if (user.roleId === 2) {
-          targetUrl = '/manager/dashboard';
-        } else {
-          targetUrl = '/client/dashboard';
-        }
+        console.log('Attempting redirect using pre-existing link elements');
         
-        console.log('Redirecting to:', targetUrl);
-        
-        // Try different redirect methods to ensure it works
         try {
-          // Method 1: Direct window location assign
-          window.location.assign(targetUrl);
+          let redirectElem;
+          if (user.roleId === 1) {
+            console.log('Clicking admin redirect link');
+            redirectElem = document.getElementById('admin-redirect');
+          } else if (user.roleId === 2) {
+            console.log('Clicking manager redirect link');
+            redirectElem = document.getElementById('manager-redirect');
+          } else {
+            console.log('Clicking client redirect link');
+            redirectElem = document.getElementById('client-redirect');
+          }
           
-          // Method 2: Fallback to href if the above doesn't work
+          if (redirectElem) {
+            console.log('Found redirect link, clicking it...');
+            redirectElem.click();
+          } else {
+            console.error('Redirect element not found in DOM');
+          }
+          
+          // Fallback to traditional methods
           setTimeout(() => {
-            window.location.href = targetUrl;
+            let targetUrl;
+            if (user.roleId === 1) {
+              targetUrl = '/admin/dashboard';
+            } else if (user.roleId === 2) {
+              targetUrl = '/manager/dashboard';
+            } else {
+              targetUrl = '/client/dashboard';
+            }
             
-            // Method 3: Use replace as a final fallback
-            setTimeout(() => {
-              window.location.replace(targetUrl);
-            }, 100);
-          }, 100);
+            console.log('Fallback: Using window.location.href to', targetUrl);
+            window.location.href = targetUrl;
+          }, 200);
         } catch (e) {
-          console.error('Redirect error:', e);
-          // Fallback to simple href
-          window.location.href = targetUrl;
+          console.error('Error during redirect:', e);
         }
       }, 500);
     } catch (error: any) {
@@ -250,8 +268,18 @@ export default function LoginPage() {
     }
   };
 
+  // For direct navigation - will be triggered by JS
+  const adminRedirectPath = '/admin/project-management';
+  const managerRedirectPath = '/manager/dashboard';
+  const clientRedirectPath = '/client/dashboard';
+  
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Hidden redirect links that we can click programmatically */}
+      <a href={adminRedirectPath} id="admin-redirect" style={{ display: 'none' }}>Admin Redirect</a>
+      <a href={managerRedirectPath} id="manager-redirect" style={{ display: 'none' }}>Manager Redirect</a>
+      <a href={clientRedirectPath} id="client-redirect" style={{ display: 'none' }}>Client Redirect</a>
+      
       {/* Left side: Auth form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <Card className="w-full max-w-md">
