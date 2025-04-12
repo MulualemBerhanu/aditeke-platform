@@ -13,19 +13,33 @@ export default function ManagerDashboard() {
   const { user, logout } = useAuth();
   const [_, setLocation] = useLocation();
 
-  // Redirect if not logged in or not a manager
+  // Redirect if not logged in or not a manager - check both API and localStorage
   React.useEffect(() => {
-    if (!user) {
-      setLocation('/login');
-    } else if (user.roleId !== 2) { // Assuming 2 is Manager role ID
-      // Redirect to appropriate dashboard based on role
-      if (user.roleId === 1) setLocation('/admin/dashboard');
-      else if (user.roleId === 3) setLocation('/client/dashboard');
-      else setLocation('/');
+    const storedUser = localStorage.getItem('currentUser');
+    const isLocalStorageAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    
+    if (!user && !storedUser && !isLocalStorageAuthenticated) {
+      console.log("⚠️ No authentication found, redirecting to login");
+      window.location.href = '/login';  // Use direct navigation for more reliable redirect
+    } else if (!user && (storedUser || isLocalStorageAuthenticated)) {
+      console.log("⚠️ Using localStorage authentication");
+      // Continue with localStorage auth
+    }
+    
+    // Check role permissions and redirect if needed
+    const userData = user || (storedUser ? JSON.parse(storedUser) : null);
+    if (userData && userData.roleId !== 2) { // Not a manager
+      console.log("⚠️ Not authorized as manager, redirecting");
+      if (userData.roleId === 1) window.location.href = '/admin/dashboard';
+      else if (userData.roleId === 3) window.location.href = '/client/dashboard';
+      else window.location.href = '/';
     }
   }, [user, setLocation]);
 
-  if (!user || user.roleId !== 2) {
+  // Load user data from localStorage if not available in context
+  const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
+
+  if (!userData || userData.roleId !== 2) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
@@ -35,7 +49,7 @@ export default function ManagerDashboard() {
         <h1 className="text-3xl font-bold">Manager Dashboard</h1>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="font-medium">{user.name}</p>
+            <p className="font-medium">{userData.name}</p>
             <p className="text-sm text-muted-foreground">Project Manager</p>
           </div>
           <Button variant="outline" onClick={() => logout()}>Logout</Button>

@@ -15,19 +15,33 @@ export default function ClientDashboard() {
   const { user, logout } = useAuth();
   const [_, setLocation] = useLocation();
 
-  // Redirect if not logged in or not a client
+  // Redirect if not logged in or not a client - check both API and localStorage
   React.useEffect(() => {
-    if (!user) {
-      setLocation('/login');
-    } else if (user.roleId !== 3) { // Assuming 3 is Client role ID
-      // Redirect to appropriate dashboard based on role
-      if (user.roleId === 1) setLocation('/admin/dashboard');
-      else if (user.roleId === 2) setLocation('/manager/dashboard');
-      else setLocation('/');
+    const storedUser = localStorage.getItem('currentUser');
+    const isLocalStorageAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    
+    if (!user && !storedUser && !isLocalStorageAuthenticated) {
+      console.log("⚠️ No authentication found, redirecting to login");
+      window.location.href = '/login';  // Use direct navigation for more reliable redirect
+    } else if (!user && (storedUser || isLocalStorageAuthenticated)) {
+      console.log("⚠️ Using localStorage authentication");
+      // Continue with localStorage auth
+    }
+    
+    // Check role permissions and redirect if needed
+    const userData = user || (storedUser ? JSON.parse(storedUser) : null);
+    if (userData && userData.roleId !== 3) { // Not a client
+      console.log("⚠️ Not authorized as client, redirecting");
+      if (userData.roleId === 1) window.location.href = '/admin/dashboard';
+      else if (userData.roleId === 2) window.location.href = '/manager/dashboard';
+      else window.location.href = '/';
     }
   }, [user, setLocation]);
 
-  if (!user || user.roleId !== 3) {
+  // Load user data from localStorage if not available in context
+  const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
+
+  if (!userData || userData.roleId !== 3) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
@@ -37,7 +51,7 @@ export default function ClientDashboard() {
         <h1 className="text-3xl font-bold">Client Dashboard</h1>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="font-medium">{user.name}</p>
+            <p className="font-medium">{userData.name}</p>
             <p className="text-sm text-muted-foreground">Client</p>
           </div>
           <Button variant="outline" onClick={() => logout()}>Logout</Button>
