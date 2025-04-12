@@ -99,8 +99,9 @@ export default function LoginPage() {
 
   // Set role from URL parameter if available
   useEffect(() => {
-    const searchParams = parseSearchParams(window.location.search);
-    const roleParam = searchParams.get('role');
+    // Use URLSearchParams for standard browser compatibility
+    const urlParams = new URLSearchParams(window.location.search);
+    const roleParam = urlParams.get('role');
     
     if (roleParam) {
       const foundRole = USER_ROLES.find(role => 
@@ -234,9 +235,8 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="role-select" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4 mb-6">
-                <TabsTrigger value="role-select">Select Role</TabsTrigger>
+            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
