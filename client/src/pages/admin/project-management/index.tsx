@@ -1,393 +1,294 @@
 import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/components/auth/AuthContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import { Loader2, Plus, Search, Filter, MoreHorizontal, Pencil, Trash2, Eye, Calendar, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Plus,
-  Search,
-  Filter,
-  MoreVertical,
-  Edit,
-  Trash2,
-  ExternalLink,
-  CheckCircle,
-  AlertCircle,
-  Clock,
-  Briefcase,
-  CalendarDays,
-  Tag,
-  Loader2
-} from 'lucide-react';
-
-// Type for projects from the API
-type Project = {
-  id: number;
-  title: string;
-  description: string;
-  thumbnail: string;
-  category: string;
-  clientId: number;
-  startDate: string;
-  endDate: string | null;
-  status: string;
-};
-
-// Helper function to get status badge styling
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'Planning':
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700">Planning</Badge>;
-    case 'In Progress':
-      return <Badge variant="outline" className="bg-yellow-50 text-yellow-700">In Progress</Badge>;
-    case 'Testing':
-      return <Badge variant="outline" className="bg-purple-50 text-purple-700">Testing</Badge>;
-    case 'Review':
-      return <Badge variant="outline" className="bg-indigo-50 text-indigo-700">Review</Badge>;
-    case 'Completed':
-      return <Badge variant="outline" className="bg-green-50 text-green-700">Completed</Badge>;
-    case 'On Hold':
-      return <Badge variant="outline" className="bg-orange-50 text-orange-700">On Hold</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-};
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProjectManagement() {
   const { user } = useAuth();
   const [_, setLocation] = useLocation();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // State for search and filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  
-  // Fetch all projects
-  const { data: projects = [], isLoading, isError } = useQuery({
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Fetch projects
+  const { data: projects = [], isLoading } = useQuery({
     queryKey: ['/api/projects'],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/projects');
-      return await response.json();
+      try {
+        const response = await apiRequest('GET', '/api/projects');
+        return await response.json();
+      } catch (error) {
+        console.error('Failed to fetch projects', error);
+        return [];
+      }
     },
   });
-  
-  // Delete project mutation
-  const deleteProjectMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest('DELETE', `/api/projects/${id}`);
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Project Deleted',
-        description: 'Project has been successfully deleted',
-      });
-      // Refresh projects data
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete project',
-        variant: 'destructive',
-      });
-    },
-  });
-  
-  // Handle deleting a project
-  const handleDeleteProject = (id: number) => {
-    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      deleteProjectMutation.mutate(id);
-    }
-  };
-  
-  // Handle creating a new project
-  const handleNewProject = () => {
-    setLocation('/admin/project-management/create');
-  };
-  
-  // Filter and search projects
-  const filteredProjects = projects.filter((project: Project) => {
-    // Apply search term filter
-    const matchesSearch = searchTerm === '' || 
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+  // Filter and search functionality
+  const filteredProjects = React.useMemo(() => {
+    let result = [...projects];
     
     // Apply category filter
-    const matchesCategory = categoryFilter === null || project.category === categoryFilter;
+    if (categoryFilter !== 'all') {
+      result = result.filter(project => project.category === categoryFilter);
+    }
     
     // Apply status filter
-    const matchesStatus = statusFilter === null || project.status === statusFilter;
+    if (statusFilter !== 'all') {
+      result = result.filter(project => project.status === statusFilter);
+    }
     
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
-  
+    // Apply search
+    if (searchTerm) {
+      const lowercasedSearch = searchTerm.toLowerCase();
+      result = result.filter(project => 
+        project.title.toLowerCase().includes(lowercasedSearch) || 
+        project.description.toLowerCase().includes(lowercasedSearch)
+      );
+    }
+    
+    return result;
+  }, [projects, categoryFilter, statusFilter, searchTerm]);
+
+  // Extract all available categories and statuses for filters
+  const categories = React.useMemo(() => {
+    const categorySet = new Set();
+    projects.forEach(project => categorySet.add(project.category));
+    return ['all', ...Array.from(categorySet)];
+  }, [projects]);
+
+  const statuses = React.useMemo(() => {
+    const statusSet = new Set();
+    projects.forEach(project => statusSet.add(project.status));
+    return ['all', ...Array.from(statusSet)];
+  }, [projects]);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Planning':
+        return 'bg-blue-100 text-blue-800';
+      case 'In Progress':
+        return 'bg-amber-100 text-amber-800';
+      case 'Testing':
+        return 'bg-purple-100 text-purple-800';
+      case 'Review':
+        return 'bg-orange-100 text-orange-800';
+      case 'Completed':
+        return 'bg-green-100 text-green-800';
+      case 'On Hold':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Format date to display in a user-friendly way
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  };
+
   // Redirect if not logged in or not an admin
   React.useEffect(() => {
     if (!user) {
       setLocation('/login');
     } else if (user.roleId !== 1) { // Assuming 1 is Admin role ID
-      // Redirect to appropriate dashboard based on role
       if (user.roleId === 2) setLocation('/manager/dashboard');
       else if (user.roleId === 3) setLocation('/client/dashboard');
       else setLocation('/');
     }
   }, [user, setLocation]);
-  
-  // Extract unique categories for filtering
-  const uniqueCategories = [...new Set(projects.map((project: Project) => project.category))];
-  
-  // Extract unique statuses for filtering
-  const uniqueStatuses = [...new Set(projects.map((project: Project) => project.status))];
-  
+
   if (!user || user.roleId !== 1) {
     return <div className="flex justify-center items-center min-h-screen">Redirecting...</div>;
   }
-  
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Project Management</h1>
-          <p className="text-muted-foreground mt-1">Manage and track all projects in one place</p>
+          <p className="text-muted-foreground mt-1">Manage and oversee all projects</p>
         </div>
-        <Button onClick={handleNewProject}>
+        <Button 
+          className="mt-4 md:mt-0" 
+          onClick={() => setLocation('/admin/project-management/create')}
+        >
           <Plus className="mr-2 h-4 w-4" />
-          New Project
+          Create New Project
         </Button>
       </div>
       
-      <Card className="mb-8">
+      <Card className="mb-6">
         <CardHeader className="pb-3">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <CardTitle>Projects Overview</CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <CardTitle>Project Filters</CardTitle>
+          <CardDescription>Filter and search projects</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  type="search"
                   placeholder="Search projects..."
-                  className="pl-8"
+                  className="pl-9"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Filter Projects</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuLabel className="text-xs font-medium mt-2">Category</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setCategoryFilter(null)}>
-                    <span className={categoryFilter === null ? "font-bold" : ""}>All Categories</span>
-                  </DropdownMenuItem>
-                  {uniqueCategories.map((category) => (
-                    <DropdownMenuItem 
-                      key={category} 
-                      onClick={() => setCategoryFilter(category)}
-                    >
-                      <span className={categoryFilter === category ? "font-bold" : ""}>{category}</span>
-                    </DropdownMenuItem>
-                  ))}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuLabel className="text-xs font-medium">Status</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setStatusFilter(null)}>
-                    <span className={statusFilter === null ? "font-bold" : ""}>All Statuses</span>
-                  </DropdownMenuItem>
-                  {uniqueStatuses.map((status) => (
-                    <DropdownMenuItem 
-                      key={status} 
-                      onClick={() => setStatusFilter(status)}
-                    >
-                      <span className={statusFilter === status ? "font-bold" : ""}>{status}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+            </div>
+            <div>
+              <select
+                className="w-full h-10 rounded-md border border-input px-3 py-2 text-sm bg-background"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+              >
+                {categories.map((category, index) => (
+                  <option key={index} value={category}>
+                    {category === 'all' ? 'All Categories' : category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                className="w-full h-10 rounded-md border border-input px-3 py-2 text-sm bg-background"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                {statuses.map((status, index) => (
+                  <option key={index} value={status}>
+                    {status === 'all' ? 'All Statuses' : status}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : isError ? (
-            <div className="flex justify-center items-center py-8 text-destructive">
-              <AlertCircle className="h-6 w-6 mr-2" />
-              <p>Failed to load projects. Please try again.</p>
-            </div>
-          ) : filteredProjects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No projects found</h3>
-              <p className="text-muted-foreground mt-1">
-                {searchTerm || categoryFilter || statusFilter 
-                  ? "Try adjusting your filters or search term"
-                  : "Get started by creating your first project"}
-              </p>
-              {!searchTerm && !categoryFilter && !statusFilter && (
-                <Button onClick={handleNewProject} className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Project
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[300px]">Project Name</TableHead>
-                    <TableHead className="w-[150px]">Category</TableHead>
-                    <TableHead className="w-[120px]">Status</TableHead>
-                    <TableHead className="w-[120px]">Start Date</TableHead>
-                    <TableHead className="w-[80px] text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProjects.map((project: Project) => (
-                    <TableRow key={project.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center">
-                          {project.thumbnail ? (
-                            <img 
-                              src={project.thumbnail} 
-                              alt={project.title} 
-                              className="h-10 w-10 mr-3 rounded object-cover" 
-                            />
-                          ) : (
-                            <div className="h-10 w-10 mr-3 bg-muted rounded flex items-center justify-center">
-                              <Briefcase className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
-                          <span className="font-medium">{project.title}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          <Tag className="h-3 w-3 mr-1" />
-                          {project.category}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(project.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <CalendarDays className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
-                          {new Date(project.startDate).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setLocation(`/admin/project-management/${project.id}`)}>
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setLocation(`/admin/project-management/${project.id}/edit`)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Project
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteProject(project.id)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Project
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Statistics</CardTitle>
-          <CardDescription>Overview of project status and distribution</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Projects</p>
-                  <h3 className="text-2xl font-bold">{projects.length}</h3>
-                </div>
-                <Briefcase className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-            
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">In Progress</p>
-                  <h3 className="text-2xl font-bold">
-                    {projects.filter((p: Project) => p.status === 'In Progress').length}
-                  </h3>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-500" />
-              </div>
-            </div>
-            
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                  <h3 className="text-2xl font-bold">
-                    {projects.filter((p: Project) => p.status === 'Completed').length}
-                  </h3>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
-              </div>
-            </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="rounded-full bg-muted p-3 mb-4">
+            <Search className="h-6 w-6 text-muted-foreground" />
           </div>
-        </CardContent>
-      </Card>
+          <h3 className="text-lg font-medium">No projects found</h3>
+          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+            {searchTerm || categoryFilter !== 'all' || statusFilter !== 'all'
+              ? "No projects match your current search criteria. Try adjusting your filters."
+              : "There are no projects yet. Click 'Create New Project' to add one."}
+          </p>
+          {(searchTerm || categoryFilter !== 'all' || statusFilter !== 'all') && (
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                setSearchTerm('');
+                setCategoryFilter('all');
+                setStatusFilter('all');
+              }}
+            >
+              Clear Filters
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProjects.map((project) => (
+            <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">
+              {project.thumbnail && (
+                <div className="h-[140px] overflow-hidden">
+                  <img 
+                    src={project.thumbnail}
+                    alt={project.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <CardHeader className="py-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="line-clamp-1">{project.title}</CardTitle>
+                    <CardDescription className="mt-1">
+                      {project.category}
+                    </CardDescription>
+                  </div>
+                  <div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                      {project.status}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-2">
+                <p className="text-sm line-clamp-2">{project.description}</p>
+                
+                <div className="mt-4 flex items-center text-sm text-muted-foreground">
+                  <div className="flex items-center mr-4">
+                    <Calendar className="mr-1 h-3.5 w-3.5" />
+                    <span>
+                      {formatDate(project.startDate)}
+                      {project.endDate ? ` - ${formatDate(project.endDate)}` : ' - Ongoing'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+              <div className="px-6 py-3 border-t bg-muted/50 flex justify-between items-center">
+                <div className="text-xs text-muted-foreground">
+                  Client ID: {project.clientId}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      className="cursor-pointer"
+                      onClick={() => console.log(`View project ${project.id}`)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="cursor-pointer"
+                      onClick={() => console.log(`Edit project ${project.id}`)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit Project
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="cursor-pointer text-destructive focus:text-destructive"
+                      onClick={() => console.log(`Delete project ${project.id}`)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Project
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
