@@ -116,7 +116,14 @@ export default function LoginPage() {
     try {
       await login(data.username, data.password);
       
-      // Navigation will happen in the auth provider after successful login
+      // Explicitly redirect based on the selected role
+      if (selectedRole.name.toLowerCase() === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else if (selectedRole.name.toLowerCase() === 'manager') {
+        window.location.href = '/manager/dashboard';
+      } else if (selectedRole.name.toLowerCase() === 'client') {
+        window.location.href = '/client/dashboard';
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -144,8 +151,14 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
-      // Note: Redirect is handled through the callback in AuthContext
-      // The callbacks in Firebase will handle the redirection to the appropriate dashboard
+      // Explicitly redirect based on the selected role (same behavior as password login)
+      if (selectedRole.name.toLowerCase() === 'admin') {
+        window.location.href = '/admin/dashboard';
+      } else if (selectedRole.name.toLowerCase() === 'manager') {
+        window.location.href = '/manager/dashboard';
+      } else if (selectedRole.name.toLowerCase() === 'client') {
+        window.location.href = '/client/dashboard';
+      }
     } catch (error) {
       console.error('Google login error:', error);
       toast({
