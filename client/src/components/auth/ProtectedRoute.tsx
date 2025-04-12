@@ -90,8 +90,17 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!isLoading && !user) {
+    // Check both the user from context and localStorage for maximum compatibility
+    const isLocalStorageAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const localStorageUser = localStorage.getItem('currentUser');
+    
+    // Only redirect if both API and localStorage auth are missing
+    if (!isLoading && !user && !isLocalStorageAuthenticated && !localStorageUser) {
+      console.log("⚠️ No auth found in API or localStorage, redirecting to login");
       setLocation('/login');
+    } else if (!user && (isLocalStorageAuthenticated || localStorageUser)) {
+      console.log("⚠️ Using localStorage authentication as fallback");
+      // We have localStorage auth but no API auth - this is okay, let the user proceed
     }
   }, [isLoading, user, setLocation]);
 

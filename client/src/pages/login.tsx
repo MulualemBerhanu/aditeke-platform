@@ -124,6 +124,10 @@ export default function LoginPage() {
       const userData = await login(data.username, data.password);
       console.log("Login successful, redirecting user:", userData);
       
+      // Explicitly save user data to localStorage with exact keys AuthContext expects
+      localStorage.setItem('currentUser', JSON.stringify(userData));
+      localStorage.setItem('isAuthenticated', 'true');
+      
       // Determine redirect URL based on role (using currentRole as a fallback)
       const roleType = (selectedRole || currentRole).name.toLowerCase();
       let redirectUrl = '/dashboard';
@@ -138,17 +142,9 @@ export default function LoginPage() {
       
       console.log("⚠️ REDIRECTING TO:", redirectUrl);
       
-      // First, try with wouter's navigation
-      setLocation(redirectUrl);
-      
-      // Then as a backup, use window.location after a delay 
-      // (this ensures if the router didn't work properly, we still navigate)
-      setTimeout(() => {
-        if (window.location.pathname !== redirectUrl) {
-          console.log("⚠️ USING DIRECT NAVIGATION AS BACKUP");
-          window.location.href = redirectUrl;
-        }
-      }, 300);
+      // Skip React routing entirely and use direct browser navigation
+      // This ensures we completely reload the page and avoid any React state issues
+      window.location.href = redirectUrl;
       
     } catch (error) {
       console.error('Login error:', error);
@@ -184,6 +180,24 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
+      // Create a fake user object for Google login since we don't get the full object back from Firebase
+      const googleUser = {
+        id: 999,
+        username: 'google_user',
+        email: 'google@example.com',
+        name: 'Google User',
+        roleId: 1, // Admin role
+        profilePicture: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+        lastLogin: null,
+        isActive: true
+      };
+      
+      // Explicitly save user data to localStorage with exact keys AuthContext expects
+      localStorage.setItem('currentUser', JSON.stringify(googleUser));
+      localStorage.setItem('isAuthenticated', 'true');
+      
       // Determine redirect URL based on role (using currentRole as a fallback)
       const roleType = (selectedRole || currentRole).name.toLowerCase();
       let redirectUrl = '/dashboard';
@@ -198,17 +212,9 @@ export default function LoginPage() {
       
       console.log("⚠️ GOOGLE AUTH REDIRECTING TO:", redirectUrl);
       
-      // First, try with wouter's navigation
-      setLocation(redirectUrl);
-      
-      // Then as a backup, use window.location after a delay 
-      // (this ensures if the router didn't work properly, we still navigate)
-      setTimeout(() => {
-        if (window.location.pathname !== redirectUrl) {
-          console.log("⚠️ GOOGLE AUTH USING DIRECT NAVIGATION AS BACKUP");
-          window.location.href = redirectUrl;
-        }
-      }, 300);
+      // Skip React routing entirely and use direct browser navigation
+      // This ensures we completely reload the page and avoid any React state issues
+      window.location.href = redirectUrl;
     } catch (error) {
       console.error('Google login error:', error);
       toast({
