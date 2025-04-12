@@ -97,6 +97,23 @@ export default function LoginPage() {
     },
   });
 
+  // Set role from URL parameter if available
+  useEffect(() => {
+    const searchParams = parseSearchParams(window.location.search);
+    const roleParam = searchParams.get('role');
+    
+    if (roleParam) {
+      const foundRole = USER_ROLES.find(role => 
+        role.name.toLowerCase() === roleParam.toLowerCase()
+      );
+      
+      if (foundRole) {
+        setSelectedRole(foundRole);
+        setActiveTab('login');
+      }
+    }
+  }, []);
+
   // Update form values when selected role changes
   useEffect(() => {
     if (selectedRole) {

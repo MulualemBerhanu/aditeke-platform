@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { NAV_ITEMS } from "@/lib/constants";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown, UserCog, Building2, Users } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -74,11 +80,34 @@ const Navbar = () => {
         
         {/* Desktop CTA Buttons */}
         <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
-          <Link href="/login">
-            <Button variant="ghost" className="text-primary hover:bg-primary/10 text-sm lg:text-base py-1 px-2 lg:px-4 lg:py-2">
-              Log In
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="text-primary hover:bg-primary/10 text-sm lg:text-base py-1 px-2 lg:px-4 lg:py-2">
+                <span>Log In</span>
+                <ChevronDown className="ml-1 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuItem asChild>
+                <Link href="/login?role=admin" className="flex items-center">
+                  <UserCog className="mr-2 h-4 w-4" />
+                  <span>Admin Login</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/login?role=manager" className="flex items-center">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  <span>Manager Login</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/login?role=client" className="flex items-center">
+                  <Users className="mr-2 h-4 w-4" />
+                  <span>Client Login</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Link href="/contact">
             <Button className="bg-primary text-white hover:bg-primary/90 text-sm lg:text-base py-1 px-2 lg:px-4 lg:py-2">
               Get a Quote
@@ -132,11 +161,27 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="pt-4 flex flex-col space-y-2">
-                <Link href="/login">
-                  <Button variant="outline" className="w-full justify-center text-primary">
-                    Log In
-                  </Button>
-                </Link>
+                <div className="space-y-2 mb-2">
+                  <h3 className="text-sm font-medium text-muted-foreground ml-1">Login as:</h3>
+                  <Link href="/login?role=admin">
+                    <Button variant="outline" className="w-full justify-start text-primary">
+                      <UserCog className="mr-2 h-4 w-4" />
+                      Admin Login
+                    </Button>
+                  </Link>
+                  <Link href="/login?role=manager">
+                    <Button variant="outline" className="w-full justify-start text-primary">
+                      <Building2 className="mr-2 h-4 w-4" />
+                      Manager Login
+                    </Button>
+                  </Link>
+                  <Link href="/login?role=client">
+                    <Button variant="outline" className="w-full justify-start text-primary">
+                      <Users className="mr-2 h-4 w-4" />
+                      Client Login
+                    </Button>
+                  </Link>
+                </div>
                 <Link href="/contact">
                   <Button className="w-full justify-center bg-primary text-white hover:bg-primary/90">
                     Get a Quote
