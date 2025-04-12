@@ -1,16 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { UsersRound, Building2, UserCog, User, ArrowLeft } from 'lucide-react';
-
-import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/components/auth/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { UserCog, Building2, UsersRound, LogIn, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // User role type
@@ -19,10 +15,7 @@ type UserRole = {
   name: string;
   icon: React.ReactNode;
   description: string;
-  credentials: {
-    username: string;
-    password: string;
-  };
+  emailPattern: string;
 };
 
 // Available user roles
@@ -32,82 +25,30 @@ const USER_ROLES: UserRole[] = [
     name: 'Admin',
     icon: <UserCog className="h-10 w-10 mb-2" />,
     description: 'Full access to all features and settings',
-    credentials: {
-      username: 'admin',
-      password: 'password123',
-    },
+    emailPattern: 'admin@',
   },
   {
     id: 2,
     name: 'Manager',
     icon: <Building2 className="h-10 w-10 mb-2" />,
     description: 'Manage projects and team members',
-    credentials: {
-      username: 'manager',
-      password: 'password123',
-    },
+    emailPattern: 'manager@',
   },
   {
     id: 3,
     name: 'Client',
     icon: <UsersRound className="h-10 w-10 mb-2" />,
     description: 'View and track project progress',
-    credentials: {
-      username: 'client',
-      password: 'password123',
-    },
+    emailPattern: 'client@',
   },
 ];
 
-// Define the form schema with zod
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-const registerSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
-  roleId: z.number().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
 export default function LoginPage() {
   const [, setLocation] = useLocation();
+  const { googleLogin } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isLoginView, setIsLoginView] = useState<boolean>(true);
   const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
-
-  // Login form
-  const loginForm = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: '',
-      password: '',
-    },
-  });
-
-  // Register form
-  const registerForm = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: '',
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      roleId: 3, // Default to client role
-    },
-  });
 
   // Set role from URL parameter if available
   useEffect(() => {
@@ -121,16 +62,12 @@ export default function LoginPage() {
       
       if (foundRole) {
         setSelectedRole(foundRole);
-        // Auto-fill credentials for demo convenience
-        loginForm.setValue('username', foundRole.credentials.username);
-        loginForm.setValue('password', foundRole.credentials.password);
-        registerForm.setValue('roleId', foundRole.id);
       }
     }
   }, []);
 
-  // Handle login form submission
-  const onLoginSubmit = async (data: LoginFormValues) => {
+  // Handle Google login
+  const handleLoginWithGoogle = async () => {
     if (!selectedRole) {
       toast({
         title: "Role selection required",
@@ -143,85 +80,17 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const response = await apiRequest('POST', '/api/login', data);
-      const user = await response.json();
+      await googleLogin();
       
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.name}!`,
-      });
-      
-      console.log('User authenticated:', user);
-      
-      // Store user in localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Redirect to appropriate dashboard based on role
-      const dashboardUrl = selectedRole.name.toLowerCase() === 'admin' 
-        ? '/admin/dashboard'
-        : selectedRole.name.toLowerCase() === 'manager'
-          ? '/manager/dashboard'
-          : '/client/dashboard';
-          
-      // Redirect immediately
-      window.location.href = dashboardUrl;
+      // Note: Redirect is handled through the callback in AuthContext
+      // The callbacks in Firebase will handle the redirection to the appropriate dashboard
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Google login error:', error);
       toast({
         title: "Login failed",
-        description: "Invalid username or password. Please try again.",
+        description: "There was a problem logging in with Google. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle register form submission
-  const onRegisterSubmit = async (data: RegisterFormValues) => {
-    if (!selectedRole) {
-      toast({
-        title: "Role selection required",
-        description: "Please select a user role from the navbar dropdown",
-        variant: "destructive",
-      });
-      window.location.href = "/";
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { confirmPassword, ...registerData } = data;
-      registerData.roleId = selectedRole.id;
-      
-      const response = await apiRequest('POST', '/api/register', registerData);
-      const user = await response.json();
-      
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created successfully.",
-      });
-      
-      // Store user in localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Redirect to appropriate dashboard based on role
-      const dashboardUrl = selectedRole.name.toLowerCase() === 'admin' 
-        ? '/admin/dashboard'
-        : selectedRole.name.toLowerCase() === 'manager'
-          ? '/manager/dashboard'
-          : '/client/dashboard';
-          
-      // Redirect immediately
-      window.location.href = dashboardUrl;
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      toast({
-        title: "Registration failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -238,7 +107,7 @@ export default function LoginPage() {
           <CardContent className="text-center">
             <div className="my-6 flex flex-col items-center">
               <div className="h-12 w-12 rounded-full bg-amber-100 mb-4 flex items-center justify-center">
-                <ArrowLeft className="h-6 w-6 text-amber-600" />
+                <UserCog className="h-6 w-6 text-amber-600" />
               </div>
               <h3 className="text-lg font-medium mb-2">Please select a role first</h3>
               <p className="text-muted-foreground mb-6">
@@ -262,20 +131,23 @@ export default function LoginPage() {
       {/* Left side: Auth form */}
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary">AdiTeke</CardTitle>
+          <CardHeader className="pb-4 text-center">
+            <div className="mx-auto h-24 w-24 rounded-full bg-primary/10 mb-4 flex items-center justify-center">
+              {selectedRole.icon}
+            </div>
+            <CardTitle className="text-2xl">Welcome!</CardTitle>
             <CardDescription>
-              {isLoginView ? 'Sign in to your account' : 'Create a new account'}
+              Sign in as {selectedRole.name}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {/* Role indicator */}
-            <div className="bg-muted/50 p-3 rounded-lg mb-6 flex items-center">
+          <CardContent className="space-y-6">
+            {/* Role selection info */}
+            <div className="bg-muted/50 p-3 rounded-lg flex items-center">
               <div className="text-primary mr-3">{selectedRole.icon}</div>
               <div>
                 <h3 className="font-medium">{selectedRole.name}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {isLoginView ? `Logging in as ${selectedRole.name.toLowerCase()}` : `Registering as ${selectedRole.name.toLowerCase()}`}
+                  {selectedRole.description}
                 </p>
               </div>
               <Button
@@ -287,164 +159,29 @@ export default function LoginPage() {
                 Change
               </Button>
             </div>
-
-            {isLoginView ? (
-              // Login Form
-              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input 
-                      id="username"
-                      type="text"
-                      placeholder="Enter your username"
-                      {...loginForm.register('username')}
-                    />
-                    {loginForm.formState.errors.username && (
-                      <p className="text-sm text-red-500">
-                        {loginForm.formState.errors.username.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Password</Label>
-                      <Button 
-                        variant="link" 
-                        className="px-0 text-sm"
-                        type="button"
-                        onClick={() => toast({
-                          title: "Password Reset",
-                          description: "This feature is not available in the demo version."
-                        })}
-                      >
-                        Forgot password?
-                      </Button>
-                    </div>
-                    <Input 
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      {...loginForm.register('password')}
-                    />
-                    {loginForm.formState.errors.password && (
-                      <p className="text-sm text-red-500">
-                        {loginForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Logging in...' : 'Login'}
-                  </Button>
-                </div>
-              </form>
-            ) : (
-              // Register Form
-              <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="register-name">Full Name</Label>
-                    <Input 
-                      id="register-name"
-                      type="text"
-                      placeholder="Enter your name"
-                      {...registerForm.register('name')}
-                    />
-                    {registerForm.formState.errors.name && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.name.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-username">Username</Label>
-                    <Input 
-                      id="register-username"
-                      type="text"
-                      placeholder="Choose a username"
-                      {...registerForm.register('username')}
-                    />
-                    {registerForm.formState.errors.username && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.username.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
-                    <Input 
-                      id="register-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      {...registerForm.register('email')}
-                    />
-                    {registerForm.formState.errors.email && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.email.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
-                    <Input 
-                      id="register-password"
-                      type="password"
-                      placeholder="Create a password"
-                      {...registerForm.register('password')}
-                    />
-                    {registerForm.formState.errors.password && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="register-confirm-password">Confirm Password</Label>
-                    <Input 
-                      id="register-confirm-password"
-                      type="password"
-                      placeholder="Confirm your password"
-                      {...registerForm.register('confirmPassword')}
-                    />
-                    {registerForm.formState.errors.confirmPassword && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.confirmPassword.message}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Creating account...' : 'Create Account'}
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {/* Toggle between login and register */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                {isLoginView ? "Don't have an account?" : "Already have an account?"}
-                <Button 
-                  variant="link" 
-                  className="ml-1 p-0"
-                  onClick={() => setIsLoginView(!isLoginView)}
-                >
-                  {isLoginView ? "Sign up" : "Sign in"}
-                </Button>
+            
+            {/* Login with Google button */}
+            <Button 
+              onClick={handleLoginWithGoogle}
+              className="w-full h-12 flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
+                <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
+              </svg>
+              {isLoading ? 'Signing in...' : 'Continue with Google'}
+            </Button>
+            
+            <Separator className="my-4" />
+            
+            <div className="text-center text-sm text-muted-foreground">
+              <p>Demo Account</p>
+              <p className="font-medium text-primary">Email: {selectedRole.emailPattern}aditeke.com</p>
+              <p className="mt-4 text-xs">
+                This is a demo application. In a production environment, real user authentication would be required.
               </p>
             </div>
           </CardContent>
