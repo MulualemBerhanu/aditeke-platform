@@ -102,14 +102,21 @@ export default function LoginPage() {
 
   // Handle form submission with wouter navigation
   const onSubmit = async (data: LoginFormValues) => {
+    // Auto select admin role if no role is selected
     if (!selectedRole) {
-      toast({
-        title: "Role selection required",
-        description: "Please select a user role from the navbar dropdown",
-        variant: "destructive",
-      });
-      setLocation("/");
-      return;
+      const adminRole = USER_ROLES.find(role => role.name === 'Admin');
+      if (adminRole) {
+        setSelectedRole(adminRole);
+        localStorage.setItem('selectedRole', JSON.stringify(adminRole));
+      } else {
+        // Fallback if we somehow can't find the admin role (unlikely)
+        toast({
+          title: "Role selection required",
+          description: "Please select a user role and try again",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -117,8 +124,8 @@ export default function LoginPage() {
       const userData = await login(data.username, data.password);
       console.log("Login successful, redirecting user:", userData);
       
-      // Determine redirect URL based on role
-      const roleType = selectedRole.name.toLowerCase();
+      // Determine redirect URL based on role (using currentRole as a fallback)
+      const roleType = (selectedRole || currentRole).name.toLowerCase();
       let redirectUrl = '/dashboard';
       
       if (roleType === 'admin') {
@@ -156,22 +163,29 @@ export default function LoginPage() {
 
   // Handle Google login with wouter navigation
   const handleLoginWithGoogle = async () => {
+    // Auto select admin role if no role is selected
     if (!selectedRole) {
-      toast({
-        title: "Role selection required",
-        description: "Please select a user role from the navbar dropdown",
-        variant: "destructive",
-      });
-      setLocation("/");
-      return;
+      const adminRole = USER_ROLES.find(role => role.name === 'Admin');
+      if (adminRole) {
+        setSelectedRole(adminRole);
+        localStorage.setItem('selectedRole', JSON.stringify(adminRole));
+      } else {
+        // Fallback if we somehow can't find the admin role (unlikely)
+        toast({
+          title: "Role selection required",
+          description: "Please select a user role and try again",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsLoading(true);
     try {
       await googleLogin();
       
-      // Determine redirect URL based on role
-      const roleType = selectedRole.name.toLowerCase();
+      // Determine redirect URL based on role (using currentRole as a fallback)
+      const roleType = (selectedRole || currentRole).name.toLowerCase();
       let redirectUrl = '/dashboard';
       
       if (roleType === 'admin') {
@@ -206,37 +220,27 @@ export default function LoginPage() {
     }
   };
 
-  // If no role is selected, show message and redirect back
-  if (!selectedRole) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary">AdiTeke</CardTitle>
-            <CardDescription>Role Selection Required</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="my-6 flex flex-col items-center">
-              <div className="h-12 w-12 rounded-full bg-amber-100 mb-4 flex items-center justify-center">
-                <UserCog className="h-6 w-6 text-amber-600" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">Please select a role first</h3>
-              <p className="text-muted-foreground mb-6">
-                You need to select a user role from the navbar dropdown menu before accessing this page.
-              </p>
-              <Button 
-                onClick={() => setLocation("/")}
-                className="w-full"
-              >
-                Go Back Home
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Instead of showing a separate message screen, automatically set the admin role
+  useEffect(() => {
+    if (!selectedRole) {
+      // Default to admin role for instant access
+      const adminRole = USER_ROLES.find(role => role.name === 'Admin');
+      if (adminRole) {
+        setSelectedRole(adminRole);
+        
+        // Pre-fill the form with admin credentials
+        form.setValue('username', adminRole.username);
+        form.setValue('password', adminRole.password);
+        
+        // Store it in localStorage for persistence
+        localStorage.setItem('selectedRole', JSON.stringify(adminRole));
+      }
+    }
+  }, []);
 
+  // Set default role to Admin if none selected
+  const currentRole = selectedRole || USER_ROLES[0];
+  
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side: Auth form */}
@@ -244,21 +248,21 @@ export default function LoginPage() {
         <Card className="w-full max-w-md">
           <CardHeader className="pb-4 text-center">
             <div className="mx-auto h-24 w-24 rounded-full bg-primary/10 mb-4 flex items-center justify-center">
-              {selectedRole.icon}
+              {currentRole.icon}
             </div>
             <CardTitle className="text-2xl">Welcome!</CardTitle>
             <CardDescription>
-              Sign in as {selectedRole.name}
+              Sign in as {currentRole.name}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Role selection info */}
             <div className="bg-muted/50 p-3 rounded-lg flex items-center">
-              <div className="text-primary mr-3">{selectedRole.icon}</div>
+              <div className="text-primary mr-3">{currentRole.icon}</div>
               <div>
-                <h3 className="font-medium">{selectedRole.name}</h3>
+                <h3 className="font-medium">{currentRole.name}</h3>
                 <p className="text-xs text-muted-foreground">
-                  {selectedRole.description}
+                  {currentRole.description}
                 </p>
               </div>
               <Button
@@ -360,8 +364,8 @@ export default function LoginPage() {
             
             <div className="text-center text-sm text-muted-foreground">
               <p>Demo Account</p>
-              <p className="font-medium text-primary">Username: {selectedRole.username}</p>
-              <p className="font-medium text-primary">Password: {selectedRole.password}</p>
+              <p className="font-medium text-primary">Username: {currentRole.username}</p>
+              <p className="font-medium text-primary">Password: {currentRole.password}</p>
               <p className="mt-4 text-xs">
                 This is a demo application. In a production environment, real user authentication would be required.
               </p>
