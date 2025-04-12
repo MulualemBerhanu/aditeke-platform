@@ -6,8 +6,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { UserCog, Building2, UsersRound, LogIn, Mail } from 'lucide-react';
+import { UserCog, Building2, UsersRound, LogIn, Mail, Key } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+// Form validation schema
+const loginSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 // User role type
 type UserRole = {
@@ -16,6 +28,8 @@ type UserRole = {
   icon: React.ReactNode;
   description: string;
   emailPattern: string;
+  username: string;  // Default username for this role
+  password: string;  // Default password for this role
 };
 
 // Available user roles
@@ -25,30 +39,46 @@ const USER_ROLES: UserRole[] = [
     name: 'Admin',
     icon: <UserCog className="h-10 w-10 mb-2" />,
     description: 'Full access to all features and settings',
-    emailPattern: 'admin@',
+    emailPattern: 'admin@aditeke.com',
+    username: 'admin',
+    password: 'password123',
   },
   {
     id: 2,
     name: 'Manager',
     icon: <Building2 className="h-10 w-10 mb-2" />,
     description: 'Manage projects and team members',
-    emailPattern: 'manager@',
+    emailPattern: 'manager@aditeke.com',
+    username: 'manager',
+    password: 'password123',
   },
   {
     id: 3,
     name: 'Client',
     icon: <UsersRound className="h-10 w-10 mb-2" />,
     description: 'View and track project progress',
-    emailPattern: 'client@',
+    emailPattern: 'client@aditeke.com',
+    username: 'client',
+    password: 'password123',
   },
 ];
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
-  const { googleLogin } = useAuth();
+  const { login, googleLogin, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [authMethod, setAuthMethod] = useState<'password' | 'google'>('password');
+
+  // Initialize form
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+  });
 
   // Set role from URL parameter if available
   useEffect(() => {
@@ -62,9 +92,41 @@ export default function LoginPage() {
       
       if (foundRole) {
         setSelectedRole(foundRole);
+        
+        // Pre-fill the form with role's default username
+        form.setValue('username', foundRole.username);
+        form.setValue('password', foundRole.password);
       }
     }
-  }, []);
+  }, [form]);
+
+  // Handle form submission
+  const onSubmit = async (data: LoginFormValues) => {
+    if (!selectedRole) {
+      toast({
+        title: "Role selection required",
+        description: "Please select a user role from the navbar dropdown",
+        variant: "destructive",
+      });
+      window.location.href = "/";
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await login(data.username, data.password);
+      
+      // Navigation will happen in the auth provider after successful login
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "Invalid username or password. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
 
   // Handle Google login
   const handleLoginWithGoogle = async () => {
@@ -160,26 +222,97 @@ export default function LoginPage() {
               </Button>
             </div>
             
-            {/* Login with Google button */}
-            <Button 
-              onClick={handleLoginWithGoogle}
-              className="w-full h-12 flex items-center justify-center gap-2"
-              disabled={isLoading}
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18">
-                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
-                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
-                <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
-                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
-              </svg>
-              {isLoading ? 'Signing in...' : 'Continue with Google'}
-            </Button>
+            {/* Authentication method toggle */}
+            <div className="flex rounded-md overflow-hidden">
+              <Button
+                type="button"
+                variant={authMethod === 'password' ? 'default' : 'outline'}
+                className="flex-1 rounded-none"
+                onClick={() => setAuthMethod('password')}
+              >
+                <Key className="h-4 w-4 mr-2" />
+                Password
+              </Button>
+              <Button
+                type="button"
+                variant={authMethod === 'google' ? 'default' : 'outline'}
+                className="flex-1 rounded-none"
+                onClick={() => setAuthMethod('google')}
+              >
+                <svg className="h-4 w-4 mr-2" viewBox="0 0 18 18">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
+                  <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
+                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
+                </svg>
+                Google
+              </Button>
+            </div>
+            
+            {authMethod === 'password' ? (
+              /* Password Login Form */
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your username" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="Enter your password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit"
+                    className="w-full mt-2" 
+                    disabled={isLoading || authLoading}
+                  >
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              /* Google Login Button */
+              <Button 
+                onClick={handleLoginWithGoogle}
+                className="w-full h-12 flex items-center justify-center gap-2"
+                disabled={isLoading || authLoading}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
+                  <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
+                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
+                </svg>
+                {isLoading ? 'Signing in...' : 'Continue with Google'}
+              </Button>
+            )}
             
             <Separator className="my-4" />
             
             <div className="text-center text-sm text-muted-foreground">
               <p>Demo Account</p>
-              <p className="font-medium text-primary">Email: {selectedRole.emailPattern}aditeke.com</p>
+              <p className="font-medium text-primary">Username: {selectedRole.username}</p>
+              <p className="font-medium text-primary">Password: {selectedRole.password}</p>
               <p className="mt-4 text-xs">
                 This is a demo application. In a production environment, real user authentication would be required.
               </p>
