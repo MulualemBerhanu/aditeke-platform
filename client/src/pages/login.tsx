@@ -100,7 +100,7 @@ export default function LoginPage() {
     }
   }, [form]);
 
-  // Handle form submission
+  // Handle form submission with wouter navigation
   const onSubmit = async (data: LoginFormValues) => {
     if (!selectedRole) {
       toast({
@@ -108,7 +108,7 @@ export default function LoginPage() {
         description: "Please select a user role from the navbar dropdown",
         variant: "destructive",
       });
-      window.location.href = "/";
+      setLocation("/");
       return;
     }
 
@@ -117,11 +117,10 @@ export default function LoginPage() {
       const userData = await login(data.username, data.password);
       console.log("Login successful, redirecting user:", userData);
       
-      // Hard redirect using window.location.replace which forces navigation
+      // Determine redirect URL based on role
       const roleType = selectedRole.name.toLowerCase();
-      
-      // Create the redirect URL
       let redirectUrl = '/dashboard';
+      
       if (roleType === 'admin') {
         redirectUrl = '/admin/dashboard';
       } else if (roleType === 'manager') {
@@ -132,14 +131,17 @@ export default function LoginPage() {
       
       console.log("⚠️ REDIRECTING TO:", redirectUrl);
       
-      // Force hard navigation - this should bypass any React router issues
-      window.location.replace(redirectUrl);
+      // First, try with wouter's navigation
+      setLocation(redirectUrl);
       
-      // Fallback in case the above doesn't trigger
+      // Then as a backup, use window.location after a delay 
+      // (this ensures if the router didn't work properly, we still navigate)
       setTimeout(() => {
-        console.log("⚠️ FALLBACK REDIRECT TRIGGERED");
-        window.location.href = redirectUrl;
-      }, 500);
+        if (window.location.pathname !== redirectUrl) {
+          console.log("⚠️ USING DIRECT NAVIGATION AS BACKUP");
+          window.location.href = redirectUrl;
+        }
+      }, 300);
       
     } catch (error) {
       console.error('Login error:', error);
@@ -152,7 +154,7 @@ export default function LoginPage() {
     }
   };
 
-  // Handle Google login
+  // Handle Google login with wouter navigation
   const handleLoginWithGoogle = async () => {
     if (!selectedRole) {
       toast({
@@ -160,7 +162,7 @@ export default function LoginPage() {
         description: "Please select a user role from the navbar dropdown",
         variant: "destructive",
       });
-      window.location.href = "/";
+      setLocation("/");
       return;
     }
 
@@ -168,11 +170,10 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
-      // Hard redirect using window.location.replace which forces navigation
+      // Determine redirect URL based on role
       const roleType = selectedRole.name.toLowerCase();
-      
-      // Create the redirect URL
       let redirectUrl = '/dashboard';
+      
       if (roleType === 'admin') {
         redirectUrl = '/admin/dashboard';
       } else if (roleType === 'manager') {
@@ -183,14 +184,17 @@ export default function LoginPage() {
       
       console.log("⚠️ GOOGLE AUTH REDIRECTING TO:", redirectUrl);
       
-      // Force hard navigation - this should bypass any React router issues
-      window.location.replace(redirectUrl);
+      // First, try with wouter's navigation
+      setLocation(redirectUrl);
       
-      // Fallback in case the above doesn't trigger
+      // Then as a backup, use window.location after a delay 
+      // (this ensures if the router didn't work properly, we still navigate)
       setTimeout(() => {
-        console.log("⚠️ GOOGLE AUTH FALLBACK REDIRECT TRIGGERED");
-        window.location.href = redirectUrl;
-      }, 500);
+        if (window.location.pathname !== redirectUrl) {
+          console.log("⚠️ GOOGLE AUTH USING DIRECT NAVIGATION AS BACKUP");
+          window.location.href = redirectUrl;
+        }
+      }, 300);
     } catch (error) {
       console.error('Google login error:', error);
       toast({
@@ -221,7 +225,7 @@ export default function LoginPage() {
                 You need to select a user role from the navbar dropdown menu before accessing this page.
               </p>
               <Button 
-                onClick={() => window.location.href = "/"}
+                onClick={() => setLocation("/")}
                 className="w-full"
               >
                 Go Back Home
@@ -261,7 +265,7 @@ export default function LoginPage() {
                 variant="ghost"
                 size="sm"
                 className="ml-auto"
-                onClick={() => window.location.href = "/"}
+                onClick={() => setLocation("/")}
               >
                 Change
               </Button>
