@@ -741,9 +741,10 @@ export class MemStorage implements IStorage {
   private async initializeUsers() {
     // Get roles
     const adminRole = await this.getRoleByName("admin");
+    const managerRole = await this.getRoleByName("manager");
     const clientRole = await this.getRoleByName("client");
     
-    if (!adminRole || !clientRole) {
+    if (!adminRole || !managerRole || !clientRole) {
       console.error("Roles not found. Make sure to initialize roles first.");
       return;
     }
@@ -758,6 +759,16 @@ export class MemStorage implements IStorage {
       isActive: true
     };
     
+    const managerUser: InsertUser = {
+      username: "manager",
+      password: "password123", // in production this should be hashed
+      email: "manager@aditeke.com",
+      name: "Manager User",
+      roleId: managerRole.id,
+      profilePicture: "https://randomuser.me/api/portraits/men/5.jpg",
+      isActive: true
+    };
+    
     const clientUser: InsertUser = {
       username: "client",
       password: "password123", // in production this should be hashed
@@ -769,6 +780,7 @@ export class MemStorage implements IStorage {
     };
     
     await this.createUser(adminUser);
+    await this.createUser(managerUser);
     await this.createUser(clientUser);
   }
 

@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { UsersRound, Building2, UserCog } from 'lucide-react';
 
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,52 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+
+// User role type
+type UserRole = {
+  id: number;
+  name: string;
+  icon: React.ReactNode;
+  description: string;
+  credentials: {
+    username: string;
+    password: string;
+  };
+};
+
+// Available user roles
+const USER_ROLES: UserRole[] = [
+  {
+    id: 1,
+    name: 'Admin',
+    icon: <UserCog className="h-10 w-10 mb-2" />,
+    description: 'Full access to all features and settings',
+    credentials: {
+      username: 'admin',
+      password: 'password123',
+    },
+  },
+  {
+    id: 2,
+    name: 'Manager',
+    icon: <Building2 className="h-10 w-10 mb-2" />,
+    description: 'Manage projects and team members',
+    credentials: {
+      username: 'manager',
+      password: 'password123',
+    },
+  },
+  {
+    id: 3,
+    name: 'Client',
+    icon: <UsersRound className="h-10 w-10 mb-2" />,
+    description: 'View and track project progress',
+    credentials: {
+      username: 'client',
+      password: 'password123',
+    },
+  },
+];
 
 // Define the form schema with zod
 const loginSchema = z.object({
@@ -25,6 +72,7 @@ const registerSchema = z.object({
   email: z.string().email('Please enter a valid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
+  roleId: z.number().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
@@ -37,16 +85,25 @@ export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("login");
+  const [activeTab, setActiveTab] = useState<string>("role-select");
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: '',
-      password: '',
+      username: selectedRole?.credentials.username || '',
+      password: selectedRole?.credentials.password || '',
     },
   });
+
+  // Update form values when selected role changes
+  useEffect(() => {
+    if (selectedRole) {
+      loginForm.setValue('username', selectedRole.credentials.username);
+      loginForm.setValue('password', selectedRole.credentials.password);
+    }
+  }, [selectedRole, loginForm]);
 
   // Register form
   const registerForm = useForm<RegisterFormValues>({
@@ -57,8 +114,15 @@ export default function LoginPage() {
       email: '',
       password: '',
       confirmPassword: '',
+      roleId: selectedRole?.id || 3, // Default to client role
     },
   });
+
+  // Handle role selection
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role);
+    setActiveTab('login');
+  };
 
   // Handle login form submission
   const onLoginSubmit = async (data: LoginFormValues) => {
@@ -97,6 +161,9 @@ export default function LoginPage() {
     try {
       // Remove the confirmPassword field as it's not needed in the API request
       const { confirmPassword, ...registerData } = data;
+      
+      // Add the role ID
+      registerData.roleId = selectedRole?.id || 3; // Default to client if not selected
       
       const response = await apiRequest('POST', '/api/register', registerData);
       const user = await response.json();
@@ -137,156 +204,237 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+            <Tabs defaultValue="role-select" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="role-select">Select Role</TabsTrigger>
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
               </TabsList>
               
+              <TabsContent value="role-select">
+                <div className="space-y-4">
+                  <p className="text-sm text-center mb-4">
+                    Select your user role to continue:
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {USER_ROLES.map((role) => (
+                      <button
+                        key={role.id}
+                        type="button"
+                        onClick={() => handleRoleSelect(role)}
+                        className="flex flex-col items-center justify-center p-4 rounded-lg border-2 border-muted hover:border-primary hover:bg-primary/5 transition-colors"
+                      >
+                        <div className="text-primary">{role.icon}</div>
+                        <h3 className="font-medium">{role.name}</h3>
+                        <p className="text-xs text-center text-muted-foreground mt-1">
+                          {role.description}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+              
               <TabsContent value="login">
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input 
-                        id="username"
-                        type="text"
-                        placeholder="Enter your username"
-                        {...loginForm.register('username')}
-                      />
-                      {loginForm.formState.errors.username && (
-                        <p className="text-sm text-red-500">
-                          {loginForm.formState.errors.username.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Button 
-                          variant="link" 
-                          className="px-0 text-sm"
-                          type="button"
-                          onClick={() => toast({
-                            title: "Password Reset",
-                            description: "This feature is not available in the demo version."
-                          })}
-                        >
-                          Forgot password?
-                        </Button>
-                      </div>
-                      <Input 
-                        id="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        {...loginForm.register('password')}
-                      />
-                      {loginForm.formState.errors.password && (
-                        <p className="text-sm text-red-500">
-                          {loginForm.formState.errors.password.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Logging in...' : 'Login'}
+                {!selectedRole ? (
+                  <div className="text-center p-4">
+                    <p className="mb-4">Please select a user role first</p>
+                    <Button onClick={() => setActiveTab("role-select")}>
+                      Select Role
                     </Button>
                   </div>
-                </form>
+                ) : (
+                  <>
+                    <div className="bg-muted/50 p-3 rounded-lg mb-4 flex items-center">
+                      <div className="text-primary mr-3">{selectedRole.icon}</div>
+                      <div>
+                        <h3 className="font-medium">{selectedRole.name}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Logging in as {selectedRole.name.toLowerCase()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto"
+                        onClick={() => setActiveTab("role-select")}
+                      >
+                        Change
+                      </Button>
+                    </div>
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Username</Label>
+                          <Input 
+                            id="username"
+                            type="text"
+                            placeholder="Enter your username"
+                            {...loginForm.register('username')}
+                          />
+                          {loginForm.formState.errors.username && (
+                            <p className="text-sm text-red-500">
+                              {loginForm.formState.errors.username.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="password">Password</Label>
+                            <Button 
+                              variant="link" 
+                              className="px-0 text-sm"
+                              type="button"
+                              onClick={() => toast({
+                                title: "Password Reset",
+                                description: "This feature is not available in the demo version."
+                              })}
+                            >
+                              Forgot password?
+                            </Button>
+                          </div>
+                          <Input 
+                            id="password"
+                            type="password"
+                            placeholder="Enter your password"
+                            {...loginForm.register('password')}
+                          />
+                          {loginForm.formState.errors.password && (
+                            <p className="text-sm text-red-500">
+                              {loginForm.formState.errors.password.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? 'Logging in...' : 'Login'}
+                        </Button>
+                      </div>
+                    </form>
+                  </>
+                )}
               </TabsContent>
               
               <TabsContent value="register">
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-name">Full Name</Label>
-                      <Input 
-                        id="register-name"
-                        type="text"
-                        placeholder="Enter your name"
-                        {...registerForm.register('name')}
-                      />
-                      {registerForm.formState.errors.name && (
-                        <p className="text-sm text-red-500">
-                          {registerForm.formState.errors.name.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="register-username">Username</Label>
-                      <Input 
-                        id="register-username"
-                        type="text"
-                        placeholder="Choose a username"
-                        {...registerForm.register('username')}
-                      />
-                      {registerForm.formState.errors.username && (
-                        <p className="text-sm text-red-500">
-                          {registerForm.formState.errors.username.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input 
-                        id="register-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        {...registerForm.register('email')}
-                      />
-                      {registerForm.formState.errors.email && (
-                        <p className="text-sm text-red-500">
-                          {registerForm.formState.errors.email.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Password</Label>
-                      <Input 
-                        id="register-password"
-                        type="password"
-                        placeholder="Create a password"
-                        {...registerForm.register('password')}
-                      />
-                      {registerForm.formState.errors.password && (
-                        <p className="text-sm text-red-500">
-                          {registerForm.formState.errors.password.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="register-confirm-password">Confirm Password</Label>
-                      <Input 
-                        id="register-confirm-password"
-                        type="password"
-                        placeholder="Confirm your password"
-                        {...registerForm.register('confirmPassword')}
-                      />
-                      {registerForm.formState.errors.confirmPassword && (
-                        <p className="text-sm text-red-500">
-                          {registerForm.formState.errors.confirmPassword.message}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Creating account...' : 'Create Account'}
+                {!selectedRole ? (
+                  <div className="text-center p-4">
+                    <p className="mb-4">Please select a user role first</p>
+                    <Button onClick={() => setActiveTab("role-select")}>
+                      Select Role
                     </Button>
                   </div>
-                </form>
+                ) : (
+                  <>
+                    <div className="bg-muted/50 p-3 rounded-lg mb-4 flex items-center">
+                      <div className="text-primary mr-3">{selectedRole.icon}</div>
+                      <div>
+                        <h3 className="font-medium">{selectedRole.name}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Registering as {selectedRole.name.toLowerCase()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto"
+                        onClick={() => setActiveTab("role-select")}
+                      >
+                        Change
+                      </Button>
+                    </div>
+                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="register-name">Full Name</Label>
+                          <Input 
+                            id="register-name"
+                            type="text"
+                            placeholder="Enter your name"
+                            {...registerForm.register('name')}
+                          />
+                          {registerForm.formState.errors.name && (
+                            <p className="text-sm text-red-500">
+                              {registerForm.formState.errors.name.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="register-username">Username</Label>
+                          <Input 
+                            id="register-username"
+                            type="text"
+                            placeholder="Choose a username"
+                            {...registerForm.register('username')}
+                          />
+                          {registerForm.formState.errors.username && (
+                            <p className="text-sm text-red-500">
+                              {registerForm.formState.errors.username.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="register-email">Email</Label>
+                          <Input 
+                            id="register-email"
+                            type="email"
+                            placeholder="Enter your email"
+                            {...registerForm.register('email')}
+                          />
+                          {registerForm.formState.errors.email && (
+                            <p className="text-sm text-red-500">
+                              {registerForm.formState.errors.email.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="register-password">Password</Label>
+                          <Input 
+                            id="register-password"
+                            type="password"
+                            placeholder="Create a password"
+                            {...registerForm.register('password')}
+                          />
+                          {registerForm.formState.errors.password && (
+                            <p className="text-sm text-red-500">
+                              {registerForm.formState.errors.password.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                          <Input 
+                            id="register-confirm-password"
+                            type="password"
+                            placeholder="Confirm your password"
+                            {...registerForm.register('confirmPassword')}
+                          />
+                          {registerForm.formState.errors.confirmPassword && (
+                            <p className="text-sm text-red-500">
+                              {registerForm.formState.errors.confirmPassword.message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? 'Creating account...' : 'Create Account'}
+                        </Button>
+                      </div>
+                    </form>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>
