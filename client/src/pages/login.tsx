@@ -136,13 +136,19 @@ export default function LoginPage() {
         description: `Welcome back, ${user.name}!`,
       });
       
-      if (user.roleId === 1) {
-        setLocation('/admin/project-management');
-      } else if (user.roleId === 2) {
-        setLocation('/manager/dashboard');
-      } else {
-        setLocation('/client/dashboard');
-      }
+      console.log('User authenticated:', user);
+      console.log('Redirecting based on roleId:', user.roleId);
+      
+      // Add a slight delay to allow the toast to show
+      setTimeout(() => {
+        if (user.roleId === 1) {
+          window.location.href = '/admin/project-management';
+        } else if (user.roleId === 2) {
+          window.location.href = '/manager/dashboard';
+        } else {
+          window.location.href = '/client/dashboard';
+        }
+      }, 500);
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -173,13 +179,19 @@ export default function LoginPage() {
         description: "Your account has been created successfully.",
       });
 
-      if (user.roleId === 1) {
-        setLocation('/admin/dashboard');
-      } else if (user.roleId === 2) {
-        setLocation('/manager/dashboard');
-      } else {
-        setLocation('/client/dashboard');
-      }
+      console.log('User registered:', user);
+      console.log('Redirecting based on roleId:', user.roleId);
+      
+      // Add a slight delay to allow the toast to show
+      setTimeout(() => {
+        if (user.roleId === 1) {
+          window.location.href = '/admin/dashboard';
+        } else if (user.roleId === 2) {
+          window.location.href = '/manager/dashboard';
+        } else {
+          window.location.href = '/client/dashboard';
+        }
+      }, 500);
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
