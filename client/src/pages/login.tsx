@@ -203,7 +203,6 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
-      // Create user data to match role selection for Google login
       // If user selected a specific role through URL or UI, we should respect it
       const selectedRoleId = selectedRole ? selectedRole.id : 1; // Default to admin (1) if no selection
       
