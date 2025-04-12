@@ -350,33 +350,121 @@ export default function LoginPage() {
                     </p>
                     
                     <div className="grid gap-4">
-                      <a 
-                        href="/admin/project-management" 
-                        className="bg-primary text-white p-4 rounded-md hover:bg-primary/90 transition-colors text-center font-medium"
+                      <Button 
+                        onClick={() => {
+                          try {
+                            // Get the stored user
+                            const storedUser = localStorage.getItem('currentUser');
+                            if (!storedUser) {
+                              toast({
+                                title: "Error",
+                                description: "User session not found. Please login again.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            // Parse the user from localStorage
+                            const user = JSON.parse(storedUser);
+                            
+                            // Create a form element
+                            const form = document.createElement('form');
+                            form.method = 'post';
+                            form.action = '/admin/project-management';
+                            
+                            // Add a hidden input field with the user data
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'userData';
+                            input.value = storedUser;
+                            form.appendChild(input);
+                            
+                            // Add the form to the document and submit it
+                            document.body.appendChild(form);
+                            form.submit();
+                          } catch (e) {
+                            console.error('Error navigating to admin dashboard:', e);
+                            toast({
+                              title: "Navigation Error",
+                              description: "Could not navigate to admin dashboard. Please try again.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        className="w-full bg-primary text-white p-6 rounded-md hover:bg-primary/90 transition-colors text-center font-medium"
                       >
                         Go to Admin Dashboard
-                      </a>
+                      </Button>
                       
-                      <a 
-                        href="/manager/dashboard" 
-                        className="border border-primary text-primary p-4 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
+                      <Button 
+                        onClick={() => {
+                          try {
+                            const storedUser = localStorage.getItem('currentUser');
+                            if (!storedUser) {
+                              toast({
+                                title: "Error",
+                                description: "User session not found. Please login again.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            // Open in new tab with user data in URL hash
+                            const url = `/manager/dashboard#user=${encodeURIComponent(storedUser)}`;
+                            window.open(url, '_blank');
+                          } catch (e) {
+                            console.error('Error navigating to manager dashboard:', e);
+                            toast({
+                              title: "Navigation Error",
+                              description: "Could not navigate to manager dashboard. Please try again.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        variant="outline"
+                        className="w-full border border-primary text-primary p-6 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
                       >
                         Go to Manager Dashboard
-                      </a>
+                      </Button>
                       
-                      <a 
-                        href="/client/dashboard" 
-                        className="border border-primary text-primary p-4 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
+                      <Button 
+                        onClick={() => {
+                          try {
+                            const storedUser = localStorage.getItem('currentUser');
+                            if (!storedUser) {
+                              toast({
+                                title: "Error",
+                                description: "User session not found. Please login again.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            // Open in new tab with user data in URL hash
+                            const url = `/client/dashboard#user=${encodeURIComponent(storedUser)}`;
+                            window.open(url, '_blank');
+                          } catch (e) {
+                            console.error('Error navigating to client dashboard:', e);
+                            toast({
+                              title: "Navigation Error",
+                              description: "Could not navigate to client dashboard. Please try again.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        variant="outline"
+                        className="w-full border border-primary text-primary p-6 rounded-md hover:bg-primary/10 transition-colors text-center font-medium"
                       >
                         Go to Client Dashboard
-                      </a>
+                      </Button>
                       
-                      <a 
-                        href="/" 
+                      <Button
+                        variant="link"
+                        onClick={() => window.location.href = '/'}
                         className="text-sm text-muted-foreground hover:underline text-center mt-2"
                       >
                         Go to Home Page
-                      </a>
+                      </Button>
                     </div>
                   </div>
                 </div>

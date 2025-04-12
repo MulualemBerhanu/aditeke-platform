@@ -52,12 +52,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     queryKey: ['/api/user'],
     queryFn: async () => {
       try {
+        // First try to get user from API
         const response = await apiRequest('GET', '/api/user');
-        return await response.json();
+        const apiUser = await response.json();
+        
+        // If we got a valid user, update localStorage and return it
+        if (apiUser) {
+          localStorage.setItem('currentUser', JSON.stringify(apiUser));
+          return apiUser;
+        }
+        
+        // No valid API user, try localStorage
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            console.log('AuthContext using user from localStorage:', parsedUser);
+            return parsedUser as User;
+          } catch (err) {
+            console.error('Error parsing stored user:', err);
+            localStorage.removeItem('currentUser');
+          }
+        }
+        
+        return null;
       } catch (error: any) {
         if (error.status === 401) {
+          // API auth failed, try localStorage
+          const storedUser = localStorage.getItem('currentUser');
+          if (storedUser) {
+            try {
+              const parsedUser = JSON.parse(storedUser);
+              console.log('AuthContext using user from localStorage after 401:', parsedUser);
+              return parsedUser as User;
+            } catch (err) {
+              console.error('Error parsing stored user:', err);
+              localStorage.removeItem('currentUser');
+            }
+          }
           return null;
         }
+        
+        // Try localStorage as fallback for other errors
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            console.log('AuthContext using user from localStorage after error:', parsedUser);
+            return parsedUser as User;
+          } catch (err) {
+            console.error('Error parsing stored user:', err);
+            localStorage.removeItem('currentUser');
+          }
+        }
+        
         throw error;
       }
     },
@@ -142,6 +190,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (auth) {
         await logoutUser();
       }
+      
+      // Clear localStorage
+      localStorage.removeItem('currentUser');
       
       // Logout from the server
       await apiRequest('POST', '/api/logout');

@@ -12,15 +12,74 @@ type ProtectedRouteProps = {
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const [_, setLocation] = useLocation();
 
-  // Check if user is authenticated
+  // Look for hash authentication data from URL
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      if (hash.startsWith('#user=')) {
+        const userData = decodeURIComponent(hash.substring(6));
+        localStorage.setItem('currentUser', userData);
+        window.location.hash = ''; // Clear the hash
+      }
+    } catch (e) {
+      console.error('Error processing URL hash data:', e);
+    }
+  }, []);
+  
+  // Check for manually submitted user data (from form)
+  useEffect(() => {
+    if (document.referrer.includes('/login')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userData = urlParams.get('userData');
+      if (userData) {
+        localStorage.setItem('currentUser', userData);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
+  
+  // Check if user is authenticated - first try API, then localStorage
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['/api/user'],
     queryFn: async () => {
       try {
+        // Try to get user from API first
         const res = await apiRequest('GET', '/api/user');
-        return await res.json();
+        const apiUser = await res.json();
+        
+        // If API returns a user, great!
+        if (apiUser) return apiUser;
+        
+        // If not, check localStorage
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            console.log('Using user from localStorage:', parsedUser);
+            return parsedUser;
+          } catch (e) {
+            console.error('Error parsing stored user:', e);
+            localStorage.removeItem('currentUser');
+          }
+        }
+        
+        return null;
       } catch (error) {
         console.error('Authentication error:', error);
+        
+        // API failed, try localStorage
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            console.log('Using user from localStorage after API error:', parsedUser);
+            return parsedUser;
+          } catch (e) {
+            console.error('Error parsing stored user:', e);
+            localStorage.removeItem('currentUser');
+          }
+        }
+        
         return null;
       }
     },
