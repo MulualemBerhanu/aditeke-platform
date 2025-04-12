@@ -9,14 +9,24 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const [_, setLocation] = useLocation();
 
-  // Redirect if not logged in
+  // Redirect if not logged in - check both user context and localStorage
   React.useEffect(() => {
-    if (!user) {
-      setLocation('/login');
+    const storedUser = localStorage.getItem('currentUser');
+    const isLocalStorageAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    
+    if (!user && !storedUser && !isLocalStorageAuthenticated) {
+      console.log("⚠️ No authentication found, redirecting to login");
+      window.location.href = '/login';  // Use direct navigation for more reliable redirect
+    } else if (!user && (storedUser || isLocalStorageAuthenticated)) {
+      console.log("⚠️ Using localStorage authentication");
+      // Continue with localStorage auth
     }
   }, [user, setLocation]);
 
-  if (!user) {
+  // Load user data from localStorage if not available in context
+  const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
+
+  if (!userData) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
@@ -29,7 +39,7 @@ export default function AdminDashboard() {
           </div>
           <CardTitle className="text-2xl">Welcome, Admin!</CardTitle>
           <CardDescription>
-            You are logged in as <span className="font-semibold text-primary">{user.name}</span>
+            You are logged in as <span className="font-semibold text-primary">{userData.name}</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-6">
