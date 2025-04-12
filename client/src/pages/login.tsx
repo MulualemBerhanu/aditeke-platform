@@ -85,7 +85,7 @@ export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<string>("role-select");
+  const [activeTab, setActiveTab] = useState<string>("login");
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
   // Login form
