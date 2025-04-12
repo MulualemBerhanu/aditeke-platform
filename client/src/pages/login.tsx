@@ -114,16 +114,26 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      await login(data.username, data.password);
+      const userData = await login(data.username, data.password);
+      console.log("Login successful, redirecting user:", userData);
       
-      // Explicitly redirect based on the selected role
-      if (selectedRole.name.toLowerCase() === 'admin') {
-        window.location.href = '/admin/dashboard';
-      } else if (selectedRole.name.toLowerCase() === 'manager') {
-        window.location.href = '/manager/dashboard';
-      } else if (selectedRole.name.toLowerCase() === 'client') {
-        window.location.href = '/client/dashboard';
-      }
+      // Hard redirect based on role - this is a failsafe approach that should work
+      setTimeout(() => {
+        // Use a short timeout to ensure state updates happen first
+        const roleType = selectedRole.name.toLowerCase();
+        
+        if (roleType === 'admin') {
+          document.location.href = '/admin/dashboard';
+        } else if (roleType === 'manager') {
+          document.location.href = '/manager/dashboard';
+        } else if (roleType === 'client') {
+          document.location.href = '/client/dashboard';
+        } else {
+          // Default fallback
+          document.location.href = '/dashboard';
+        }
+      }, 100);
+      
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -151,14 +161,22 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
-      // Explicitly redirect based on the selected role (same behavior as password login)
-      if (selectedRole.name.toLowerCase() === 'admin') {
-        window.location.href = '/admin/dashboard';
-      } else if (selectedRole.name.toLowerCase() === 'manager') {
-        window.location.href = '/manager/dashboard';
-      } else if (selectedRole.name.toLowerCase() === 'client') {
-        window.location.href = '/client/dashboard';
-      }
+      // Force redirect using document.location.href which should work more reliably
+      setTimeout(() => {
+        // Use a short timeout to ensure state updates happen first
+        const roleType = selectedRole.name.toLowerCase();
+        
+        if (roleType === 'admin') {
+          document.location.href = '/admin/dashboard';
+        } else if (roleType === 'manager') {
+          document.location.href = '/manager/dashboard';
+        } else if (roleType === 'client') {
+          document.location.href = '/client/dashboard';
+        } else {
+          // Default fallback
+          document.location.href = '/dashboard';
+        }
+      }, 100);
     } catch (error) {
       console.error('Google login error:', error);
       toast({
