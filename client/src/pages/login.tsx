@@ -269,9 +269,9 @@ export default function LoginPage() {
               <TabsContent value="login">
                 {!selectedRole ? (
                   <div className="text-center p-4">
-                    <p className="mb-4">Please select a user role first</p>
-                    <Button onClick={() => setActiveTab("role-select")}>
-                      Select Role
+                    <p className="mb-4">Please select a user role from the navbar dropdown</p>
+                    <Button onClick={() => window.location.href = "/"}>
+                      Go Home
                     </Button>
                   </div>
                 ) : (
@@ -288,7 +288,7 @@ export default function LoginPage() {
                         variant="ghost"
                         size="sm"
                         className="ml-auto"
-                        onClick={() => setActiveTab("role-select")}
+                        onClick={() => window.location.href = "/"}
                       >
                         Change
                       </Button>
@@ -414,8 +414,8 @@ export default function LoginPage() {
               <TabsContent value="register">
                 {!selectedRole ? (
                   <div className="text-center p-4">
-                    <p className="mb-4">Please select a user role first</p>
-                    <Button onClick={() => setActiveTab("role-select")}>
+                    <p className="mb-4">Please select a user role from the navbar dropdown</p>
+                    <Button onClick={() => window.location.href = "/"}>
                       Select Role
                     </Button>
                   </div>
@@ -433,7 +433,7 @@ export default function LoginPage() {
                         variant="ghost"
                         size="sm"
                         className="ml-auto"
-                        onClick={() => setActiveTab("role-select")}
+                        onClick={() => window.location.href = "/"}
                       >
                         Change
                       </Button>
