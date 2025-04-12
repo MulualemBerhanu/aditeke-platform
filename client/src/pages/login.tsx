@@ -70,6 +70,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [authMethod, setAuthMethod] = useState<'password' | 'google'>('password');
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
 
   // Initialize form
   const form = useForm<LoginFormValues>({
@@ -273,6 +274,18 @@ export default function LoginPage() {
   // Set default role to Admin if none selected
   const currentRole = selectedRole || USER_ROLES[0];
   
+  // Function to handle role selection
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role);
+    localStorage.setItem('selectedRole', JSON.stringify(role));
+    
+    // Pre-fill the form with role's credentials
+    form.setValue('username', role.username);
+    form.setValue('password', role.password);
+    
+    setIsRoleDialogOpen(false);
+  };
+  
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left side: Auth form */}
@@ -301,11 +314,47 @@ export default function LoginPage() {
                 variant="ghost"
                 size="sm"
                 className="ml-auto"
-                onClick={() => setLocation("/")}
+                onClick={() => setIsRoleDialogOpen(true)}
               >
                 Change
               </Button>
             </div>
+            
+            {/* Role selection dialog */}
+            {isRoleDialogOpen && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <Card className="w-full max-w-md mx-4">
+                  <CardHeader>
+                    <CardTitle>Select User Role</CardTitle>
+                    <CardDescription>Choose a role to continue</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {USER_ROLES.map((role) => (
+                      <div 
+                        key={role.id}
+                        className="p-4 border rounded-lg hover:bg-muted cursor-pointer flex items-center"
+                        onClick={() => handleRoleSelect(role)}
+                      >
+                        <div className="text-primary mr-4">{role.icon}</div>
+                        <div>
+                          <h3 className="font-medium">{role.name}</h3>
+                          <p className="text-sm text-muted-foreground">{role.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setIsRoleDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            )}
             
             {/* Authentication method toggle */}
             <div className="flex rounded-md overflow-hidden">

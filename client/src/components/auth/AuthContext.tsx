@@ -129,25 +129,56 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Logout mutation
   const logoutMutation = useMutation<void, Error, void>({
     mutationFn: async () => {
-      if (auth) {
-        await logoutUser();
+      try {
+        if (auth) {
+          await logoutUser();
+        }
+      } catch (error) {
+        console.error("Firebase logout error:", error);
+        // Continue with local logout even if Firebase logout fails
       }
+      
+      // Clear all auth-related localStorage items
       localStorage.removeItem('currentUser');
-      await apiRequest('POST', '/api/logout');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('selectedRole');
+      
+      // Try API logout, but don't stop if it fails
+      try {
+        await apiRequest('POST', '/api/logout');
+      } catch (error) {
+        console.error("API logout error:", error);
+        // Continue with local logout even if API logout fails
+      }
     },
     onSuccess: () => {
+      // Clear React Query cache
       queryClient.setQueryData(['/api/user'], null);
+      
       toast({
         title: 'Logout Successful',
         description: 'You have been logged out',
       });
+      
+      // Redirect to home page after successful logout
+      window.location.href = '/';
     },
     onError: (error) => {
+      console.error("Logout mutation error:", error);
+      
+      // Still clear localStorage and redirect even on error
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('selectedRole');
+      
       toast({
-        title: 'Logout Failed',
-        description: error.message || 'Unable to log out',
+        title: 'Logout Partially Successful',
+        description: 'You have been logged out locally, but there was a server communication issue.',
         variant: 'destructive',
       });
+      
+      // Redirect to home page even if there's an error
+      window.location.href = '/';
     },
   });
 
