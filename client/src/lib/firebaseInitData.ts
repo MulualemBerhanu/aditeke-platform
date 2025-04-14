@@ -105,11 +105,11 @@ export const createDefaultAdminUser = async (): Promise<void> => {
   // Create a unique user ID for the admin
   const adminId = "admin-" + Date.now().toString();
   
-  // Create the admin user document
+  // Create the admin user document with the specified email
   await setDoc(doc(db, "users", adminId), {
     uid: adminId,
     username: "admin",
-    email: "admin@aditeke.com",
+    email: "berhanumule6@gmail.com", // Custom email as requested
     name: "Admin User",
     roleId: 1,
     profilePicture: "https://randomuser.me/api/portraits/men/1.jpg", // Random placeholder image
@@ -124,7 +124,7 @@ export const createDefaultAdminUser = async (): Promise<void> => {
     }
   });
   
-  console.log("Default admin user created successfully");
+  console.log("Default admin user created successfully with email: berhanumule6@gmail.com");
 };
 
 /**
@@ -149,11 +149,11 @@ export const createDefaultManagerUser = async (): Promise<void> => {
   // Create a unique user ID for the manager
   const managerId = "manager-" + Date.now().toString();
   
-  // Create the manager user document
+  // Create the manager user document with the specified email
   await setDoc(doc(db, "users", managerId), {
     uid: managerId,
     username: "manager",
-    email: "manager@aditeke.com",
+    email: "berhanumule6@gmail.com", // Same email as admin for now
     name: "Manager User",
     roleId: 2,
     profilePicture: "https://randomuser.me/api/portraits/women/1.jpg", // Random placeholder image
@@ -168,13 +168,14 @@ export const createDefaultManagerUser = async (): Promise<void> => {
     }
   });
   
-  console.log("Default manager user created successfully");
+  console.log("Default manager user created successfully with email: berhanumule6@gmail.com");
 };
 
 /**
- * Creates default client user if no client exists
+ * Checks for client users but does not create a default
+ * since client users will be created through the UI as requested
  */
-export const createDefaultClientUser = async (): Promise<void> => {
+export const checkClientUsers = async (): Promise<void> => {
   console.log("Checking for client users...");
   
   // Check if any client user exists
@@ -183,36 +184,10 @@ export const createDefaultClientUser = async (): Promise<void> => {
   const clientSnapshot = await getDocs(clientQuery);
   
   if (!clientSnapshot.empty) {
-    console.log("Client user already exists");
-    return;
+    console.log("Client users exist:", clientSnapshot.size);
+  } else {
+    console.log("No client users found. They will be created through the UI.");
   }
-  
-  // No client user exists, create a default one
-  console.log("No client user found, creating default client...");
-  
-  // Create a unique user ID for the client
-  const clientId = "client-" + Date.now().toString();
-  
-  // Create the client user document
-  await setDoc(doc(db, "users", clientId), {
-    uid: clientId,
-    username: "client",
-    email: "client@aditeke.com",
-    name: "Client User",
-    roleId: 3,
-    profilePicture: "https://randomuser.me/api/portraits/men/2.jpg", // Random placeholder image
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-    lastLogin: null,
-    isActive: true,
-    settings: {
-      theme: "light",
-      notifications: true,
-      language: "en"
-    }
-  });
-  
-  console.log("Default client user created successfully");
 };
 
 /**
@@ -223,10 +198,12 @@ export const initializeFirestoreData = async (): Promise<void> => {
     // Initialize roles first
     await initializeRoles();
     
-    // Create default users if they don't exist
+    // Create admin and manager with the specified email
     await createDefaultAdminUser();
     await createDefaultManagerUser();
-    await createDefaultClientUser();
+    
+    // Check client users but don't create any (will be done through UI)
+    await checkClientUsers();
     
     console.log("Firebase database initialized successfully with initial data");
   } catch (error) {
