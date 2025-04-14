@@ -146,6 +146,7 @@ export const createDefaultAdminUser = async (): Promise<void> => {
       username: "admin",
       email: "berhanumule6@gmail.com", // Custom email as requested
       name: "Admin User",
+      password: "password123", // Default password - should be hashed in production
       roleId: adminRoleId, // Use the actual role ID from the database
       profilePicture: "https://randomuser.me/api/portraits/men/1.jpg", // Random placeholder image
       createdAt: Timestamp.now(),
@@ -228,6 +229,7 @@ export const createDefaultManagerUser = async (): Promise<void> => {
       username: "manager",
       email: "berhanumule6@gmail.com", // Same email as admin for now
       name: "Manager User",
+      password: "password123", // Default password - should be hashed in production
       roleId: managerRoleId, // Use the actual role ID from the database
       profilePicture: "https://randomuser.me/api/portraits/women/1.jpg", // Random placeholder image
       createdAt: Timestamp.now(),
@@ -297,7 +299,32 @@ export const checkClientUsers = async (): Promise<void> => {
     if (!clientSnapshot.empty) {
       console.log("Client users exist:", clientSnapshot.size);
     } else {
-      console.log("No client users found. They will be created through the UI.");
+      console.log("No client users found. Creating a default client for testing...");
+      
+      // Create a unique user ID for the client
+      const clientId = "client-" + Date.now().toString();
+      
+      // Create the client user document
+      await setDoc(doc(db, "users", clientId), {
+        uid: clientId,
+        username: "client",
+        email: "client@example.com",
+        name: "Client User",
+        password: "password123", // Default password - should be hashed in production
+        roleId: clientRoleId, // Use the actual role ID from the database
+        profilePicture: "https://randomuser.me/api/portraits/women/2.jpg",
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+        lastLogin: null,
+        isActive: true,
+        settings: {
+          theme: "light",
+          notifications: true,
+          language: "en"
+        }
+      });
+      
+      console.log("Default client user created successfully for testing");
     }
   } catch (error) {
     console.error("Error checking for client users:", error);
