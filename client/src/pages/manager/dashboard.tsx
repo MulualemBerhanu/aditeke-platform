@@ -30,20 +30,32 @@ export default function ManagerDashboard() {
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
   const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = React.useState(false);
   
-  // Format dates
-  const formatDate = (dateString: string | Date | null) => {
-    if (!dateString) return 'No date';
+  // Format dates - handles various formats including Firestore timestamps
+  const formatDate = (dateInput: any) => {
+    if (!dateInput) return 'No deadline';
     
     try {
-      // Safely convert to Date object
+      // Handle Firestore timestamp format which contains _seconds property
+      if (dateInput && typeof dateInput === 'object' && '_seconds' in dateInput) {
+        // Convert Firestore timestamp to Date object
+        const seconds = dateInput._seconds;
+        const date = new Date(seconds * 1000); // Convert seconds to milliseconds
+        
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      }
+      
+      // Handle regular Date objects or strings
       let date: Date;
-      if (typeof dateString === 'string') {
-        // Try to create a Date from string
-        date = new Date(dateString);
-      } else if (dateString instanceof Date) {
-        date = dateString;
+      if (typeof dateInput === 'string') {
+        date = new Date(dateInput);
+      } else if (dateInput instanceof Date) {
+        date = dateInput;
       } else {
-        console.error('Invalid date format:', dateString);
+        console.error('Unrecognized date format:', dateInput);
         return 'Invalid date';
       }
       
