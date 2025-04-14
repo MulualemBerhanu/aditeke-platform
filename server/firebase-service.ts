@@ -127,23 +127,99 @@ export class FirebaseStorage implements IStorage {
   // You can expand these as needed
   
   async getRoleByName(name: string): Promise<Role | undefined> {
-    throw new Error("Method not implemented.");
+    try {
+      const roleRef = this.db.collection('roles').where('name', '==', name);
+      const snapshot = await roleRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      const roleData = snapshot.docs[0].data();
+      return roleData as Role;
+    } catch (error) {
+      console.error("Error getting role by name from Firestore:", error);
+      throw error;
+    }
   }
   
   async getAllRoles(): Promise<Role[]> {
-    throw new Error("Method not implemented.");
+    try {
+      const rolesRef = this.db.collection('roles');
+      const snapshot = await rolesRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as Role);
+    } catch (error) {
+      console.error("Error getting all roles from Firestore:", error);
+      throw error;
+    }
   }
   
   async createRole(role: any): Promise<Role> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID
+      const newRole = {
+        ...role,
+        id: Date.now(), // Simple ID generation
+        createdAt: new Date(),
+        updatedAt: null
+      };
+      
+      await this.db.collection('roles').add(newRole);
+      
+      return newRole as Role;
+    } catch (error) {
+      console.error("Error creating role in Firestore:", error);
+      throw error;
+    }
   }
   
   async updateRole(id: number, roleData: any): Promise<Role> {
-    throw new Error("Method not implemented.");
+    try {
+      const roleRef = this.db.collection('roles').where('id', '==', id);
+      const snapshot = await roleRef.get();
+      
+      if (snapshot.empty) {
+        throw new Error(`Role with ID ${id} not found`);
+      }
+      
+      const docId = snapshot.docs[0].id;
+      const updatedRole = {
+        ...snapshot.docs[0].data(),
+        ...roleData,
+        updatedAt: new Date()
+      };
+      
+      await this.db.collection('roles').doc(docId).update(updatedRole);
+      
+      return updatedRole as Role;
+    } catch (error) {
+      console.error("Error updating role in Firestore:", error);
+      throw error;
+    }
   }
   
   async deleteRole(id: number): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    try {
+      const roleRef = this.db.collection('roles').where('id', '==', id);
+      const snapshot = await roleRef.get();
+      
+      if (snapshot.empty) {
+        throw new Error(`Role with ID ${id} not found`);
+      }
+      
+      const docId = snapshot.docs[0].id;
+      await this.db.collection('roles').doc(docId).delete();
+      
+      return true;
+    } catch (error) {
+      console.error("Error deleting role from Firestore:", error);
+      throw error;
+    }
   }
   
   async getPermission(id: number): Promise<Permission | undefined> {
@@ -199,66 +275,299 @@ export class FirebaseStorage implements IStorage {
   }
   
   async getAllProjects(category?: string): Promise<Project[]> {
-    throw new Error("Method not implemented.");
+    try {
+      let projectsRef = this.db.collection('projects');
+      
+      // Apply category filter if provided
+      if (category) {
+        projectsRef = projectsRef.where('category', '==', category);
+      }
+      
+      const snapshot = await projectsRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as Project);
+    } catch (error) {
+      console.error("Error getting projects from Firestore:", error);
+      throw error;
+    }
   }
   
   async getProject(id: number): Promise<Project | undefined> {
-    throw new Error("Method not implemented.");
+    try {
+      const projectRef = this.db.collection('projects').where('id', '==', id);
+      const snapshot = await projectRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      const projectData = snapshot.docs[0].data();
+      return projectData as Project;
+    } catch (error) {
+      console.error("Error getting project from Firestore:", error);
+      throw error;
+    }
   }
   
   async createProject(project: any): Promise<Project> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newProject = {
+        ...project,
+        id: Date.now(),
+        startDate: project.startDate || new Date(),
+        endDate: project.endDate || null,
+        status: project.status || "Not Started"
+      };
+      
+      await this.db.collection('projects').add(newProject);
+      
+      return newProject as Project;
+    } catch (error) {
+      console.error("Error creating project in Firestore:", error);
+      throw error;
+    }
   }
   
   async getAllTestimonials(): Promise<Testimonial[]> {
-    throw new Error("Method not implemented.");
+    try {
+      const testimonialsRef = this.db.collection('testimonials');
+      const snapshot = await testimonialsRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as Testimonial);
+    } catch (error) {
+      console.error("Error getting testimonials from Firestore:", error);
+      throw error;
+    }
   }
   
   async createTestimonial(testimonial: any): Promise<Testimonial> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newTestimonial = {
+        ...testimonial,
+        id: Date.now(),
+        isActive: testimonial.isActive !== undefined ? testimonial.isActive : true,
+        profilePicture: testimonial.profilePicture || null
+      };
+      
+      await this.db.collection('testimonials').add(newTestimonial);
+      
+      return newTestimonial as Testimonial;
+    } catch (error) {
+      console.error("Error creating testimonial in Firestore:", error);
+      throw error;
+    }
   }
   
   async getAllServices(): Promise<Service[]> {
-    throw new Error("Method not implemented.");
+    try {
+      const servicesRef = this.db.collection('services');
+      const snapshot = await servicesRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as Service);
+    } catch (error) {
+      console.error("Error getting services from Firestore:", error);
+      throw error;
+    }
   }
   
   async getService(id: number): Promise<Service | undefined> {
-    throw new Error("Method not implemented.");
+    try {
+      const serviceRef = this.db.collection('services').where('id', '==', id);
+      const snapshot = await serviceRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      const serviceData = snapshot.docs[0].data();
+      return serviceData as Service;
+    } catch (error) {
+      console.error("Error getting service from Firestore:", error);
+      throw error;
+    }
   }
   
   async createService(service: any): Promise<Service> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newService = {
+        ...service,
+        id: Date.now(),
+        isActive: service.isActive !== undefined ? service.isActive : true,
+      };
+      
+      await this.db.collection('services').add(newService);
+      
+      return newService as Service;
+    } catch (error) {
+      console.error("Error creating service in Firestore:", error);
+      throw error;
+    }
   }
   
   async getAllBlogPosts(category?: string): Promise<BlogPost[]> {
-    throw new Error("Method not implemented.");
+    try {
+      let blogPostsRef = this.db.collection('blogPosts');
+      
+      // Apply category filter if provided
+      if (category) {
+        blogPostsRef = blogPostsRef.where('category', '==', category);
+      }
+      
+      const snapshot = await blogPostsRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as BlogPost);
+    } catch (error) {
+      console.error("Error getting blog posts from Firestore:", error);
+      throw error;
+    }
   }
   
   async getBlogPost(id: number): Promise<BlogPost | undefined> {
-    throw new Error("Method not implemented.");
+    try {
+      const blogPostRef = this.db.collection('blogPosts').where('id', '==', id);
+      const snapshot = await blogPostRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      const blogPostData = snapshot.docs[0].data();
+      return blogPostData as BlogPost;
+    } catch (error) {
+      console.error("Error getting blog post from Firestore:", error);
+      throw error;
+    }
   }
   
   async createBlogPost(blogPost: any): Promise<BlogPost> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newBlogPost = {
+        ...blogPost,
+        id: Date.now(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        tags: blogPost.tags || null,
+        isPublished: blogPost.isPublished !== undefined ? blogPost.isPublished : false
+      };
+      
+      await this.db.collection('blogPosts').add(newBlogPost);
+      
+      return newBlogPost as BlogPost;
+    } catch (error) {
+      console.error("Error creating blog post in Firestore:", error);
+      throw error;
+    }
   }
   
   async saveContactMessage(message: any): Promise<ContactMessage> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newMessage = {
+        ...message,
+        id: Date.now(),
+        createdAt: new Date(),
+        isResolved: false,
+        phone: message.phone || null
+      };
+      
+      await this.db.collection('contactMessages').add(newMessage);
+      
+      return newMessage as ContactMessage;
+    } catch (error) {
+      console.error("Error saving contact message in Firestore:", error);
+      throw error;
+    }
   }
   
   async addNewsletterSubscriber(subscriber: any): Promise<NewsletterSubscriber> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newSubscriber = {
+        ...subscriber,
+        id: Date.now(),
+        subscriptionDate: new Date(),
+        isActive: true,
+        name: subscriber.name || null
+      };
+      
+      await this.db.collection('newsletterSubscribers').add(newSubscriber);
+      
+      return newSubscriber as NewsletterSubscriber;
+    } catch (error) {
+      console.error("Error adding newsletter subscriber in Firestore:", error);
+      throw error;
+    }
   }
   
   async getAllJobs(): Promise<Job[]> {
-    throw new Error("Method not implemented.");
+    try {
+      const jobsRef = this.db.collection('jobs');
+      const snapshot = await jobsRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as Job);
+    } catch (error) {
+      console.error("Error getting jobs from Firestore:", error);
+      throw error;
+    }
   }
   
   async getJob(id: number): Promise<Job | undefined> {
-    throw new Error("Method not implemented.");
+    try {
+      const jobRef = this.db.collection('jobs').where('id', '==', id);
+      const snapshot = await jobRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      const jobData = snapshot.docs[0].data();
+      return jobData as Job;
+    } catch (error) {
+      console.error("Error getting job from Firestore:", error);
+      throw error;
+    }
   }
   
   async createJob(job: any): Promise<Job> {
-    throw new Error("Method not implemented.");
+    try {
+      // Generate a unique ID and set defaults
+      const newJob = {
+        ...job,
+        id: Date.now(),
+        postedDate: job.postedDate || new Date(),
+        isActive: job.isActive !== undefined ? job.isActive : true
+      };
+      
+      await this.db.collection('jobs').add(newJob);
+      
+      return newJob as Job;
+    } catch (error) {
+      console.error("Error creating job in Firestore:", error);
+      throw error;
+    }
   }
 }

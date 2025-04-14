@@ -1372,7 +1372,20 @@ export class PostgresStorage implements IStorage {
 }
 
 // Initialize storage - Use MemStorage for now until PostgreSQL is properly configured
-let storageInstance: IStorage = new MemStorage();
+// Import the FirebaseStorage implementation
+import { FirebaseStorage } from './firebase-service';
+
+// Create the storage instance
+// We'll try to use FirebaseStorage, but fall back to MemStorage if there's an error
+let storageInstance: IStorage;
+try {
+  storageInstance = new FirebaseStorage();
+  console.log("Using Firebase Firestore as the storage backend");
+} catch (error) {
+  console.warn("Failed to initialize Firebase storage, falling back to in-memory storage:", error);
+  storageInstance = new MemStorage();
+}
+
 export const storage: IStorage = storageInstance;
 
 // Function to switch storage implementations
