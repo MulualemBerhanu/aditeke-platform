@@ -192,91 +192,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   ];
 
-  // Get all clients (users with roleId=3) - needed for project assignment
-  app.get("/api/users/clients", async (req, res) => {
+  // Special endpoint for manager dashboard to get client options
+  // This avoids the issue with /api/users/clients
+  app.get("/api/manager/client-options", async (req, res) => {
     try {
-      console.log("Fetching client users...");
-      
-      try {
-        // Get all users from Firebase directly
-        const users = await storage.getAllUsers();
-        console.log(`Got ${users.length} total users`);
-        
-        if (!users || users.length === 0) {
-          console.log("No users found, returning hardcoded clients");
-          return res.json(hardcodedClients);
-        }
-        
-        // Direct approach - create array of clients with proper typing
-        const clientUsers: any[] = [];
-        
-        // Process each user
-        users.forEach(user => {
-          try {
-            // Check if user has client role
-            let isClient = false;
-            
-            if (user.username && typeof user.username === 'string' && 
-                ((user.username.indexOf('client') !== -1) || 
-                 (user.username.indexOf('Client') !== -1))) {
-              isClient = true;
-            } else if (user.name && typeof user.name === 'string' && 
-                      ((user.name.indexOf('Client') !== -1) || 
-                       (user.name.indexOf('client') !== -1))) {
-              isClient = true;
-            } else if (user.roleId) {
-              // Check various roleId formats
-              if (typeof user.roleId === 'string') {
-                const roleIdStr = user.roleId;
-                if (roleIdStr === '3' || 
-                    (roleIdStr.indexOf('client') !== -1) || 
-                    (roleIdStr.indexOf('Client') !== -1)) {
-                  isClient = true;
-                }
-              } else if (typeof user.roleId === 'number' && user.roleId === 3) {
-                isClient = true;
-              } else if (user.roleId && typeof user.roleId.toString === 'function') {
-                try {
-                  const roleIdStr = user.roleId.toString();
-                  if (roleIdStr === '3' || 
-                      (roleIdStr.indexOf('client') !== -1) || 
-                      (roleIdStr.indexOf('Client') !== -1)) {
-                    isClient = true;
-                  }
-                } catch (err) {
-                  console.error(`Error converting roleId to string:`, err);
-                }
-              }
-            }
-            
-            if (isClient) {
-              console.log(`Found client: ${user.name || user.username} (ID: ${user.id})`);
-              // Remove sensitive data
-              const { password, ...safeUser } = user;
-              clientUsers.push(safeUser);
-            }
-          } catch (userError) {
-            console.error(`Error processing user:`, userError);
-            // Continue to next user
-          }
-        });
-        
-        if (clientUsers.length > 0) {
-          console.log(`Returning ${clientUsers.length} client users`);
-          return res.json(clientUsers);
-        } else {
-          console.log("No clients found in user data, returning hardcoded clients");
-          return res.json(hardcodedClients);
-        }
-      } catch (usersError) {
-        console.error("Error getting all users:", usersError);
-        console.log("Falling back to hardcoded clients");
-        return res.json(hardcodedClients);
-      }
+      console.log("Returning hardcoded client options for manager dashboard");
+      // Explicitly set content type for reliable JSON response
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).json(hardcodedClients);
     } catch (error) {
-      console.error("Error in client fetching endpoint:", error);
-      // Return hardcoded clients as a fallback
-      return res.json(hardcodedClients);
+      console.error("Error in client options endpoint:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   });
   

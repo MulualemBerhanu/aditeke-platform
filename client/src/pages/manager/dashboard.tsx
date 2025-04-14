@@ -93,19 +93,28 @@ export default function ManagerDashboard() {
     }
   });
   
-  // Fetch all clients (users with roleId = 3)
+  // Fetch all clients (users with roleId = 3) - using dedicated endpoint
   const {
     data: clients,
     isLoading: isLoadingClients,
     error: clientsError
   } = useQuery<User[]>({
-    queryKey: ['/api/users/clients'],
+    queryKey: ['/api/manager/client-options'],
     queryFn: async () => {
-      const res = await fetch('/api/users/clients');
-      if (!res.ok) {
-        throw new Error('Failed to load clients');
+      try {
+        console.log("Fetching client options from dedicated endpoint");
+        const res = await fetch('/api/manager/client-options');
+        if (!res.ok) {
+          console.error("Client options API returned error:", res.status, res.statusText);
+          throw new Error('Failed to load clients');
+        }
+        const data = await res.json();
+        console.log("Received client options:", data);
+        return data;
+      } catch (error) {
+        console.error("Error in client options fetch:", error);
+        throw error;
       }
-      return res.json();
     }
   });
   
