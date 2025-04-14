@@ -164,6 +164,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Debug endpoint to check a specific user by username (temporary for development)
+  app.get("/api/debug/user/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      console.log("Debugging user:", username);
+      
+      const user = await storage.getUserByUsername(username);
+      console.log("User found:", user ? "Yes" : "No");
+      console.log("Password exists:", user?.password ? "Yes" : "No");
+      
+      res.json({ 
+        found: !!user,
+        hasPassword: !!user?.password,
+        passwordLength: user?.password ? user.password.length : 0,
+        user: {
+          id: user?.id,
+          username: user?.username,
+          email: user?.email,
+          name: user?.name,
+          roleId: user?.roleId,
+        }
+      });
+    } catch (error) {
+      console.error("Error debugging user:", error);
+      res.status(500).json({ message: "Error debugging user", error });
+    }
+  });
+  
+  // Fix manager account by adding a password (temporary for development)
+  app.post("/api/debug/fix-manager", async (req, res) => {
+    try {
+      console.log("Fixing manager account...");
+      
+      // Get the manager user
+      const user = await storage.getUserByUsername("manager");
+      if (!user) {
+        return res.status(404).json({ message: "Manager user not found" });
+      }
+      
+      // Add a password field
+      const updatedUser = await storage.updateUser(user.id, {
+        password: "password123" // Plain text for now, would be hashed in production
+      });
+      
+      console.log("Manager account fixed!");
+      
+      res.json({ 
+        success: true,
+        message: "Manager account fixed with password: password123"
+      });
+    } catch (error) {
+      console.error("Error fixing manager account:", error);
+      res.status(500).json({ message: "Error fixing manager account", error });
+    }
+  });
+  
   // Create a new user (protected with permission)
   app.post("/api/users", requirePermission("users", "manage"), async (req, res) => {
     try {
