@@ -35,11 +35,25 @@ export default function ManagerDashboard() {
     if (!dateString) return 'No date';
     
     try {
-      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-      // Check if the date is valid
-      if (isNaN(date.getTime())) {
+      // Safely convert to Date object
+      let date: Date;
+      if (typeof dateString === 'string') {
+        // Try to create a Date from string
+        date = new Date(dateString);
+      } else if (dateString instanceof Date) {
+        date = dateString;
+      } else {
+        console.error('Invalid date format:', dateString);
         return 'Invalid date';
       }
+      
+      // Verify it's a valid date
+      if (!(date instanceof Date) || isNaN(date.getTime())) {
+        console.error('Invalid date object or timestamp:', date);
+        return 'Invalid date';
+      }
+      
+      // Format the date safely
       return date.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'long', 
