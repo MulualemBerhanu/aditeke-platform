@@ -1086,6 +1086,87 @@ export class PostgresStorage implements IStorage {
     }).returning();
     return result[0];
   }
+  
+  // Missing methods from IStorage interface - stub implementations
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getRole(id: number): Promise<Role | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getRoleByName(name: string): Promise<Role | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getAllRoles(): Promise<Role[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async createRole(role: InsertRole): Promise<Role> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async updateRole(id: number, roleData: Partial<InsertRole>): Promise<Role> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async deleteRole(id: number): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getPermission(id: number): Promise<Permission | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getPermissionByName(name: string): Promise<Permission | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getAllPermissions(): Promise<Permission[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getPermissionsByResource(resource: string): Promise<Permission[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async createPermission(permission: InsertPermission): Promise<Permission> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async updatePermission(id: number, permissionData: Partial<InsertPermission>): Promise<Permission> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async deletePermission(id: number): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async assignPermissionToRole(roleId: number, permissionId: number): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async removePermissionFromRole(roleId: number, permissionId: number): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getPermissionsForRole(roleId: number): Promise<Permission[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getRolesForPermission(permissionId: number): Promise<Role[]> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async getUserWithPermissions(userId: number): Promise<{ user: User; role: Role; permissions: Permission[] }> {
+    throw new Error("Method not implemented.");
+  }
+  
+  async hasPermission(userId: number, resource: string, action: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
 
   // Initialize the database with sample data
   async initializeDatabase() {
@@ -1291,4 +1372,19 @@ export class PostgresStorage implements IStorage {
 }
 
 // Initialize storage - Use MemStorage for now until PostgreSQL is properly configured
-export const storage = new MemStorage();
+let storageInstance: IStorage = new MemStorage();
+export const storage: IStorage = storageInstance;
+
+// Function to switch storage implementations
+export function setStorageImplementation(newStorage: IStorage): void {
+  storageInstance = newStorage;
+  // Since JS exports are references, we need to update all methods on the storage object
+  Object.keys(newStorage).forEach(key => {
+    if (typeof newStorage[key as keyof IStorage] === 'function') {
+      (storage as any)[key] = (...args: any[]) => {
+        return (newStorage as any)[key](...args);
+      };
+    }
+  });
+  console.log('Storage implementation changed successfully');
+}
