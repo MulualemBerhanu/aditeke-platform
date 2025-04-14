@@ -129,7 +129,7 @@ export default function ClientDashboard() {
               <CardContent>
                 <div className="flex items-center">
                   <Clock className="mr-2 h-4 w-4 text-amber-500" />
-                  <div className="text-2xl font-bold">2</div>
+                  <div className="text-2xl font-bold">{projectStats.active}</div>
                 </div>
               </CardContent>
             </Card>
@@ -141,7 +141,7 @@ export default function ClientDashboard() {
               <CardContent>
                 <div className="flex items-center">
                   <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                  <div className="text-2xl font-bold">3</div>
+                  <div className="text-2xl font-bold">{projectStats.completed}</div>
                 </div>
               </CardContent>
             </Card>
@@ -160,109 +160,103 @@ export default function ClientDashboard() {
           </div>
 
           <div className="space-y-6 mt-6">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>E-commerce Website</CardTitle>
-                    <CardDescription>Online store with product catalog and payment processing</CardDescription>
-                  </div>
-                  <Badge className="bg-amber-500">In Progress</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span>Progress</span>
-                      <span>65%</span>
-                    </div>
-                    <Progress value={65} className="h-2" />
-                  </div>
+            {isLoadingProjects ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2">Loading projects...</span>
+              </div>
+            ) : projectsError ? (
+              <Card className="py-8">
+                <CardContent className="flex flex-col items-center">
+                  <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+                  <h3 className="text-xl font-medium mb-2">Error loading projects</h3>
+                  <p className="text-muted-foreground text-center">
+                    There was an error loading your projects. Please try again later.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : projects && projects.length > 0 ? (
+              <>
+                {projects.map((project) => {
+                  // Calculate progress (for demo purposes - we could add a progress field to the schema)
+                  const progress = project.status === 'Completed' ? 100 : 
+                                   project.status === 'In Progress' ? 65 :
+                                   project.status === 'Design Phase' ? 25 : 10;
                   
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Start Date</p>
-                      <p className="font-medium">March 10, 2025</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Expected Completion</p>
-                      <p className="font-medium">June 15, 2025</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Project Manager</p>
-                      <p className="font-medium">Sarah Williams</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Last Update</p>
-                      <p className="font-medium">April 5, 2025</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2 border-t pt-4">
-                <Button variant="outline" size="sm">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Contact
-                </Button>
-                <Button size="sm">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Project
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Mobile App Development</CardTitle>
-                    <CardDescription>Cross-platform mobile application for your business</CardDescription>
-                  </div>
-                  <Badge variant="outline" className="text-amber-500 border-amber-500">Design Phase</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-1 text-sm">
-                      <span>Progress</span>
-                      <span>25%</span>
-                    </div>
-                    <Progress value={25} className="h-2" />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Start Date</p>
-                      <p className="font-medium">April 1, 2025</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Expected Completion</p>
-                      <p className="font-medium">August 30, 2025</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Project Manager</p>
-                      <p className="font-medium">Mike Chen</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Last Update</p>
-                      <p className="font-medium">April 8, 2025</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2 border-t pt-4">
-                <Button variant="outline" size="sm">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Contact
-                </Button>
-                <Button size="sm">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Project
-                </Button>
-              </CardFooter>
-            </Card>
+                  return (
+                    <Card key={project.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <CardTitle>{project.title}</CardTitle>
+                            <CardDescription>{project.description}</CardDescription>
+                          </div>
+                          <Badge 
+                            className={
+                              project.status === 'Completed' ? 'bg-green-500' : 
+                              project.status === 'In Progress' ? 'bg-amber-500' :
+                              'bg-blue-500'
+                            }
+                          >
+                            {project.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between mb-1 text-sm">
+                              <span>Progress</span>
+                              <span>{progress}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Start Date</p>
+                              <p className="font-medium">{formatDate(project.startDate)}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Expected Completion</p>
+                              <p className="font-medium">{project.endDate ? formatDate(project.endDate) : 'TBD'}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Category</p>
+                              <p className="font-medium">{project.category}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Project ID</p>
+                              <p className="font-medium">#{project.id}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                        <Button variant="outline" size="sm">
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          Contact
+                        </Button>
+                        <Button size="sm">
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          View Project
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
+              </>
+            ) : (
+              <Card className="py-8">
+                <CardContent className="flex flex-col items-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No projects found</h3>
+                  <p className="text-muted-foreground text-center">
+                    You don't have any projects assigned to you yet. Please contact your project manager.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
