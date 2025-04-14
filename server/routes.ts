@@ -162,6 +162,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
+  
+  // Create a new user (protected with permission)
+  app.post("/api/users", requirePermission("users", "manage"), async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Create the user
+      const user = await storage.createUser(userData);
+      
+      // Remove password before sending to client
+      const { password, ...userWithoutPassword } = user;
+      
+      return res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid user data", errors: error.errors });
+      }
+      console.error("Error creating user:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Contact form submission
   app.post("/api/contact", async (req, res) => {

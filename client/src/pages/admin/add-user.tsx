@@ -59,8 +59,14 @@ export default function AddUserPage() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
+  interface Role {
+    id: number;
+    name: string;
+    description: string | null;
+  }
+
   // Fetch available roles
-  const { data: roles, isLoading: rolesLoading } = useQuery({
+  const { data: roles = [], isLoading: rolesLoading } = useQuery<Role[]>({
     queryKey: ['/api/roles'],
     retry: 1,
   });
@@ -93,12 +99,17 @@ export default function AddUserPage() {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: UserFormValues) => {
-      const res = await apiRequest("POST", "/api/users", userData);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create user");
+      try {
+        const res = await apiRequest("POST", "/api/users", userData);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Failed to create user");
+        }
+        return await res.json();
+      } catch (error) {
+        console.error("Error creating user:", error);
+        throw error;
       }
-      return await res.json();
     },
     onSuccess: () => {
       toast({
