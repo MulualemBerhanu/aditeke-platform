@@ -24,7 +24,13 @@ async function hashPassword(password: string) {
 }
 
 // Password verification function
-async function comparePasswords(supplied: string, stored: string) {
+async function comparePasswords(supplied: string, stored: string | undefined) {
+  // Handle undefined or null passwords
+  if (!stored) {
+    console.log("Warning: Stored password is undefined or null");
+    return false;
+  }
+  
   // Handle the case where the password is stored in plain text (for demo purposes only)
   if (!stored.includes('.')) {
     return supplied === stored;
