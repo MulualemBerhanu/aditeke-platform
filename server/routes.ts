@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
+import { initializeDatabase } from "./db-init";
 import {
   insertUserSchema,
   insertContactMessageSchema,
@@ -329,6 +330,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching newsletter subscribers:", error);
       return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Special endpoint to initialize the database with sample data
+  // This would typically be protected or disabled in production
+  app.post("/api/init-database", async (req, res) => {
+    try {
+      const result = await initializeDatabase();
+      if (result) {
+        return res.status(200).json({ message: "Database initialized successfully" });
+      } else {
+        return res.status(500).json({ message: "Database initialization failed" });
+      }
+    } catch (error) {
+      console.error("Error initializing database:", error);
+      return res.status(500).json({ message: "Database initialization failed", error: error.message });
     }
   });
 
