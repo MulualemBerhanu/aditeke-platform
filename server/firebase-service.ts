@@ -144,15 +144,27 @@ export class FirebaseStorage implements IStorage {
   
   async getRoleByName(name: string): Promise<Role | undefined> {
     try {
-      const roleRef = this.db.collection('roles').where('name', '==', name);
-      const snapshot = await roleRef.get();
+      // Firestore doesn't support case-insensitive search directly,
+      // so we need to handle this in application logic
+      const snapshot = await this.db.collection('roles').get();
       
       if (snapshot.empty) {
         return undefined;
       }
       
-      const roleData = snapshot.docs[0].data();
-      return roleData as Role;
+      // Find role with matching name (case-insensitive)
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        if (data.name && data.name.toLowerCase() === name.toLowerCase()) {
+          // Include the document ID as the role ID if needed
+          return {
+            ...data,
+            id: doc.id
+          } as Role;
+        }
+      }
+      
+      return undefined;
     } catch (error) {
       console.error("Error getting role by name from Firestore:", error);
       throw error;

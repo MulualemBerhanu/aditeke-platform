@@ -89,42 +89,80 @@ export const initializeRoles = async (): Promise<void> => {
 export const createDefaultAdminUser = async (): Promise<void> => {
   console.log("Checking for admin users...");
   
-  // Check if any admin user exists
-  const usersCollection = collection(db, "users");
-  const adminQuery = query(usersCollection, where("roleId", "==", 1));
-  const adminSnapshot = await getDocs(adminQuery);
-  
-  if (!adminSnapshot.empty) {
-    console.log("Admin user already exists");
-    return;
-  }
-  
-  // No admin user exists, create a default one
-  console.log("No admin user found, creating default admin...");
-  
-  // Create a unique user ID for the admin
-  const adminId = "admin-" + Date.now().toString();
-  
-  // Create the admin user document with the specified email
-  await setDoc(doc(db, "users", adminId), {
-    uid: adminId,
-    username: "admin",
-    email: "berhanumule6@gmail.com", // Custom email as requested
-    name: "Admin User",
-    roleId: 1,
-    profilePicture: "https://randomuser.me/api/portraits/men/1.jpg", // Random placeholder image
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-    lastLogin: null,
-    isActive: true,
-    settings: {
-      theme: "light",
-      notifications: true,
-      language: "en"
+  try {
+    // Get the admin role ID from the roles collection
+    const rolesCollection = collection(db, "roles");
+    const rolesSnapshot = await getDocs(rolesCollection);
+    
+    let adminRoleId: string | number | null = null;
+    
+    // Find the admin role
+    rolesSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.name && data.name.toLowerCase() === "admin") {
+        adminRoleId = doc.id;
+      }
+    });
+    
+    if (!adminRoleId) {
+      console.error("Admin role not found in the database");
+      return;
     }
-  });
-  
-  console.log("Default admin user created successfully with email: berhanumule6@gmail.com");
+    
+    console.log("Found admin role with ID:", adminRoleId);
+    
+    // Check if any admin user exists
+    const usersCollection = collection(db, "users");
+    // First try with string ID (document ID)
+    let adminQuery = query(usersCollection, where("roleId", "==", adminRoleId));
+    let adminSnapshot = await getDocs(adminQuery);
+    
+    // If none found, try with "admin" name in case it's identified by name
+    if (adminSnapshot.empty) {
+      adminQuery = query(usersCollection, where("role", "==", "admin"));
+      adminSnapshot = await getDocs(adminQuery);
+    }
+    
+    // If still none found, try with the numeric 1 as used in client-side code
+    if (adminSnapshot.empty) {
+      adminQuery = query(usersCollection, where("roleId", "==", 1));
+      adminSnapshot = await getDocs(adminQuery);
+    }
+    
+    if (!adminSnapshot.empty) {
+      console.log("Admin user already exists");
+      return;
+    }
+    
+    // No admin user exists, create a default one
+    console.log("No admin user found, creating default admin...");
+    
+    // Create a unique user ID for the admin
+    const adminId = "admin-" + Date.now().toString();
+    
+    // Create the admin user document with the specified email
+    await setDoc(doc(db, "users", adminId), {
+      uid: adminId,
+      username: "admin",
+      email: "berhanumule6@gmail.com", // Custom email as requested
+      name: "Admin User",
+      roleId: adminRoleId, // Use the actual role ID from the database
+      profilePicture: "https://randomuser.me/api/portraits/men/1.jpg", // Random placeholder image
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      lastLogin: null,
+      isActive: true,
+      settings: {
+        theme: "light",
+        notifications: true,
+        language: "en"
+      }
+    });
+    
+    console.log("Default admin user created successfully with email: berhanumule6@gmail.com");
+  } catch (error) {
+    console.error("Error creating admin user:", error);
+  }
 };
 
 /**
@@ -133,42 +171,80 @@ export const createDefaultAdminUser = async (): Promise<void> => {
 export const createDefaultManagerUser = async (): Promise<void> => {
   console.log("Checking for manager users...");
   
-  // Check if any manager user exists
-  const usersCollection = collection(db, "users");
-  const managerQuery = query(usersCollection, where("roleId", "==", 2));
-  const managerSnapshot = await getDocs(managerQuery);
-  
-  if (!managerSnapshot.empty) {
-    console.log("Manager user already exists");
-    return;
-  }
-  
-  // No manager user exists, create a default one
-  console.log("No manager user found, creating default manager...");
-  
-  // Create a unique user ID for the manager
-  const managerId = "manager-" + Date.now().toString();
-  
-  // Create the manager user document with the specified email
-  await setDoc(doc(db, "users", managerId), {
-    uid: managerId,
-    username: "manager",
-    email: "berhanumule6@gmail.com", // Same email as admin for now
-    name: "Manager User",
-    roleId: 2,
-    profilePicture: "https://randomuser.me/api/portraits/women/1.jpg", // Random placeholder image
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-    lastLogin: null,
-    isActive: true,
-    settings: {
-      theme: "light",
-      notifications: true,
-      language: "en"
+  try {
+    // Get the manager role ID from the roles collection
+    const rolesCollection = collection(db, "roles");
+    const rolesSnapshot = await getDocs(rolesCollection);
+    
+    let managerRoleId: string | number | null = null;
+    
+    // Find the manager role
+    rolesSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.name && data.name.toLowerCase() === "manager") {
+        managerRoleId = doc.id;
+      }
+    });
+    
+    if (!managerRoleId) {
+      console.error("Manager role not found in the database");
+      return;
     }
-  });
-  
-  console.log("Default manager user created successfully with email: berhanumule6@gmail.com");
+    
+    console.log("Found manager role with ID:", managerRoleId);
+    
+    // Check if any manager user exists
+    const usersCollection = collection(db, "users");
+    // First try with string ID (document ID)
+    let managerQuery = query(usersCollection, where("roleId", "==", managerRoleId));
+    let managerSnapshot = await getDocs(managerQuery);
+    
+    // If none found, try with "manager" name in case it's identified by name
+    if (managerSnapshot.empty) {
+      managerQuery = query(usersCollection, where("role", "==", "manager"));
+      managerSnapshot = await getDocs(managerQuery);
+    }
+    
+    // If still none found, try with the numeric 2 as used in client-side code
+    if (managerSnapshot.empty) {
+      managerQuery = query(usersCollection, where("roleId", "==", 2));
+      managerSnapshot = await getDocs(managerQuery);
+    }
+    
+    if (!managerSnapshot.empty) {
+      console.log("Manager user already exists");
+      return;
+    }
+    
+    // No manager user exists, create a default one
+    console.log("No manager user found, creating default manager...");
+    
+    // Create a unique user ID for the manager
+    const managerId = "manager-" + Date.now().toString();
+    
+    // Create the manager user document with the specified email
+    await setDoc(doc(db, "users", managerId), {
+      uid: managerId,
+      username: "manager",
+      email: "berhanumule6@gmail.com", // Same email as admin for now
+      name: "Manager User",
+      roleId: managerRoleId, // Use the actual role ID from the database
+      profilePicture: "https://randomuser.me/api/portraits/women/1.jpg", // Random placeholder image
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      lastLogin: null,
+      isActive: true,
+      settings: {
+        theme: "light",
+        notifications: true,
+        language: "en"
+      }
+    });
+    
+    console.log("Default manager user created successfully with email: berhanumule6@gmail.com");
+  } catch (error) {
+    console.error("Error creating manager user:", error);
+  }
 };
 
 /**
@@ -178,15 +254,53 @@ export const createDefaultManagerUser = async (): Promise<void> => {
 export const checkClientUsers = async (): Promise<void> => {
   console.log("Checking for client users...");
   
-  // Check if any client user exists
-  const usersCollection = collection(db, "users");
-  const clientQuery = query(usersCollection, where("roleId", "==", 3));
-  const clientSnapshot = await getDocs(clientQuery);
-  
-  if (!clientSnapshot.empty) {
-    console.log("Client users exist:", clientSnapshot.size);
-  } else {
-    console.log("No client users found. They will be created through the UI.");
+  try {
+    // Get the client role ID from the roles collection
+    const rolesCollection = collection(db, "roles");
+    const rolesSnapshot = await getDocs(rolesCollection);
+    
+    let clientRoleId: string | number | null = null;
+    
+    // Find the client role
+    rolesSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.name && data.name.toLowerCase() === "client") {
+        clientRoleId = doc.id;
+      }
+    });
+    
+    if (!clientRoleId) {
+      console.error("Client role not found in the database");
+      return;
+    }
+    
+    console.log("Found client role with ID:", clientRoleId);
+    
+    // Check if any client user exists
+    const usersCollection = collection(db, "users");
+    // First try with string ID (document ID)
+    let clientQuery = query(usersCollection, where("roleId", "==", clientRoleId));
+    let clientSnapshot = await getDocs(clientQuery);
+    
+    // If none found, try with "client" name in case it's identified by name
+    if (clientSnapshot.empty) {
+      clientQuery = query(usersCollection, where("role", "==", "client"));
+      clientSnapshot = await getDocs(clientQuery);
+    }
+    
+    // If still none found, try with the numeric 3 as used in client-side code
+    if (clientSnapshot.empty) {
+      clientQuery = query(usersCollection, where("roleId", "==", 3));
+      clientSnapshot = await getDocs(clientQuery);
+    }
+    
+    if (!clientSnapshot.empty) {
+      console.log("Client users exist:", clientSnapshot.size);
+    } else {
+      console.log("No client users found. They will be created through the UI.");
+    }
+  } catch (error) {
+    console.error("Error checking for client users:", error);
   }
 };
 
