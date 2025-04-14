@@ -164,6 +164,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get all clients (users with roleId=3) - needed for project assignment
+  app.get("/api/users/clients", async (req, res) => {
+    try {
+      // Get all users from Firebase directly
+      const users = await storage.getAllUsers();
+      
+      // Filter for client role (roleId=3) and remove passwords
+      const clients = users
+        .filter(user => {
+          // Handle both string and number roleId
+          const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+          return roleId === 3; // Client role ID
+        })
+        .map(user => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { password, ...userWithoutPassword } = user;
+          return userWithoutPassword;
+        });
+      
+      return res.json(clients);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   // Debug endpoint to check a specific user by username (temporary for development)
   app.get("/api/debug/user/:username", async (req, res) => {
     try {
@@ -493,6 +519,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(updatedProject);
     } catch (error) {
       console.error("Error updating project:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Assign a project to a client (protected)
+  app.post("/api/projects/:id/assign", requirePermission("projects", "manage"), async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const { clientId } = req.body;
+      
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      if (!clientId || isNaN(parseInt(clientId.toString()))) {
+        return res.status(400).json({ message: "Valid client ID is required" });
+      }
+      
+      // Convert to number if it's a string
+      const clientIdNum = typeof clientId === 'string' ? parseInt(clientId) : clientId;
+      
+      // Check if project exists
+      const existingProject = await storage.getProject(projectId);
+      if (!existingProject) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Check if client exists and has role ID 3 (client)
+      const client = await storage.getUser(clientIdNum);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      const clientRoleId = typeof client.roleId === 'string' ? parseInt(client.roleId) : client.roleId;
+      if (clientRoleId !== 3) { // 3 is the client role ID
+        return res.status(400).json({ message: "The specified user is not a client" });
+      }
+      
+      // Update the project with the new client ID
+      const updatedProject = await storage.updateProject(projectId, { clientId: clientIdNum });
+      
+      console.log(`Project ${projectId} successfully assigned to client ${clientIdNum}`);
+      return res.json(updatedProject);
+    } catch (error) {
+      console.error("Error assigning project:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
