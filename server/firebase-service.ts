@@ -55,6 +55,22 @@ export class FirebaseStorage implements IStorage {
       throw error;
     }
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const usersRef = this.db.collection('users');
+      const snapshot = await usersRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map(doc => doc.data() as User);
+    } catch (error) {
+      console.error("Error getting all users from Firestore:", error);
+      throw error;
+    }
+  }
 
   async createUser(user: any): Promise<User> {
     try {

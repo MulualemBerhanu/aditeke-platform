@@ -146,21 +146,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all users (protected with permission)
   app.get("/api/users", requirePermission("users", "read"), async (req, res) => {
     try {
-      // In a real application, you would implement pagination here
-      const users = await Promise.all(
-        Array.from({ length: 10 }, (_, i) => storage.getUser(i + 1))
-      );
+      // Get all users from Firebase directly
+      const users = await storage.getAllUsers();
       
-      // Filter out null values and remove passwords
-      const filteredUsers = users
-        .filter(user => user !== undefined)
-        .map(user => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { password, ...userWithoutPassword } = user!;
-          return userWithoutPassword;
-        });
+      // Remove passwords before sending to client
+      const safeUsers = users.map(user => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
       
-      return res.json(filteredUsers);
+      return res.json(safeUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
       return res.status(500).json({ message: "Internal server error" });
