@@ -143,29 +143,24 @@ export default function LoginPage() {
       // Determine redirect URL based on roleId from the API response, not the selectedRole
       // This ensures we redirect based on the actual user permissions in the database
       console.log("User data roleId:", userData.roleId, "type:", typeof userData.roleId);
-      // Default to /dashboard which will handle role-based redirection
-      let redirectUrl = '/dashboard';
       
-      try {
-        // Try to get role info from the database response
-        const role = await fetch(`/api/role/${userData.roleId}`).then(r => r.json());
-        console.log("Got role info:", role);
-        
-        if (role && role.name) {
-          // Use role name for more reliable redirection
-          const roleName = role.name.toLowerCase();
-          if (roleName === 'admin') {
-            redirectUrl = '/admin/dashboard';
-          } else if (roleName === 'manager') {
-            redirectUrl = '/manager/dashboard';
-          } else if (roleName === 'client') {
-            redirectUrl = '/client/dashboard';
-          }
-        }
-      } catch (error) {
-        console.log("Error getting role info, using fallback redirection");
-        // If we can't get the role, we'll just redirect to /dashboard
+      // Get role name from selectedRole or use the default value based on URL param
+      let roleGuess = 'admin'; // Default role
+      if (selectedRole && selectedRole.name) {
+        roleGuess = selectedRole.name.toLowerCase();
       }
+      
+      // Direct mapping based on role name guesses
+      let redirectUrl = '/dashboard';
+      if (roleGuess === 'admin') {
+        redirectUrl = '/admin/dashboard';
+      } else if (roleGuess === 'manager') {
+        redirectUrl = '/manager/dashboard';
+      } else if (roleGuess === 'client') {
+        redirectUrl = '/client/dashboard';
+      }
+      
+      console.log("Using role name for redirection:", roleGuess, "-> URL:", redirectUrl);
       
       // Add overrides for the URL-selected role (helpful for testing)
       if (selectedRole) {
@@ -238,17 +233,20 @@ export default function LoginPage() {
       localStorage.setItem('currentUser', JSON.stringify(googleUser));
       localStorage.setItem('isAuthenticated', 'true');
       
-      // Determine redirect URL based on roleId from the selected role
-      let redirectUrl = '/dashboard';
+      // Get role name from selectedRole or use admin as default
+      const roleName = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
       
-      // Map roleId to the correct dashboard URL
-      if (selectedRoleId === 1) {
+      // Direct mapping based on role name
+      let redirectUrl = '/dashboard';
+      if (roleName === 'admin') {
         redirectUrl = '/admin/dashboard';
-      } else if (selectedRoleId === 2) {
+      } else if (roleName === 'manager') {
         redirectUrl = '/manager/dashboard';
-      } else if (selectedRoleId === 3) {
+      } else if (roleName === 'client') {
         redirectUrl = '/client/dashboard';
       }
+      
+      console.log("Using role name for Google redirection:", roleName, "-> URL:", redirectUrl);
       
       console.log("⚠️ GOOGLE AUTH REDIRECTING TO:", redirectUrl);
       
