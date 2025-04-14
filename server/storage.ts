@@ -53,8 +53,10 @@ export interface IStorage {
   
   // Project methods
   getAllProjects(category?: string): Promise<Project[]>;
+  getProjectsForClient(clientId: number): Promise<Project[]>;
   getProject(id: number): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: number, projectData: Partial<InsertProject>): Promise<Project>;
   
   // Testimonial methods
   getAllTestimonials(): Promise<Testimonial[]>;
@@ -431,6 +433,11 @@ export class MemStorage implements IStorage {
     
     return projects;
   }
+  
+  async getProjectsForClient(clientId: number): Promise<Project[]> {
+    const projects = Array.from(this.projects.values());
+    return projects.filter(project => project.clientId === clientId);
+  }
 
   async getProject(id: number): Promise<Project | undefined> {
     return this.projects.get(id);
@@ -441,6 +448,21 @@ export class MemStorage implements IStorage {
     const project: Project = { ...insertProject, id };
     this.projects.set(id, project);
     return project;
+  }
+  
+  async updateProject(id: number, projectData: Partial<InsertProject>): Promise<Project> {
+    const project = this.projects.get(id);
+    if (!project) {
+      throw new Error(`Project with id ${id} not found`);
+    }
+    
+    const updatedProject: Project = {
+      ...project,
+      ...projectData,
+    };
+    
+    this.projects.set(id, updatedProject);
+    return updatedProject;
   }
 
   // Testimonial methods
