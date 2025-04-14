@@ -404,6 +404,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
+  
+  // Get projects for a specific client
+  app.get("/api/clients/:clientId/projects", requirePermission("projects", "read"), async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      // Check if client exists
+      const client = await storage.getUser(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      const projects = await storage.getProjectsForClient(clientId);
+      return res.json(projects);
+    } catch (error) {
+      console.error("Error fetching client projects:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Get a specific project
+  app.get("/api/projects/:id", requirePermission("projects", "read"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      const project = await storage.getProject(id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Create a new project (protected)
+  app.post("/api/projects", requirePermission("projects", "manage"), async (req, res) => {
+    try {
+      console.log("Received project creation request:", JSON.stringify(req.body));
+      
+      const projectData = insertProjectSchema.parse(req.body);
+      console.log("Project data validated successfully:", JSON.stringify(projectData));
+      
+      // Create the project
+      const project = await storage.createProject(projectData);
+      console.log("Project created:", JSON.stringify(project));
+      
+      return res.status(201).json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error("Validation error:", JSON.stringify(error.errors));
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
+      console.error("Error creating project:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Update a project (protected)
+  app.patch("/api/projects/:id", requirePermission("projects", "manage"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      // Check if project exists
+      const existingProject = await storage.getProject(id);
+      if (!existingProject) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Validate request body
+      const projectData = req.body;
+      
+      // Update the project
+      const updatedProject = await storage.updateProject(id, projectData);
+      
+      return res.json(updatedProject);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Blog posts
   app.get("/api/blog", async (req, res) => {

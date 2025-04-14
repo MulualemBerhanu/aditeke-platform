@@ -394,6 +394,22 @@ export class FirebaseStorage implements IStorage {
     }
   }
   
+  async getProjectsForClient(clientId: number): Promise<Project[]> {
+    try {
+      const projectsRef = this.db.collection('projects').where('clientId', '==', clientId);
+      const snapshot = await projectsRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map((doc: any) => doc.data() as Project);
+    } catch (error) {
+      console.error("Error getting client projects from Firestore:", error);
+      throw error;
+    }
+  }
+  
   async createProject(project: any): Promise<Project> {
     try {
       // Generate a unique ID and set defaults
@@ -410,6 +426,31 @@ export class FirebaseStorage implements IStorage {
       return newProject as Project;
     } catch (error) {
       console.error("Error creating project in Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async updateProject(id: number, projectData: any): Promise<Project> {
+    try {
+      const projectRef = this.db.collection('projects').where('id', '==', id);
+      const snapshot = await projectRef.get();
+      
+      if (snapshot.empty) {
+        throw new Error(`Project with ID ${id} not found`);
+      }
+      
+      const docId = snapshot.docs[0].id;
+      const currentProject = snapshot.docs[0].data();
+      const updatedProject = {
+        ...currentProject,
+        ...projectData
+      };
+      
+      await this.db.collection('projects').doc(docId).update(updatedProject);
+      
+      return updatedProject as Project;
+    } catch (error) {
+      console.error("Error updating project in Firestore:", error);
       throw error;
     }
   }

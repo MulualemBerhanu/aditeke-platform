@@ -8,12 +8,24 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { 
   MessageSquare, FileText, Clock, CheckCircle2, 
-  AlertCircle, ExternalLink, Download, Calendar
+  AlertCircle, ExternalLink, Download, Calendar, Loader2
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Project } from '@shared/schema';
 
 export default function ClientDashboard() {
   const { user, logout } = useAuth();
   const [_, setLocation] = useLocation();
+  
+  // Function to format dates
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
 
   // Redirect if not logged in or not a client - check both API and localStorage
   React.useEffect(() => {
@@ -56,6 +68,32 @@ export default function ClientDashboard() {
   
   // Check if user is a client (roleId 3)
   const isClient = userData && roleIdNum === 3;
+  
+  // Fetch client's projects
+  const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery<Project[]>({
+    queryKey: ['/api/clients', userData?.id, 'projects'],
+    queryFn: async () => {
+      if (!userData?.id) {
+        return [];
+      }
+      const res = await fetch(`/api/clients/${userData.id}/projects`);
+      if (!res.ok) {
+        throw new Error('Failed to load projects');
+      }
+      return res.json();
+    },
+    enabled: !!userData?.id && isClient
+  });
+  
+  // Calculate project statistics
+  const projectStats = React.useMemo(() => {
+    if (!projects) return { active: 0, completed: 0 };
+    
+    const active = projects.filter(p => p.status !== 'Completed').length;
+    const completed = projects.filter(p => p.status === 'Completed').length;
+    
+    return { active, completed };
+  }, [projects]);
 
   if (!userData || !isClient) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
