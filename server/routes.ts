@@ -167,15 +167,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all clients (users with roleId=3) - needed for project assignment
   app.get("/api/users/clients", async (req, res) => {
     try {
+      console.log("Fetching all client users (roleId=3)...");
+      
+      // Get client role
+      const clientRole = await storage.getRoleByName("client");
+      if (!clientRole) {
+        console.log("Client role not found");
+        return res.status(404).json({ message: "Client role not found" });
+      }
+      console.log("Found client role with ID:", clientRole.id);
+      
       // Get all users from Firebase directly
       const users = await storage.getAllUsers();
+      console.log(`Got ${users.length} total users`);
       
       // Filter for client role (roleId=3) and remove passwords
       const clients = users
         .filter(user => {
           // Handle both string and number roleId
           const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
-          return roleId === 3; // Client role ID
+          const isClient = roleId === clientRole.id || roleId === 3; // Match by role ID (might be different from 3 in some environments)
+          console.log(`User ${user.username} has roleId ${user.roleId} (${typeof user.roleId}), isClient: ${isClient}`);
+          return isClient;
         })
         .map(user => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -183,6 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return userWithoutPassword;
         });
       
+      console.log(`Returning ${clients.length} client users`);
       return res.json(clients);
     } catch (error) {
       console.error("Error fetching clients:", error);

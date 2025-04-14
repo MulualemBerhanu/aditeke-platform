@@ -31,13 +31,24 @@ export default function ManagerDashboard() {
   const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = React.useState(false);
   
   // Format dates
-  const formatDate = (dateString: string | Date) => {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+  const formatDate = (dateString: string | Date | null) => {
+    if (!dateString) return 'No date';
+    
+    try {
+      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
   };
   
   // Fetch all projects
