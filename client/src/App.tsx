@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import Chatbot from "./components/layout/Chatbot";
+import FirebaseInit from "./components/firebase/FirebaseInit";
 import Home from "./pages/home";
 import About from "./pages/about";
 import Services from "./pages/services";
@@ -133,20 +134,22 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <div className="font-sans text-dark bg-light">
-          {/* Only show navbar on non-dashboard routes */}
-          {!isDashboardRoute && <Navbar />}
-          
-          <Router />
-          
-          {/* Only show footer and chatbot on non-dashboard routes */}
-          {!isDashboardRoute && <Footer />}
-          {!isDashboardRoute && <Chatbot />}
-          
-          <Toaster />
-        </div>
-      </AuthProvider>
+      <FirebaseInit>
+        <AuthProvider>
+          <div className="font-sans text-dark bg-light">
+            {/* Only show navbar on non-dashboard routes */}
+            {!isDashboardRoute && <Navbar />}
+            
+            <Router />
+            
+            {/* Only show footer and chatbot on non-dashboard routes */}
+            {!isDashboardRoute && <Footer />}
+            {!isDashboardRoute && <Chatbot />}
+            
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </FirebaseInit>
     </QueryClientProvider>
   );
 }
