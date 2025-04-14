@@ -142,16 +142,29 @@ export default function LoginPage() {
       
       // Determine redirect URL based on roleId from the API response, not the selectedRole
       // This ensures we redirect based on the actual user permissions in the database
-      const userRoleId = userData.roleId;
+      console.log("User data roleId:", userData.roleId, "type:", typeof userData.roleId);
+      // Default to /dashboard which will handle role-based redirection
       let redirectUrl = '/dashboard';
       
-      // Map roleId to the correct dashboard URL
-      if (userRoleId === 1) {
-        redirectUrl = '/admin/dashboard';
-      } else if (userRoleId === 2) {
-        redirectUrl = '/manager/dashboard';
-      } else if (userRoleId === 3) {
-        redirectUrl = '/client/dashboard';
+      try {
+        // Try to get role info from the database response
+        const role = await fetch(`/api/role/${userData.roleId}`).then(r => r.json());
+        console.log("Got role info:", role);
+        
+        if (role && role.name) {
+          // Use role name for more reliable redirection
+          const roleName = role.name.toLowerCase();
+          if (roleName === 'admin') {
+            redirectUrl = '/admin/dashboard';
+          } else if (roleName === 'manager') {
+            redirectUrl = '/manager/dashboard';
+          } else if (roleName === 'client') {
+            redirectUrl = '/client/dashboard';
+          }
+        }
+      } catch (error) {
+        console.log("Error getting role info, using fallback redirection");
+        // If we can't get the role, we'll just redirect to /dashboard
       }
       
       // Add overrides for the URL-selected role (helpful for testing)

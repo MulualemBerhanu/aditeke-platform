@@ -26,6 +26,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { requirePermission } = app.locals;
   
   // Role and permission admin routes
+  // Get a role by ID (unprotected - needed for login redirection)
+  app.get("/api/role/:id", async (req, res) => {
+    try {
+      const roleId = parseInt(req.params.id);
+      if (isNaN(roleId)) {
+        return res.status(400).json({ message: "Invalid role ID" });
+      }
+      
+      const role = await storage.getRole(roleId);
+      if (!role) {
+        return res.status(404).json({ message: "Role not found" });
+      }
+      
+      res.json(role);
+    } catch (error) {
+      console.error("Error fetching role:", error);
+      res.status(500).json({ message: "Error fetching role" });
+    }
+  });
+
   // Role management (protected by system permissions)
   app.get("/api/roles", requirePermission("roles", "read"), async (req, res) => {
     try {
