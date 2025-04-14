@@ -166,23 +166,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new user (protected with permission)
   app.post("/api/users", requirePermission("users", "manage"), async (req, res) => {
     try {
+      console.log("Received user creation request:", JSON.stringify(req.body));
+      
       const userData = insertUserSchema.parse(req.body);
+      console.log("User data validated successfully:", JSON.stringify(userData));
       
       // Check if username already exists
       const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
+        console.log("Username already exists:", userData.username);
         return res.status(400).json({ message: "Username already exists" });
       }
       
       // Create the user
+      console.log("Creating user in storage:", JSON.stringify(userData));
       const user = await storage.createUser(userData);
+      console.log("User created:", JSON.stringify(user));
       
       // Remove password before sending to client
       const { password, ...userWithoutPassword } = user;
+      console.log("Sending response:", JSON.stringify(userWithoutPassword));
       
+      res.setHeader('Content-Type', 'application/json');
       return res.status(201).json(userWithoutPassword);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Validation error:", JSON.stringify(error.errors));
         return res.status(400).json({ message: "Invalid user data", errors: error.errors });
       }
       console.error("Error creating user:", error);

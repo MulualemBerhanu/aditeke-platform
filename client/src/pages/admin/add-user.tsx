@@ -100,7 +100,11 @@ export default function AddUserPage() {
   const createUserMutation = useMutation({
     mutationFn: async (userData: UserFormValues) => {
       try {
-        const res = await apiRequest("POST", "/api/users", userData);
+        console.log("Creating user with data:", JSON.stringify(userData));
+        // Use the register endpoint which is already working
+        const res = await apiRequest("POST", "/api/register", userData);
+        console.log("Response status:", res.status, res.statusText);
+        
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.message || "Failed to create user");
