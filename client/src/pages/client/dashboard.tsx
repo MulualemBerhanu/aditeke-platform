@@ -30,18 +30,46 @@ export default function ClientDashboard() {
     
     // Check role permissions and redirect if needed
     const userData = user || (storedUser ? JSON.parse(storedUser) : null);
-    if (userData && userData.roleId !== 3) { // Not a client
-      console.log("⚠️ Not authorized as client, redirecting");
-      if (userData.roleId === 1) window.location.href = '/admin/dashboard';
-      else if (userData.roleId === 2) window.location.href = '/manager/dashboard';
-      else window.location.href = '/';
+    if (userData) {
+      // Get the role name based on selected role from localStorage
+      const selectedRole = localStorage.getItem('selectedRole');
+      const roleName = selectedRole ? JSON.parse(selectedRole).name.toLowerCase() : '';
+      
+      // If not a client role (by name or ID), redirect
+      const isClient = 
+        roleName === 'client' || 
+        userData.roleId === 3 || 
+        userData.roleId === 'tkIVVYpWobVjoawaozmp'; // Firebase client role ID
+
+      if (!isClient) {
+        console.log("⚠️ Not authorized as client, redirecting");
+        if (roleName === 'admin' || userData.roleId === 1 || userData.roleId === 'xG7hEVtYoYVT486Iw30z') {
+          window.location.href = '/admin/dashboard';
+        } else if (roleName === 'manager' || userData.roleId === 2 || userData.roleId === 'YcKKrgriG70R2O9Qg4io') {
+          window.location.href = '/manager/dashboard';
+        } else {
+          window.location.href = '/';
+        }
+      }
     }
   }, [user, setLocation]);
 
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
 
-  if (!userData || userData.roleId !== 3) {
+  // Get the role name based on selected role from localStorage
+  const selectedRole = localStorage.getItem('selectedRole');
+  const roleName = selectedRole ? JSON.parse(selectedRole).name.toLowerCase() : '';
+  
+  // Check if user is a client by role name or ID
+  const isClient = 
+    userData && (
+      roleName === 'client' || 
+      userData.roleId === 3 || 
+      userData.roleId === 'tkIVVYpWobVjoawaozmp' // Firebase client role ID
+    );
+
+  if (!userData || !isClient) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 

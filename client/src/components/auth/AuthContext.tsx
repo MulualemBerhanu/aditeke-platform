@@ -10,7 +10,7 @@ export interface User {
   username: string;
   email: string;
   name: string;
-  roleId: number;
+  roleId: string | number; // Can be either string (Firebase doc ID) or number (legacy numeric ID)
   profilePicture: string | null;
   createdAt: string;
   updatedAt: string | null;

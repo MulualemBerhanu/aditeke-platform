@@ -10,20 +10,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      // Redirect based on user role
-      switch (user.roleId) {
-        case 1: // Admin
-          setLocation('/admin/dashboard');
-          break;
-        case 2: // Manager
-          setLocation('/manager/dashboard');
-          break;
-        case 3: // Client
-          setLocation('/client/dashboard');
-          break;
-        default:
-          // If role is not recognized, redirect to home
-          setLocation('/');
+      // Log user role information for debugging
+      console.log("User data roleId:", user.roleId, "type:", typeof user.roleId);
+      
+      // Check for role by ID (both numeric legacy IDs and string Firebase IDs)
+      if (user.roleId === 1 || user.roleId === 'xG7hEVtYoYVT486Iw30z') {
+        console.log("Using role name for redirection:", "admin", "-> URL:", "/admin/dashboard");
+        setLocation('/admin/dashboard');
+      } else if (user.roleId === 2 || user.roleId === 'YcKKrgriG70R2O9Qg4io') {
+        console.log("Using role name for redirection:", "manager", "-> URL:", "/manager/dashboard");
+        setLocation('/manager/dashboard');
+      } else if (user.roleId === 3 || user.roleId === 'tkIVVYpWobVjoawaozmp') {
+        console.log("Using role name for redirection:", "client", "-> URL:", "/client/dashboard");
+        setLocation('/client/dashboard');
+      } else {
+        // If role is not recognized, redirect to home
+        console.log("Role not recognized, redirecting to home");
+        setLocation('/');
       }
     } else if (!isLoading && !user) {
       // If not logged in, redirect to login
