@@ -29,21 +29,15 @@ export default function ManagerDashboard() {
     // Check role permissions and redirect if needed
     const userData = user || (storedUser ? JSON.parse(storedUser) : null);
     if (userData) {
-      // Get the role name based on selected role from localStorage
-      const selectedRole = localStorage.getItem('selectedRole');
-      const roleName = selectedRole ? JSON.parse(selectedRole).name.toLowerCase() : '';
+      // Get numeric roleId - either directly or convert from string if needed
+      const roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
       
-      // If not a manager role (by name or ID), redirect
-      const isManager = 
-        roleName === 'manager' || 
-        userData.roleId === 2 || 
-        userData.roleId === 'YcKKrgriG70R2O9Qg4io'; // Firebase manager role ID
-
-      if (!isManager) {
+      // If not a manager (roleId 2), redirect
+      if (roleIdNum !== 2) {
         console.log("⚠️ Not authorized as manager, redirecting");
-        if (roleName === 'admin' || userData.roleId === 1 || userData.roleId === 'xG7hEVtYoYVT486Iw30z') {
+        if (roleIdNum === 1) {
           window.location.href = '/admin/dashboard';
-        } else if (roleName === 'client' || userData.roleId === 3 || userData.roleId === 'tkIVVYpWobVjoawaozmp') {
+        } else if (roleIdNum === 3) {
           window.location.href = '/client/dashboard';
         } else {
           window.location.href = '/';
@@ -55,17 +49,11 @@ export default function ManagerDashboard() {
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
 
-  // Get the role name based on selected role from localStorage
-  const selectedRole = localStorage.getItem('selectedRole');
-  const roleName = selectedRole ? JSON.parse(selectedRole).name.toLowerCase() : '';
+  // Get numeric roleId for validation
+  const roleIdNum = userData ? (typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId) : null;
   
-  // Check if user is a manager by role name or ID
-  const isManager = 
-    userData && (
-      roleName === 'manager' || 
-      userData.roleId === 2 || 
-      userData.roleId === 'YcKKrgriG70R2O9Qg4io' // Firebase manager role ID
-    );
+  // Check if user is a manager (roleId 2)
+  const isManager = userData && roleIdNum === 2;
 
   if (!userData || !isManager) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
