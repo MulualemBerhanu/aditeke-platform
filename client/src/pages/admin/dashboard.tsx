@@ -66,7 +66,7 @@ const quickActions = [
     title: 'New User',
     description: 'Add a new user',
     icon: <Users className="h-6 w-6 text-primary" />,
-    link: '/admin/user-management/create'
+    link: '/admin/add-user'
   },
   {
     title: 'New Blog Post',

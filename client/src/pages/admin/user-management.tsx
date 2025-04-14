@@ -329,7 +329,7 @@ export default function UserManagement() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button onClick={() => setShowAddUser(true)}>
+            <Button onClick={() => setLocation('/admin/add-user')}>
               <UserPlus className="h-4 w-4 mr-2" />
               Add User
             </Button>

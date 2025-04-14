@@ -20,6 +20,7 @@ import Dashboard from "./pages/dashboard";
 // Admin pages
 import AdminDashboard from "./pages/admin/dashboard";
 import UserManagement from "./pages/admin/user-management";
+import AddUser from "./pages/admin/add-user";
 import AdminContentManagement from "./pages/admin/content-management";
 import BlogManagement from "./pages/admin/content-management/blog";
 import ServiceManagement from "./pages/admin/content-management/services";
@@ -65,6 +66,11 @@ function Router() {
       <Route path="/admin/user-management">
         <ProtectedRoute>
           <UserManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/add-user">
+        <ProtectedRoute>
+          <AddUser />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/content-management">
