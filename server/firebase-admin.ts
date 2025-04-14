@@ -1,4 +1,7 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
+import { applicationDefault, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { ServiceAccount } from "firebase-admin";
 
 // Mock Firebase Admin for development if credentials are missing
@@ -59,9 +62,15 @@ try {
     } catch {
       // Initialize new app
       try {
-        firebaseAdminInstance = admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-        });
+        // Check if admin.credential exists before using it
+        if (admin.credential && typeof admin.credential.cert === 'function') {
+          firebaseAdminInstance = admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount as any),
+          });
+        } else {
+          console.error("Firebase admin.credential.cert function is not available");
+          throw new Error("Firebase credential not available");
+        }
         console.log("Firebase Admin SDK initialized successfully");
       } catch (initError) {
         console.error("Error during Firebase initialization:", initError);
@@ -71,8 +80,8 @@ try {
     
     // Test the Firebase connection
     try {
-      const db = getFirestore();
-      const auth = getAuth();
+      const db = admin.firestore();
+      const auth = admin.auth();
       console.log("Firebase services are available");
     } catch (serviceError) {
       console.error("Error accessing Firebase services:", serviceError);
@@ -95,7 +104,7 @@ export function getFirestoreDb() {
     return firebaseAdminInstance.firestore();
   }
   try {
-    return getFirestore();
+    return admin.firestore();
   } catch (error) {
     console.error("Error getting Firestore:", error);
     const mockFirebaseAdmin = new MockFirebaseAdmin();
@@ -109,7 +118,7 @@ export function getFirebaseAuth() {
     return firebaseAdminInstance.auth();
   }
   try {
-    return getAuth();
+    return admin.auth();
   } catch (error) {
     console.error("Error getting Auth:", error);
     const mockFirebaseAdmin = new MockFirebaseAdmin();

@@ -39,8 +39,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Using in-memory storage for now
-  log('Using in-memory storage with sample data');
+  // Log the storage type
+  log('Initializing storage backend...');
   
   const server = await registerRoutes(app);
 
