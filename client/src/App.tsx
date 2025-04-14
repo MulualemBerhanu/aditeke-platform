@@ -132,9 +132,15 @@ function App() {
   const isClientRoute = pathname.startsWith('/client');
   const isDashboardRoute = isAdminRoute || isManagerRoute || isClientRoute;
   
+  // Check if we have the bypass flag in the URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const bypassFirebase = urlParams.get('bypass') === 'true';
+  
+  // Set up the application with or without Firebase initialization
   return (
     <QueryClientProvider client={queryClient}>
-      <FirebaseInit>
+      {bypassFirebase ? (
+        // Skip Firebase initialization if bypass=true in URL
         <AuthProvider>
           <div className="font-sans text-dark bg-light">
             {/* Only show navbar on non-dashboard routes */}
@@ -149,7 +155,25 @@ function App() {
             <Toaster />
           </div>
         </AuthProvider>
-      </FirebaseInit>
+      ) : (
+        // Normal flow with Firebase initialization
+        <FirebaseInit>
+          <AuthProvider>
+            <div className="font-sans text-dark bg-light">
+              {/* Only show navbar on non-dashboard routes */}
+              {!isDashboardRoute && <Navbar />}
+              
+              <Router />
+              
+              {/* Only show footer and chatbot on non-dashboard routes */}
+              {!isDashboardRoute && <Footer />}
+              {!isDashboardRoute && <Chatbot />}
+              
+              <Toaster />
+            </div>
+          </AuthProvider>
+        </FirebaseInit>
+      )}
     </QueryClientProvider>
   );
 }
