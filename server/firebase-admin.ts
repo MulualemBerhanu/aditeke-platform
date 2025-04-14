@@ -62,15 +62,10 @@ try {
     } catch {
       // Initialize new app
       try {
-        // Check if admin.credential exists before using it
-        if (admin.credential && typeof admin.credential.cert === 'function') {
-          firebaseAdminInstance = admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount as any),
-          });
-        } else {
-          console.error("Firebase admin.credential.cert function is not available");
-          throw new Error("Firebase credential not available");
-        }
+        // Use the directly imported cert function
+        firebaseAdminInstance = admin.initializeApp({
+          credential: cert(serviceAccount as any),
+        });
         console.log("Firebase Admin SDK initialized successfully");
       } catch (initError) {
         console.error("Error during Firebase initialization:", initError);
@@ -80,8 +75,8 @@ try {
     
     // Test the Firebase connection
     try {
-      const db = admin.firestore();
-      const auth = admin.auth();
+      const db = getFirestore();
+      const auth = getAuth();
       console.log("Firebase services are available");
     } catch (serviceError) {
       console.error("Error accessing Firebase services:", serviceError);
@@ -104,7 +99,7 @@ export function getFirestoreDb() {
     return firebaseAdminInstance.firestore();
   }
   try {
-    return admin.firestore();
+    return getFirestore();
   } catch (error) {
     console.error("Error getting Firestore:", error);
     const mockFirebaseAdmin = new MockFirebaseAdmin();
@@ -118,7 +113,7 @@ export function getFirebaseAuth() {
     return firebaseAdminInstance.auth();
   }
   try {
-    return admin.auth();
+    return getAuth();
   } catch (error) {
     console.error("Error getting Auth:", error);
     const mockFirebaseAdmin = new MockFirebaseAdmin();
