@@ -122,14 +122,28 @@ function Router() {
 }
 
 function App() {
+  // We'll use pathname directly from window.location
+  const pathname = window.location.pathname;
+  
+  // Determine if we're on an admin, manager, or client dashboard page
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isManagerRoute = pathname.startsWith('/manager');
+  const isClientRoute = pathname.startsWith('/client');
+  const isDashboardRoute = isAdminRoute || isManagerRoute || isClientRoute;
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <div className="font-sans text-dark bg-light">
-          <Navbar />
+          {/* Only show navbar on non-dashboard routes */}
+          {!isDashboardRoute && <Navbar />}
+          
           <Router />
-          <Footer />
-          <Chatbot />
+          
+          {/* Only show footer and chatbot on non-dashboard routes */}
+          {!isDashboardRoute && <Footer />}
+          {!isDashboardRoute && <Chatbot />}
+          
           <Toaster />
         </div>
       </AuthProvider>
