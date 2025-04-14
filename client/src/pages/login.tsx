@@ -49,7 +49,7 @@ const USER_ROLES: UserRole[] = [
     icon: <Building2 className="h-10 w-10 mb-2" />,
     description: 'Manage projects and team members',
     emailPattern: 'manager@aditeke.com',
-    username: 'manager',  // Use username, not email
+    username: 'manager2',  // Updated to use the new manager account with proper password
     password: 'password123',
   },
   {
@@ -58,7 +58,7 @@ const USER_ROLES: UserRole[] = [
     icon: <UsersRound className="h-10 w-10 mb-2" />,
     description: 'View and track project progress',
     emailPattern: 'client@example.com',  // Updated to match database initialization
-    username: 'client',  // Use username, not email
+    username: 'client2',  // Updated to use the new client account with proper password
     password: 'password123',
   },
 ];
