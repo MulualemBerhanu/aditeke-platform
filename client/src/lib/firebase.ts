@@ -1,13 +1,27 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signInWithRedirect, 
-  getRedirectResult,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
   signOut,
-  Auth
-} from 'firebase/auth';
+  GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile,
+  User as FirebaseUser
+} from "firebase/auth";
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc,
+  query,
+  where,
+  getDocs,
+  Timestamp
+} from "firebase/firestore";
+import { toast } from "@/hooks/use-toast";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -15,88 +29,205 @@ const firebaseConfig = {
   authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
-let firebaseApp;
-let auth: Auth | null = null;
-
-try {
-  // Only initialize if we have the minimum required config
-  if (import.meta.env.VITE_FIREBASE_API_KEY && 
-      import.meta.env.VITE_FIREBASE_PROJECT_ID && 
-      import.meta.env.VITE_FIREBASE_APP_ID) {
-    firebaseApp = initializeApp(firebaseConfig);
-    auth = getAuth(firebaseApp);
-    console.log('Firebase initialized successfully');
-  } else {
-    console.warn('Firebase not initialized: Missing environment variables');
-  }
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-}
-
-// Google sign-in provider
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// Login with Google
-// Use redirect method for Replit compatibility (popup may not work in some environments)
+// User Authentication Functions
+export const registerWithEmailPassword = async (
+  email: string, 
+  password: string, 
+  username: string, 
+  name: string, 
+  roleId: number
+) => {
+  try {
+    // Create authentication account
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Update display name
+    await updateProfile(user, {
+      displayName: name
+    });
+    
+    // Store additional user info in Firestore
+    await createUserDocument(user, { username, name, roleId });
+    
+    toast({
+      title: "Registration successful",
+      description: "Your account has been created.",
+    });
+    
+    return user;
+  } catch (error: any) {
+    console.error("Error during registration:", error);
+    toast({
+      title: "Registration failed",
+      description: error.message,
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+export const loginWithEmailPassword = async (email: string, password: string) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Update last login
+    await updateUserLastLogin(user.uid);
+    
+    return await getUserWithRole(user);
+  } catch (error: any) {
+    console.error("Error during login:", error);
+    toast({
+      title: "Login failed",
+      description: error.message,
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
 export const loginWithGoogle = async () => {
-  if (!auth) {
-    throw new Error('Firebase Auth not initialized');
-  }
-  
   try {
-    // Using redirect for better compatibility with iframes & Replit environment
-    await signInWithRedirect(auth, googleProvider);
-  } catch (error) {
-    console.error('Google sign-in error:', error);
-    throw error;
-  }
-};
-
-// Handle the redirect result
-export const handleRedirectResult = async () => {
-  if (!auth) {
-    return null;
-  }
-  
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      // User successfully signed in with redirect
-      const user = result.user;
-      // Get the ID token to send to your backend
-      const idToken = await user.getIdToken();
-      return { user, idToken };
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    
+    // Check if user exists in our database
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    
+    if (!userDoc.exists()) {
+      // First time Google login - assign default client role
+      await createUserDocument(user, { 
+        username: user.email?.split('@')[0] || user.uid.substring(0, 8),
+        name: user.displayName || "User", 
+        roleId: 3 // Default to Client role
+      });
+    } else {
+      // Update last login
+      await updateUserLastLogin(user.uid);
     }
-    return null;
-  } catch (error) {
-    console.error('Error handling redirect:', error);
+    
+    return await getUserWithRole(user);
+  } catch (error: any) {
+    console.error("Error during Google login:", error);
+    toast({
+      title: "Google login failed",
+      description: error.message,
+      variant: "destructive",
+    });
     throw error;
   }
 };
 
-// Get auth result - helper function for login page
-export const getAuthResult = async () => {
-  return handleRedirectResult();
-};
-
-// Logout user
 export const logoutUser = async () => {
-  if (!auth) {
-    return;
-  }
-  
   try {
     await signOut(auth);
-  } catch (error) {
-    console.error('Logout error:', error);
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+    return true;
+  } catch (error: any) {
+    console.error("Error during logout:", error);
+    toast({
+      title: "Logout failed",
+      description: error.message,
+      variant: "destructive",
+    });
     throw error;
   }
 };
 
-// Export auth instance for use throughout the app
-export { auth };
+// Firestore helper functions
+const createUserDocument = async (
+  user: FirebaseUser, 
+  additionalData: { username: string; name: string; roleId: number }
+) => {
+  try {
+    // Check if username already exists
+    const usernameQuery = query(
+      collection(db, "users"),
+      where("username", "==", additionalData.username)
+    );
+    
+    const usernameSnapshot = await getDocs(usernameQuery);
+    
+    if (!usernameSnapshot.empty) {
+      throw new Error("Username already exists. Please choose another username.");
+    }
+    
+    // Reference to user document
+    const userRef = doc(db, "users", user.uid);
+    
+    // Create user document with provided data
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      username: additionalData.username,
+      name: additionalData.name,
+      roleId: additionalData.roleId,
+      profilePicture: user.photoURL || "",
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      lastLogin: Timestamp.now(),
+      isActive: true,
+      settings: {
+        theme: "light",
+        notifications: true,
+        language: "en"
+      }
+    });
+    
+    return userRef;
+  } catch (error) {
+    console.error("Error creating user document:", error);
+    throw error;
+  }
+};
+
+const updateUserLastLogin = async (uid: string) => {
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, {
+    lastLogin: Timestamp.now(),
+    updatedAt: Timestamp.now()
+  });
+};
+
+const getUserWithRole = async (user: FirebaseUser) => {
+  // Get user document
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  
+  if (!userDoc.exists()) {
+    throw new Error("User not found in database");
+  }
+  
+  const userData = userDoc.data();
+  
+  // Get role
+  const roleDoc = await getDoc(doc(db, "roles", userData.roleId.toString()));
+  
+  if (!roleDoc.exists()) {
+    throw new Error("Role not found in database");
+  }
+  
+  const roleData = roleDoc.data();
+  
+  // Return combined user and role information
+  return {
+    ...userData,
+    role: roleData
+  };
+};
+
+// Export Firebase instances
+export { auth, db };
