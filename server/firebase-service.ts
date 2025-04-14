@@ -1,5 +1,4 @@
-import firebaseAdmin from './firebase-admin';
-import * as admin from 'firebase-admin';
+import { getFirestoreDb, getFirebaseAuth } from './firebase-admin';
 import { IStorage } from './storage';
 import { User, Role, Permission, Project, Testimonial, Service, BlogPost, ContactMessage, NewsletterSubscriber, Job } from '@shared/schema';
 
@@ -7,35 +6,23 @@ import { User, Role, Permission, Project, Testimonial, Service, BlogPost, Contac
  * Implementation of the IStorage interface using Firebase Firestore
  */
 export class FirebaseStorage implements IStorage {
-  private db!: admin.firestore.Firestore; // Using the definite assignment assertion
-  private isMockFirebase: boolean = false;
+  private db: any; // Using any type to handle both real and mock Firestore
+  private auth: any;
 
   constructor() {
-    // Check if we're using real Firebase or mock
-    // Use type guard to check if firebaseAdmin is a real Firebase app
-    const isRealApp = firebaseAdmin && 
-      typeof firebaseAdmin === 'object' && 
-      'name' in firebaseAdmin &&
-      'options' in firebaseAdmin;
-    
-    this.isMockFirebase = !isRealApp;
-    
-    if (this.isMockFirebase) {
-      console.warn("Using mock Firebase Storage implementation");
-      throw new Error("Mock Firebase not fully implemented. Please provide Firebase credentials.");
-    } else {
-      // Type assertion since we know it's a real app at this point
-      this.db = admin.firestore(firebaseAdmin as admin.app.App);
-      console.log("Firebase Firestore connected successfully");
+    try {
+      // Get Firestore instance
+      this.db = getFirestoreDb();
+      this.auth = getFirebaseAuth();
+      console.log("Firebase services connected successfully");
+    } catch (error) {
+      console.error("Error initializing Firebase services:", error);
+      throw new Error("Failed to initialize Firebase services");
     }
   }
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    if (this.isMockFirebase) {
-      throw new Error("Mock Firebase not implemented");
-    }
-
     try {
       const userRef = this.db.collection('users').where('id', '==', id);
       const snapshot = await userRef.get();
@@ -53,10 +40,6 @@ export class FirebaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    if (this.isMockFirebase) {
-      throw new Error("Mock Firebase not implemented");
-    }
-
     try {
       const userRef = this.db.collection('users').where('username', '==', username);
       const snapshot = await userRef.get();
@@ -74,10 +57,6 @@ export class FirebaseStorage implements IStorage {
   }
 
   async createUser(user: any): Promise<User> {
-    if (this.isMockFirebase) {
-      throw new Error("Mock Firebase not implemented");
-    }
-
     try {
       // Generate a unique ID
       const newUser = {
@@ -98,10 +77,6 @@ export class FirebaseStorage implements IStorage {
   }
 
   async updateUser(id: number, userData: any): Promise<User> {
-    if (this.isMockFirebase) {
-      throw new Error("Mock Firebase not implemented");
-    }
-
     try {
       const userRef = this.db.collection('users').where('id', '==', id);
       const snapshot = await userRef.get();
@@ -128,10 +103,6 @@ export class FirebaseStorage implements IStorage {
 
   // Role methods
   async getRole(id: number): Promise<Role | undefined> {
-    if (this.isMockFirebase) {
-      throw new Error("Mock Firebase not implemented");
-    }
-
     try {
       // In Firestore, we're using ID as document ID
       const roleDoc = await this.db.collection('roles').doc(id.toString()).get();

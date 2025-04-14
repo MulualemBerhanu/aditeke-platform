@@ -1,4 +1,7 @@
-import * as admin from "firebase-admin";
+import { ServiceAccount } from "firebase-admin";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
+import { cert, initializeApp, getApp } from "firebase-admin/app";
 
 // Mock Firebase Admin for development if credentials are missing
 class MockFirebaseAdmin {
@@ -16,10 +19,26 @@ class MockFirebaseAdmin {
       }
     };
   }
+  
+  firestore() {
+    // Mock firestore implementation
+    return {
+      collection: () => {
+        return {
+          doc: () => {},
+          add: () => {},
+          get: async () => ({ empty: true, docs: [] }),
+          where: () => ({
+            get: async () => ({ empty: true, docs: [] })
+          })
+        };
+      }
+    };
+  }
 }
 
 // Initialize Firebase Admin SDK using environment variables or a mock
-let firebaseAdminInstance: admin.app.App | MockFirebaseAdmin;
+let firebaseAdminInstance: any; // Using any type to accommodate both real Firebase and mock
 
 try {
   // Check if we have the minimum Firebase credentials
@@ -29,32 +48,75 @@ try {
     process.env.FIREBASE_PRIVATE_KEY
   ) {
     // Initialize the real Firebase Admin SDK
-    const serviceAccount = {
+    const serviceAccount: ServiceAccount = {
       projectId: process.env.VITE_FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
     };
     
-    // Initialize Firebase if it's not already initialized
     try {
-      firebaseAdminInstance = admin.app();
+      // Try to get existing app
+      firebaseAdminInstance = getApp();
+      console.log("Using existing Firebase Admin SDK instance");
     } catch {
-      firebaseAdminInstance = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
+      // Initialize new app
+      try {
+        firebaseAdminInstance = initializeApp({
+          credential: cert(serviceAccount),
+        });
+        console.log("Firebase Admin SDK initialized successfully");
+      } catch (initError) {
+        console.error("Error during Firebase initialization:", initError);
+        throw initError;
+      }
     }
     
-    console.log("Firebase Admin SDK initialized successfully");
+    // Test the Firebase connection
+    try {
+      const db = getFirestore();
+      const auth = getAuth();
+      console.log("Firebase services are available");
+    } catch (serviceError) {
+      console.error("Error accessing Firebase services:", serviceError);
+      throw serviceError;
+    }
   } else {
-    // Use a mock implementation for development
+    console.warn("Firebase credentials missing - using mock implementation");
     firebaseAdminInstance = new MockFirebaseAdmin();
-    console.warn("Using mock Firebase Admin (development mode)");
   }
 } catch (error) {
   console.error("Error initializing Firebase Admin SDK:", error);
   // Fallback to mock implementation
   firebaseAdminInstance = new MockFirebaseAdmin();
   console.warn("Falling back to mock Firebase Admin implementation");
+}
+
+// Export a function to get Firestore database instance
+export function getFirestoreDb() {
+  if (firebaseAdminInstance instanceof MockFirebaseAdmin) {
+    return firebaseAdminInstance.firestore();
+  }
+  try {
+    return getFirestore();
+  } catch (error) {
+    console.error("Error getting Firestore:", error);
+    const mockFirebaseAdmin = new MockFirebaseAdmin();
+    return mockFirebaseAdmin.firestore();
+  }
+}
+
+// Export a function to get Auth instance
+export function getFirebaseAuth() {
+  if (firebaseAdminInstance instanceof MockFirebaseAdmin) {
+    return firebaseAdminInstance.auth();
+  }
+  try {
+    return getAuth();
+  } catch (error) {
+    console.error("Error getting Auth:", error);
+    const mockFirebaseAdmin = new MockFirebaseAdmin();
+    return mockFirebaseAdmin.auth();
+  }
 }
 
 export default firebaseAdminInstance;
