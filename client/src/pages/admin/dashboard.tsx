@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth/AuthContext';
 import { useLocation } from 'wouter';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BarChart3, 
   Users, 
@@ -12,7 +13,9 @@ import {
   FolderKanban, 
   TrendingUp, 
   MessageSquare, 
-  ShoppingCart
+  ShoppingCart,
+  Database,
+  RefreshCw
 } from 'lucide-react';
 
 // Dashboard cards data
@@ -94,6 +97,8 @@ const quickActions = [
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [_, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [initializing, setInitializing] = useState(false);
 
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
@@ -104,6 +109,45 @@ export default function AdminDashboard() {
 
   const handleCardClick = (link: string) => {
     setLocation(link);
+  };
+  
+  // Function to initialize the database with sample data
+  const handleInitializeDatabase = async () => {
+    try {
+      setInitializing(true);
+      
+      const response = await fetch('/api/init-database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Database initialized successfully",
+          description: "Sample data has been added to the database.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Database initialization failed",
+          description: data.message || "An error occurred during initialization.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Database initialization failed",
+        description: "An error occurred while connecting to the server.",
+        variant: "destructive",
+      });
+      console.error("Error initializing database:", error);
+    } finally {
+      setInitializing(false);
+    }
   };
 
   return (
@@ -118,6 +162,55 @@ export default function AdminDashboard() {
             Here's what's happening with your website today
           </p>
         </div>
+        
+        {/* Database Management Section (Admin Only) */}
+        <Card className="bg-slate-50 border-2 border-primary/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl">Database Management</CardTitle>
+            </div>
+            <CardDescription>
+              Advanced tools for database administration
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-4">
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900">Initialize Database</h3>
+                  <p className="text-sm text-gray-500 mb-2">
+                    Populate the database with sample data for development and testing.
+                    This action will add users, services, projects, testimonials, and blog posts.
+                  </p>
+                  <div className="text-sm bg-amber-50 border border-amber-200 rounded-md p-2 text-amber-800">
+                    <strong>Warning:</strong> This will not overwrite existing data but may create duplicates. 
+                    Use only in development environments.
+                  </div>
+                </div>
+                <div>
+                  <Button 
+                    onClick={handleInitializeDatabase} 
+                    disabled={initializing}
+                    className="bg-primary/90 hover:bg-primary"
+                  >
+                    {initializing ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Initializing...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="h-4 w-4 mr-2" />
+                        Initialize
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
