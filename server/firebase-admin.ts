@@ -1,7 +1,5 @@
+import * as admin from "firebase-admin";
 import { ServiceAccount } from "firebase-admin";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
-import { cert, initializeApp, getApp } from "firebase-admin/app";
 
 // Mock Firebase Admin for development if credentials are missing
 class MockFirebaseAdmin {
@@ -56,13 +54,13 @@ try {
     
     try {
       // Try to get existing app
-      firebaseAdminInstance = getApp();
+      firebaseAdminInstance = admin.app();
       console.log("Using existing Firebase Admin SDK instance");
     } catch {
       // Initialize new app
       try {
-        firebaseAdminInstance = initializeApp({
-          credential: cert(serviceAccount),
+        firebaseAdminInstance = admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
         });
         console.log("Firebase Admin SDK initialized successfully");
       } catch (initError) {
