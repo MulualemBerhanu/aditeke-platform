@@ -40,7 +40,7 @@ const USER_ROLES: UserRole[] = [
     icon: <UserCog className="h-10 w-10 mb-2" />,
     description: 'Full access to all features and settings',
     emailPattern: 'admin@aditeke.com',
-    username: 'admin',
+    username: 'admin',  // Use username, not email
     password: 'password123',
   },
   {
@@ -49,7 +49,7 @@ const USER_ROLES: UserRole[] = [
     icon: <Building2 className="h-10 w-10 mb-2" />,
     description: 'Manage projects and team members',
     emailPattern: 'manager@aditeke.com',
-    username: 'manager',
+    username: 'manager',  // Use username, not email
     password: 'password123',
   },
   {
@@ -57,8 +57,8 @@ const USER_ROLES: UserRole[] = [
     name: 'Client',
     icon: <UsersRound className="h-10 w-10 mb-2" />,
     description: 'View and track project progress',
-    emailPattern: 'client@aditeke.com',
-    username: 'client',
+    emailPattern: 'client@example.com',  // Updated to match database initialization
+    username: 'client',  // Use username, not email
     password: 'password123',
   },
 ];
@@ -444,9 +444,12 @@ export default function LoginPage() {
             <Separator className="my-4" />
             
             <div className="text-center text-sm text-muted-foreground">
-              <p>Demo Account</p>
-              <p className="font-medium text-primary">Username: {currentRole.username}</p>
-              <p className="font-medium text-primary">Password: {currentRole.password}</p>
+              <p className="font-semibold mb-1">Demo Account</p>
+              <p className="font-medium">Username: <span className="font-mono bg-gray-100 px-1 py-0.5 rounded text-primary">{currentRole.username}</span></p>
+              <p className="font-medium">Password: <span className="font-mono bg-gray-100 px-1 py-0.5 rounded text-primary">{currentRole.password}</span></p>
+              <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs">
+                <p className="font-semibold">Important: Use username (not email) to login</p>
+              </div>
               <p className="mt-4 text-xs">
                 This is a demo application. In a production environment, real user authentication would be required.
               </p>
