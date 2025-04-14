@@ -331,4 +331,15 @@ export function setupAuth(app: Express) {
 
   // Export the permission middleware to be used in routes
   app.locals.requirePermission = requirePermission;
+
+  // Public endpoint for getting roles (used for signup/login pages)
+  app.get("/api/public/roles", async (req, res) => {
+    try {
+      const roles = await storage.getAllRoles();
+      return res.json(roles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 }

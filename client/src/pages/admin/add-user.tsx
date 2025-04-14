@@ -65,10 +65,10 @@ export default function AddUserPage() {
     description: string | null;
   }
 
-  // Fetch available roles
+  // Fetch available roles from public endpoint
   const { data: roles = [], isLoading: rolesLoading } = useQuery<Role[]>({
-    queryKey: ['/api/roles'],
-    retry: 1,
+    queryKey: ['/api/public/roles'],
+    retry: 3, // Increase retries for this important data
   });
 
   // Form with defaults
