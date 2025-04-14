@@ -192,31 +192,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Fix manager account by adding a password (temporary for development)
-  app.post("/api/debug/fix-manager", async (req, res) => {
+  // Create a new manager account with a password (temporary for development)
+  app.post("/api/debug/create-new-manager", async (req, res) => {
     try {
-      console.log("Fixing manager account...");
+      console.log("Creating new manager account...");
       
-      // Get the manager user
-      const user = await storage.getUserByUsername("manager");
-      if (!user) {
-        return res.status(404).json({ message: "Manager user not found" });
+      // Get the manager role ID
+      const managerRole = await storage.getRoleByName("manager");
+      if (!managerRole) {
+        return res.status(404).json({ message: "Manager role not found" });
       }
       
-      // Add a password field
-      const updatedUser = await storage.updateUser(user.id, {
-        password: "password123" // Plain text for now, would be hashed in production
-      });
+      // Create a new manager user with password
+      const newManagerData = {
+        username: "manager2",
+        password: "password123", // Plain text for now, would be hashed in production
+        email: "manager2@example.com",
+        name: "Manager User 2",
+        roleId: managerRole.id,
+        isActive: true
+      };
       
-      console.log("Manager account fixed!");
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(newManagerData.username);
+      if (existingUser) {
+        return res.status(200).json({ 
+          success: true,
+          message: "Manager account already exists with username: " + newManagerData.username
+        });
+      }
+      
+      const newManager = await storage.createUser(newManagerData);
+      console.log("New manager account created!");
       
       res.json({ 
         success: true,
-        message: "Manager account fixed with password: password123"
+        message: "New manager account created with username: " + newManagerData.username,
+        user: {
+          id: newManager.id,
+          username: newManager.username,
+          email: newManager.email,
+          roleId: newManager.roleId
+        }
       });
     } catch (error) {
-      console.error("Error fixing manager account:", error);
-      res.status(500).json({ message: "Error fixing manager account", error });
+      console.error("Error creating new manager account:", error);
+      res.status(500).json({ message: "Error creating new manager account", error });
+    }
+  });
+  
+  // Create a new client account with a password (temporary for development)
+  app.post("/api/debug/create-new-client", async (req, res) => {
+    try {
+      console.log("Creating new client account...");
+      
+      // Get the client role ID
+      const clientRole = await storage.getRoleByName("client");
+      if (!clientRole) {
+        return res.status(404).json({ message: "Client role not found" });
+      }
+      
+      // Create a new client user with password
+      const newClientData = {
+        username: "client2",
+        password: "password123", // Plain text for now, would be hashed in production
+        email: "client2@example.com",
+        name: "Client User 2",
+        roleId: clientRole.id,
+        isActive: true
+      };
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(newClientData.username);
+      if (existingUser) {
+        return res.status(200).json({ 
+          success: true,
+          message: "Client account already exists with username: " + newClientData.username
+        });
+      }
+      
+      const newClient = await storage.createUser(newClientData);
+      console.log("New client account created!");
+      
+      res.json({ 
+        success: true,
+        message: "New client account created with username: " + newClientData.username,
+        user: {
+          id: newClient.id,
+          username: newClient.username,
+          email: newClient.email,
+          roleId: newClient.roleId
+        }
+      });
+    } catch (error) {
+      console.error("Error creating new client account:", error);
+      res.status(500).json({ message: "Error creating new client account", error });
     }
   });
   
