@@ -7,7 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import firebaseAdmin from "./firebase-admin";
-import { verifyToken, generateTokens, extractJwtFromRequest } from "./utils/jwt";
+import { verifyToken, generateTokens, extractJwtFromRequest, clearTokenCookies, setTokenCookies } from "./utils/jwt";
 
 declare global {
   namespace Express {
@@ -346,13 +346,10 @@ export function setupAuth(app: Express) {
     req.logout((err) => {
       if (err) return next(err);
       
-      // Clear the JWT cookie if it exists
-      res.clearCookie('accessToken', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-      });
+      // Clear all JWT cookies using the utility function
+      clearTokenCookies(res);
       
+      // Return success response
       res.sendStatus(200);
     });
   });
@@ -497,15 +494,10 @@ export function setupAuth(app: Express) {
         roleId: user.roleId
       });
       
-      // Set the new access token cookie
-      res.cookie('accessToken', tokens.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 1000, // 1 hour
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-      });
+      // Set the token cookies using the utility function
+      setTokenCookies(res, tokens);
       
-      // Return the new tokens
+      // Return the new tokens (also in body for cross-domain compatibility)
       res.json({
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken

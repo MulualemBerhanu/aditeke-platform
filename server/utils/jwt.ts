@@ -1,85 +1,119 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { User } from '@shared/schema';
-import { NextFunction, Request, Response } from 'express';
 
-// We would normally use environment variables for these secrets
-// In production, use a strong random string as the secret
-const JWT_SECRET = process.env.JWT_SECRET || 'aditeke-software-solutions-jwt-secret-key';
-const ACCESS_TOKEN_EXPIRY = '1h'; // 1 hour
-const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days
+// Secret rotation and management
+interface JwtSecrets {
+  current: string;
+  previous?: string; // Keep previous key for token validation during rotation
+  nextRotation: number; // Timestamp when next rotation should occur
+}
 
-// User data that will be encoded in tokens
-export type UserTokenData = {
-  id: number;
-  username: string;
-  roleId: number | string;
+// In-memory secrets (will reset on server restart, which is fine for security)
+let jwtSecrets: JwtSecrets = {
+  current: process.env.JWT_SECRET || generateSecureSecret(),
+  nextRotation: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
 };
 
+// Generate a cryptographically secure random secret
+function generateSecureSecret(): string {
+  // Generate a 64-byte random string
+  return crypto.randomBytes(64).toString('hex');
+}
+
+// Rotate secrets periodically
+function rotateSecrets() {
+  const now = Date.now();
+  
+  // Check if it's time to rotate
+  if (now >= jwtSecrets.nextRotation) {
+    // Keep the previous secret for a while to validate existing tokens
+    jwtSecrets.previous = jwtSecrets.current;
+    
+    // Generate a new secret
+    jwtSecrets.current = generateSecureSecret();
+    
+    // Set next rotation time (7 days)
+    jwtSecrets.nextRotation = now + (7 * 24 * 60 * 60 * 1000);
+    
+    console.log(`JWT secret rotated at ${new Date().toISOString()}`);
+  }
+}
+
+// Check for secret rotation every day
+setInterval(rotateSecrets, 24 * 60 * 60 * 1000);
+
+// Initial check for rotation
+rotateSecrets();
+
+// Token expiration times
+const ACCESS_TOKEN_EXPIRY = '15m';  // 15 minutes
+const REFRESH_TOKEN_EXPIRY = '7d';  // 7 days
+
 /**
- * Generate an access token for a user
+ * Generate a JWT access token for a user
  */
-export function generateAccessToken(user: UserTokenData) {
-  return jwt.sign(
-    { 
-      userId: user.id,
-      username: user.username,
-      roleId: user.roleId 
-    }, 
-    JWT_SECRET, 
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
-  );
+export function generateAccessToken(user: Partial<User>): string {
+  const payload = {
+    sub: user.id?.toString(),
+    username: user.username,
+    email: user.email,
+    roleId: user.roleId,
+    type: 'access'
+  };
+  
+  return jwt.sign(payload, jwtSecrets.current, {
+    expiresIn: ACCESS_TOKEN_EXPIRY,
+    algorithm: 'HS256'
+  });
 }
 
 /**
- * Generate a refresh token for a user
+ * Generate a JWT refresh token for a user
  */
-export function generateRefreshToken(user: UserTokenData) {
-  return jwt.sign(
-    { 
-      userId: user.id,
-      tokenType: 'refresh' 
-    }, 
-    JWT_SECRET, 
-    { expiresIn: REFRESH_TOKEN_EXPIRY }
-  );
+export function generateRefreshToken(user: Partial<User>): string {
+  const payload = {
+    sub: user.id?.toString(),
+    type: 'refresh',
+    // Include a unique token identifier for revocation if needed
+    jti: crypto.randomBytes(16).toString('hex')
+  };
+  
+  return jwt.sign(payload, jwtSecrets.current, {
+    expiresIn: REFRESH_TOKEN_EXPIRY,
+    algorithm: 'HS256'
+  });
 }
 
 /**
- * Verify and decode a JWT token
+ * Verify a JWT token
+ * Returns the decoded token payload if valid, throws an error if invalid
  */
-export function verifyToken(token: string): UserTokenData | null {
+export function verifyToken(token: string): any {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    
-    // For access tokens
-    if (decoded.userId && decoded.username) {
-      return {
-        id: decoded.userId,
-        username: decoded.username,
-        roleId: decoded.roleId
-      };
+    // First try with current secret
+    return jwt.verify(token, jwtSecrets.current);
+  } catch (error: any) {
+    // If token is invalid and we have a previous secret, try that
+    if (error.name === 'JsonWebTokenError' && jwtSecrets.previous) {
+      try {
+        return jwt.verify(token, jwtSecrets.previous);
+      } catch (error2) {
+        throw error; // If still invalid, throw the original error
+      }
+    } else {
+      throw error;
     }
-    
-    // For refresh tokens
-    if (decoded.userId && decoded.tokenType === 'refresh') {
-      return {
-        id: decoded.userId,
-        username: '', // Refresh tokens don't contain username
-        roleId: 0     // Refresh tokens don't contain roleId
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('JWT verification error:', error);
-    return null;
   }
 }
 
 /**
  * Generate both access and refresh tokens for a user
  */
-export function generateTokens(user: UserTokenData) {
+export function generateTokens(user: Partial<User>): {
+  accessToken: string;
+  refreshToken: string;
+} {
   return {
     accessToken: generateAccessToken(user),
     refreshToken: generateRefreshToken(user)
@@ -87,45 +121,90 @@ export function generateTokens(user: UserTokenData) {
 }
 
 /**
- * Extract JWT from request
- * Looks in: Authorization header, cookies, and query params
+ * Extract user ID from token
  */
-export function extractJwtFromRequest(req: Request): string | null {
-  // Check Authorization header
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    return authHeader.substring(7);
+export function getUserIdFromToken(token: string): number | undefined {
+  try {
+    const decoded = verifyToken(token);
+    const userId = decoded.sub;
+    
+    if (userId) {
+      return parseInt(userId, 10);
+    }
+    
+    return undefined;
+  } catch (error) {
+    return undefined;
   }
-  
-  // Check cookies
-  if (req.cookies && req.cookies.accessToken) {
-    return req.cookies.accessToken;
-  }
-  
-  // Check query params (not recommended for production)
-  if (req.query && req.query.token) {
-    return req.query.token as string;
-  }
-  
-  return null;
 }
 
 /**
- * JWT Authentication middleware
+ * Set JWT tokens in HTTP-only cookies for enhanced security
  */
-export function jwtAuth(req: Request, res: Response, next: NextFunction) {
-  const token = extractJwtFromRequest(req);
+export function setTokenCookies(res: any, tokens: { accessToken: string, refreshToken: string }) {
+  // Set access token cookie (short-lived)
+  res.cookie('access_token', tokens.accessToken, {
+    httpOnly: true,  // Prevents JavaScript access
+    secure: process.env.NODE_ENV === 'production',  // HTTPS only in production
+    sameSite: 'lax', // Helps prevent CSRF
+    maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
+  });
   
-  if (!token) {
-    return next(); // Let the next middleware handle unauthenticated requests
+  // Set refresh token cookie (long-lived)
+  res.cookie('refresh_token', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+  });
+}
+
+/**
+ * Clear JWT tokens from cookies
+ */
+export function clearTokenCookies(res: any) {
+  res.clearCookie('access_token');
+  res.clearCookie('refresh_token');
+}
+
+/**
+ * Check if a token is about to expire
+ * Returns true if token expires within the next 5 minutes
+ */
+export function isTokenAboutToExpire(token: string): boolean {
+  try {
+    const decoded = verifyToken(token);
+    const expiryTime = decoded.exp * 1000; // Convert to milliseconds
+    const now = Date.now();
+    
+    // Check if token expires within 5 minutes
+    return expiryTime - now < 5 * 60 * 1000;
+  } catch (error) {
+    // If token verification fails, consider it about to expire
+    return true;
+  }
+}
+
+/**
+ * Extract JWT token from the request
+ * Checks for token in Authorization header, cookies, or query parameter
+ */
+export function extractJwtFromRequest(req: any): string | undefined {
+  // Check Authorization header (Bearer token)
+  const authHeader = req.headers?.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7); // Remove 'Bearer ' prefix
   }
   
-  const userData = verifyToken(token);
-  if (userData) {
-    // Attach the user info to the request
-    (req as any).user = userData;
-    return next();
+  // Check cookies (for server-to-server communication)
+  if (req.cookies?.access_token) {
+    return req.cookies.access_token;
   }
   
-  return next(); // Continue to the next middleware
+  // Check query parameter (less secure, used for special cases like WebSocket connections)
+  if (req.query?.token) {
+    return req.query.token as string;
+  }
+  
+  return undefined;
 }
