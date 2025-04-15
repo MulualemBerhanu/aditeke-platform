@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/components/auth/AuthContext';
-import OfflineModeAlert from '@/components/auth/OfflineModeAlert';
+import TokenAuthAlert from '@/components/auth/TokenAuthAlert';
 import {
   BarChart3,
   Users,
@@ -131,8 +131,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Offline mode alert */}
-      <OfflineModeAlert />
+      {/* Token Auth Alert for cross-domain environments */}
+      <TokenAuthAlert />
       
       {/* Overlay for mobile when sidebar is open */}
       {isMobile && isSidebarOpen && (
