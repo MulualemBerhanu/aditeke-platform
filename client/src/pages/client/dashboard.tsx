@@ -59,40 +59,46 @@ export default function ClientDashboard() {
     // Check role permissions and redirect if needed
     const userData = user || (storedUser ? JSON.parse(storedUser) : null);
     if (userData) {
+      // Get roleId - either directly or convert from string if needed
+      const roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
       const username = userData.username.toLowerCase();
       
-      // First, check role based on username (most reliable)
-      if (!username.includes('client')) {
-        console.log("⚠️ Not authorized as client based on username, redirecting");
-        if (username.includes('admin')) {
-          window.location.href = '/admin/dashboard';
-        } else if (username.includes('manager')) {
-          window.location.href = '/manager/dashboard';
-        } else {
-          // Try to get numeric roleId - either directly or convert from string if needed
-          const roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
-          
-          // If still can't determine role, use roleId
-          if (roleIdNum !== 1001) { // 1001 is the client role ID in Firebase
-            console.log("⚠️ Not authorized as client based on roleId, redirecting");
-            if (roleIdNum === 1002) { // 1002 is the admin role ID in Firebase
-              window.location.href = '/admin/dashboard';
-            } else if (roleIdNum === 1000) { // 1000 is the manager role ID in Firebase
-              window.location.href = '/manager/dashboard';
-            } else {
-              window.location.href = '/';
-            }
-          }
-        }
+      console.log("🔍 DEBUG - Role check:", { username, roleId: roleIdNum });
+
+      // First, check username pattern for legacy compatibility
+      // But immediately after, also check roleId which is more reliable
+      if (username.includes('admin') || roleIdNum === 1002) {
+        console.log("⚠️ Redirecting to admin dashboard based on role identification");
+        window.location.href = '/admin/dashboard';
+        return;
       }
+      
+      if (username.includes('manager') || roleIdNum === 1000) {
+        console.log("⚠️ Redirecting to manager dashboard based on role identification");
+        window.location.href = '/manager/dashboard';
+        return;
+      }
+
+      // If not admin or manager, check if the user is a client based on roleId
+      if (!username.includes('client') && roleIdNum !== 1001) {
+        console.log("⚠️ Not a client by username or roleId, redirecting to home");
+        window.location.href = '/';
+        return;
+      }
+      
+      // If we reach here, user is confirmed client - either by username or roleId
+      console.log("✓ Confirmed client access - either by username or roleId:", roleIdNum);
     }
   }, [user, setLocation]);
 
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
 
-  // Check if user is a client based on username (most reliable method)
-  const isClient = userData && userData.username.toLowerCase().includes('client');
+  // Check if user is a client based on either username or roleId
+  const isClient = userData && (
+    userData.username.toLowerCase().includes('client') || 
+    (userData.roleId === 1001 || userData.roleId === "1001")
+  );
   
   // Project hardcoded data for client demonstration
   const hardcodedClientProjects = React.useMemo(() => {
