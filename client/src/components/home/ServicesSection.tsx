@@ -100,11 +100,9 @@ const ServiceCard = ({ title, description, icon, href, index }: ServiceCardProps
       </div>
       <h3 className="text-xl font-bold mb-3">{title}</h3>
       <p className="text-gray-600 mb-4">{description}</p>
-      <Link href={href}>
-        <a className="text-primary font-medium inline-flex items-center group-hover:text-accent transition-colors">
-          Learn more 
-          <i className="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
-        </a>
+      <Link href={href} className="text-primary font-medium inline-flex items-center group-hover:text-accent transition-colors">
+        Learn more 
+        <i className="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
       </Link>
     </motion.div>
   );
