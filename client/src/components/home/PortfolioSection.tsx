@@ -127,11 +127,9 @@ const ProjectCard = ({ title, description, image, index }: ProjectCardProps) => 
           <div className="p-6">
             <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
             <p className="text-white/80 mb-4">{description}</p>
-            <Link href={`/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`}>
-              <a className="inline-flex items-center text-white hover:text-accent transition-colors">
-                View Case Study
-                <i className="fas fa-arrow-right ml-2"></i>
-              </a>
+            <Link href={`/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`} className="inline-flex items-center text-white hover:text-accent transition-colors">
+              View Case Study
+              <i className="fas fa-arrow-right ml-2"></i>
             </Link>
           </div>
         </div>
