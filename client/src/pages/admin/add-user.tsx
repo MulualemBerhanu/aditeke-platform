@@ -114,14 +114,38 @@ export default function AddUserPage() {
           isActive: userData.isActive !== undefined ? userData.isActive : true
         };
         
-        // Use the register endpoint which is already working
-        const res = await apiRequest("POST", "/api/register", userDataToSend);
-        console.log("Response status:", res.status, res.statusText);
+        // Try a different approach using direct fetch to diagnose the issue
+        const token = document.cookie
+          .split(';')
+          .find(cookie => cookie.trim().startsWith('csrf_token='))
+          ?.split('=')[1];
+        
+        console.log("Using direct fetch with CSRF token:", token);
+        
+        const res = await fetch("/api/register", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': token || '',
+          },
+          credentials: 'include',
+          body: JSON.stringify(userDataToSend)
+        });
+        
+        console.log("Direct fetch response status:", res.status, res.statusText);
         
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || "Failed to create user");
+          let errorMessage = "Failed to create user";
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            // If response isn't JSON, use the status text
+            errorMessage = `HTTP error ${res.status}: ${res.statusText}`;
+          }
+          throw new Error(errorMessage);
         }
+        
         return await res.json();
       } catch (error) {
         console.error("Error creating user:", error);
