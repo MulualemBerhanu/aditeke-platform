@@ -157,11 +157,11 @@ export const getQueryFn: <T>(options: {
           "Expires": "0"
         };
         
-        // Add CSRF token for protection against CSRF attacks
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        if (csrfToken) {
-          headers['X-CSRF-Token'] = csrfToken;
-        }
+        // Add CSRF token for protection against CSRF attacks using our utility
+        const csrfHeaders = addCSRFTokenToHeaders(headers);
+        Object.entries(csrfHeaders).forEach(([key, value]) => {
+          headers[key] = value;
+        });
         
         // Import the secure token utility
         const { getAccessToken } = await import('./secureTokenStorage');
@@ -219,7 +219,8 @@ export const getQueryFn: <T>(options: {
         // Check for auth errors and attempt token refresh if needed
         if (res.status === 401) {
           // Try to refresh the token if we have a refresh token (and we're not already falling back)
-          if (localStorage.getItem('refreshToken') && unauthorizedBehavior !== "returnNull") {
+          const { getRefreshToken } = await import('./secureTokenStorage');
+          if (getRefreshToken() && unauthorizedBehavior !== "returnNull") {
             try {
               console.warn('Access token expired in query, attempting refresh...');
               
@@ -238,8 +239,22 @@ export const getQueryFn: <T>(options: {
           }
           
           // If in deployed environment and we're configured to return null, fall back to localStorage
+          // This is only used for compatibility with older versions of the app
           if (isDeployedEnv && unauthorizedBehavior === "returnNull") {
-            console.warn('Authentication error - trying to recover with localStorage');
+            console.warn('Authentication error - trying to recover with secure storage');
+            // First try to get from secure storage using token
+            try {
+              const { getAccessToken, clearTokens } = await import('./secureTokenStorage');
+              const token = getAccessToken();
+              if (token) {
+                // Token exists but is invalid (401), so we need to clear it
+                clearTokens();
+              }
+            } catch (e) {
+              console.error('Error accessing secure storage:', e);
+            }
+            
+            // Legacy fallback (to be removed in future)
             const storedUser = localStorage.getItem('currentUser');
             if (storedUser) {
               return JSON.parse(storedUser);
@@ -262,7 +277,8 @@ export const getQueryFn: <T>(options: {
         if (lastError.message.includes('Failed to fetch') && attempt === maxRetries) {
           // In deployed environments with network errors, try to use fallback from localStorage
           if (unauthorizedBehavior === "returnNull") {
-            console.warn('Network error - trying to recover with localStorage');
+            console.warn('Network error - trying to recover with secure storage');
+            // Legacy fallback (to be removed in future)
             const storedUser = localStorage.getItem('currentUser');
             if (storedUser) {
               return JSON.parse(storedUser);
@@ -273,9 +289,11 @@ export const getQueryFn: <T>(options: {
       }
     }
     
-    // If we've exhausted all retries, try localStorage fallback for user queries before failing
+    // If we've exhausted all retries, try secure fallbacks for user queries before failing
     if (queryKey[0] === '/api/user' && unauthorizedBehavior === "returnNull") {
-      console.warn('All retries failed - trying to recover with localStorage');
+      console.warn('All retries failed - trying to recover with secure storage');
+      
+      // Legacy fallback (to be removed in future)
       const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
         return JSON.parse(storedUser);

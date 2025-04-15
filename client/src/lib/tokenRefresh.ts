@@ -1,5 +1,5 @@
 import { apiRequest } from './queryClient';
-import { getRefreshToken, storeTokens, clearTokens } from './secureTokenStorage';
+import { getRefreshToken, setAccessToken, setRefreshToken, clearTokens } from './secureTokenStorage';
 
 // Track if a refresh is already in progress to prevent multiple simultaneous refreshes
 let isRefreshing = false;
@@ -32,7 +32,8 @@ export async function refreshTokens(): Promise<{ accessToken: string, refreshTok
       
       if (data.accessToken && data.refreshToken) {
         // Store new tokens securely
-        storeTokens(data.accessToken, data.refreshToken);
+        setAccessToken(data.accessToken);
+        setRefreshToken(data.refreshToken);
         
         console.log('Token refresh successful');
         return data;
