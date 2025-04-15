@@ -19,6 +19,13 @@ const scryptAsync = promisify(scrypt);
 
 // Password hashing function
 async function hashPassword(password: string) {
+  // Check if password is undefined or empty
+  if (!password) {
+    console.error("Password is undefined or empty");
+    throw new Error("Password cannot be empty or undefined");
+  }
+  
+  console.log(`Hashing password of length: ${password.length}`);
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
   return `${buf.toString("hex")}.${salt}`;
@@ -214,6 +221,26 @@ export function setupAuth(app: Express) {
   // Registration endpoint
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("Registration request received:", {
+        username: req.body.username,
+        email: req.body.email,
+        hasPassword: !!req.body.password,
+        passwordLength: req.body.password ? req.body.password.length : 0,
+        roleId: req.body.roleId
+      });
+      
+      // Basic validation
+      if (!req.body.username || !req.body.password || !req.body.email) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            username: !req.body.username ? "Username is required" : null,
+            password: !req.body.password ? "Password is required" : null,
+            email: !req.body.email ? "Email is required" : null
+          }
+        });
+      }
+      
       // Check if username already exists
       const existingUser = await storage.getUserByUsername(req.body.username);
       if (existingUser) {
@@ -227,21 +254,42 @@ export function setupAuth(app: Express) {
       }
 
       // Hash password and create user
-      const hashedPassword = await hashPassword(req.body.password);
-      const user = await storage.createUser({
-        ...req.body,
-        password: hashedPassword,
-        roleId: req.body.roleId || clientRole.id, // Default to client role if not specified
-      });
-
-      // Log in the newly registered user
-      req.login(user, (err) => {
-        if (err) return next(err);
+      try {
+        console.log(`Attempting to hash password of length: ${req.body.password.length}`);
+        const hashedPassword = await hashPassword(req.body.password);
+        console.log("Password hashed successfully");
         
-        // Return user without sensitive information
-        const { password, ...userWithoutPassword } = user;
-        res.status(201).json(userWithoutPassword);
-      });
+        // Create a clean user object without any undefined values
+        const userToCreate = {
+          username: req.body.username,
+          password: hashedPassword,
+          email: req.body.email,
+          name: req.body.name || req.body.username,
+          roleId: req.body.roleId || clientRole.id,
+          profilePicture: req.body.profilePicture || null,
+          isActive: req.body.isActive === false ? false : true // default to true
+        };
+        
+        console.log("Creating user with clean data:", {
+          ...userToCreate,
+          password: "[REDACTED]" // Don't log the actual password hash
+        });
+        
+        const user = await storage.createUser(userToCreate);
+        console.log("User created successfully with ID:", user.id);
+
+        // Log in the newly registered user
+        req.login(user, (err) => {
+          if (err) return next(err);
+          
+          // Return user without sensitive information
+          const { password, ...userWithoutPassword } = user;
+          res.status(201).json(userWithoutPassword);
+        });
+      } catch (hashError) {
+        console.error("Error hashing password:", hashError);
+        return res.status(500).json({ message: "Error processing password" });
+      }
     } catch (error) {
       next(error);
     }
