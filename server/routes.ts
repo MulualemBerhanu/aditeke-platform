@@ -1253,10 +1253,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
-    res.json({
-      message: "CSRF test endpoint",
-      csrfToken: req.cookies?.csrf_token || "No CSRF token found"
-    });
+    // Check if we have a token
+    const tokenExists = !!req.cookies?.csrf_token;
+    
+    // If not, force generate one by explicitly setting a cookie
+    if (!tokenExists) {
+      const newToken = require('crypto').randomBytes(32).toString('hex');
+      res.cookie('csrf_token', newToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000
+      });
+      
+      console.log('Generated new CSRF token for client:', newToken);
+      
+      res.json({
+        message: "New CSRF token generated and set in cookie",
+        csrfToken: newToken
+      });
+    } else {
+      console.log('Using existing CSRF token from cookie:', req.cookies.csrf_token);
+      
+      res.json({
+        message: "Using existing CSRF token from cookie",
+        csrfToken: req.cookies.csrf_token
+      });
+    }
   });
   
   // Test endpoint that requires CSRF protection (POST) but not authentication
