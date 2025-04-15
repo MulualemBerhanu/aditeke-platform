@@ -100,49 +100,10 @@ export default function ClientDashboard() {
     (userData.roleId === 1001 || userData.roleId === "1001")
   );
   
-  // Project hardcoded data for client demonstration
-  const hardcodedClientProjects = React.useMemo(() => {
-    if (!userData?.id) return [];
-    
-    // Demo projects for this specific client
-    return [
-      {
-        id: 101,
-        title: "E-commerce Platform",
-        description: "Custom e-commerce platform with payment gateway integration",
-        thumbnail: "/images/projects/ecommerce.jpg",
-        category: "Web Development",
-        clientId: userData.id,
-        startDate: new Date("2025-01-15"),
-        endDate: new Date("2025-06-30"),
-        status: "In Progress"
-      },
-      {
-        id: 102,
-        title: "Mobile App Development",
-        description: "Cross-platform mobile application with user authentication",
-        thumbnail: "/images/projects/mobile-app.jpg",
-        category: "Mobile Development",
-        clientId: userData.id,
-        startDate: new Date("2024-11-10"),
-        endDate: new Date("2025-05-15"),
-        status: "Design Phase" 
-      },
-      {
-        id: 103, 
-        title: "Website Redesign",
-        description: "Complete redesign of corporate website with modern UI/UX",
-        thumbnail: "/images/projects/redesign.jpg",
-        category: "UI/UX Design",
-        clientId: userData.id,
-        startDate: new Date("2024-09-01"),
-        endDate: new Date("2024-12-15"),
-        status: "Completed"
-      }
-    ];
-  }, [userData?.id]);
+  // Empty projects array - we'll use real data from the API only
+  const emptyProjects: Project[] = [];
   
-  // Fetch client's projects
+  // Fetch client's projects - only using real data from API
   const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery<Project[]>({
     queryKey: ['/api/clients', userData?.id, 'projects'],
     queryFn: async () => {
@@ -155,24 +116,23 @@ export default function ClientDashboard() {
         const res = await fetch(`/api/clients/${userData.id}/projects`);
         
         if (!res.ok) {
-          console.log("API request failed, falling back to hardcoded data");
-          return hardcodedClientProjects;
+          console.log("API request failed");
+          return [];
         }
         
         const data = await res.json();
         console.log("Projects fetched from API:", data);
         
-        // If the API returns empty array or no data, use hardcoded data
-        if (!data || !Array.isArray(data) || data.length === 0) {
-          console.log("API returned no projects, using hardcoded data");
-          return hardcodedClientProjects;
+        // Return an empty array if the API returns no data
+        if (!data || !Array.isArray(data)) {
+          console.log("API returned invalid data format");
+          return [];
         }
         
         return data;
       } catch (error) {
         console.error("Error fetching client projects:", error);
-        console.log("Using hardcoded projects due to error");
-        return hardcodedClientProjects;
+        return [];
       }
     },
     enabled: !!userData?.id && isClient
