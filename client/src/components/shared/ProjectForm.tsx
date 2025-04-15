@@ -80,10 +80,8 @@ export default function ProjectForm({
     },
   });
 
-  // Determine the client fetching endpoint based on role
-  const clientsEndpoint = role === 'admin' 
-    ? '/api/users/clients' 
-    : '/api/manager/client-options';
+  // Use the simple clients list endpoint for both roles
+  const clientsEndpoint = '/api/clients/list';
 
   // Fetch clients for dropdown
   const { data: clients = [], isLoading: isLoadingClients } = useQuery({
