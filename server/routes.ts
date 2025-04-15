@@ -567,11 +567,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Received project creation request:", JSON.stringify(req.body));
       
+      // Parse and validate the data first
       const projectData = insertProjectSchema.parse(req.body);
       console.log("Project data validated successfully:", JSON.stringify(projectData));
       
+      // Convert string dates to Date objects for storage
+      const processedProjectData = {
+        ...projectData,
+        // If startDate is a string, convert it to a Date, otherwise keep as is
+        startDate: typeof projectData.startDate === 'string' 
+          ? new Date(projectData.startDate)
+          : projectData.startDate,
+        // If endDate is present and a string, convert it to a Date, otherwise keep as is
+        endDate: projectData.endDate && typeof projectData.endDate === 'string'
+          ? new Date(projectData.endDate)
+          : projectData.endDate
+      };
+      
       // Create the project
-      const project = await storage.createProject(projectData);
+      const project = await storage.createProject(processedProjectData);
       console.log("Project created:", JSON.stringify(project));
       
       return res.status(201).json(project);

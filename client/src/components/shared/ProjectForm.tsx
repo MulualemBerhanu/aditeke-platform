@@ -129,13 +129,16 @@ export default function ProjectForm({
   async function onSubmit(data: ProjectFormValues) {
     setIsSubmitting(true);
     
-    // Transform string dates to proper format if needed
+    // Format the data correctly for submission - send dates as strings
     const formattedData = {
       ...data,
-      // Pass undefined instead of null for empty endDate to match the expected types
+      // Keep dates as strings in format YYYY-MM-DD
+      startDate: data.startDate,
+      // Pass empty string as undefined for optional endDate
       endDate: data.endDate || undefined,
     };
     
+    console.log("Submitting project data:", formattedData);
     createProject.mutate(formattedData);
   }
 

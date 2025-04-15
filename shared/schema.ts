@@ -85,15 +85,16 @@ export const projects = pgTable("projects", {
   status: text("status").notNull().default("in-progress"),
 });
 
-export const insertProjectSchema = createInsertSchema(projects).pick({
-  title: true,
-  description: true,
-  thumbnail: true,
-  category: true,
-  clientId: true,
-  startDate: true,
-  endDate: true,
-  status: true,
+// Create a custom project schema that accepts string dates
+export const insertProjectSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters long"),
+  description: z.string().min(10, "Description must be at least 10 characters long"),
+  thumbnail: z.string().optional(),
+  category: z.string(),
+  clientId: z.number(),
+  startDate: z.string().or(z.date()), // Accept both string and date
+  endDate: z.string().optional().or(z.date().optional()), // Optional string or date
+  status: z.string(),
 });
 
 // Testimonial schema
