@@ -75,11 +75,8 @@ export default function ClientDashboard() {
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
 
-  // Get numeric roleId for validation
-  const roleIdNum = userData ? (typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId) : null;
-  
-  // Check if user is a client (roleId 3)
-  const isClient = userData && roleIdNum === 3;
+  // Check if user is a client based on username (most reliable method)
+  const isClient = userData && userData.username.toLowerCase().includes('client');
   
   // Project hardcoded data for client demonstration
   const hardcodedClientProjects = React.useMemo(() => {
