@@ -17,14 +17,30 @@ export default function ClientDashboard() {
   const { user, logout } = useAuth();
   const [_, setLocation] = useLocation();
   
-  // Function to format dates
-  const formatDate = (dateString: string | Date) => {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+  // Function to format dates - handling different date formats (Firebase Timestamp format)
+  const formatDate = (dateInput: any) => {
+    // If it's a Firebase Timestamp with _seconds property
+    if (dateInput && typeof dateInput === 'object' && '_seconds' in dateInput) {
+      const date = new Date(dateInput._seconds * 1000);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+    
+    // If it's a regular Date object or string
+    try {
+      const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      console.error("Failed to format date:", dateInput);
+      return "Invalid date";
+    }
   };
 
   // Redirect if not logged in or not a client - check both API and localStorage
