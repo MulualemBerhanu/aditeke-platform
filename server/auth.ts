@@ -234,7 +234,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Login endpoint
+  // Enhanced login endpoint with cross-domain token support
   app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
@@ -247,7 +247,19 @@ export function setupAuth(app: Express) {
         
         // Return user without sensitive information
         const { password, ...userWithoutPassword } = user;
-        res.status(200).json(userWithoutPassword);
+        
+        // For cross-domain deployments, add a JWT-like token
+        // This is a simple implementation - in production, use a proper JWT library
+        const timestamp = Date.now();
+        const simpleToken = Buffer.from(
+          `${user.id}:${user.username}:${user.roleId}:${timestamp}`
+        ).toString('base64');
+        
+        // Return user data with token for cross-domain authentication
+        res.status(200).json({
+          ...userWithoutPassword,
+          token: simpleToken
+        });
       });
     })(req, res, next);
   });
@@ -305,9 +317,60 @@ export function setupAuth(app: Express) {
     res.json(userWithoutPassword);
   });
 
+  // Middleware to verify token authentication for cross-domain requests
+  const verifyTokenAuth = async (req: Request, res: Response, next: NextFunction) => {
+    // If already authenticated via session, continue
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    
+    // Check for Bearer token in Authorization header
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      
+      try {
+        // Simple token verification - in production use a proper JWT library
+        const tokenData = Buffer.from(token, 'base64').toString().split(':');
+        if (tokenData.length === 4) {
+          const [userId, username, roleId, timestamp] = tokenData;
+          
+          // Check if token is not too old (e.g., not older than 7 days)
+          const tokenAge = Date.now() - parseInt(timestamp);
+          const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+          
+          if (tokenAge < maxAge) {
+            // Find the user
+            const user = await storage.getUser(parseInt(userId));
+            if (user && user.username === username) {
+              // Manually set the user on the request
+              (req as any).user = user;
+              console.log(`Token authentication successful for user ${username}`);
+              return next();
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Token authentication error:', error);
+      }
+    }
+    
+    // If we reach here with an API request, authentication failed
+    if (req.path.startsWith('/api/') && req.path !== '/api/login' && 
+        req.path !== '/api/register' && !req.path.startsWith('/api/public/')) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    // For non-API paths, continue to the next middleware
+    next();
+  };
+  
+  // Apply the token verification middleware to all requests
+  app.use(verifyTokenAuth);
+  
   // Helper middleware for protected routes
   app.use("/api/protected/*", (req, res, next) => {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() && !(req as any).user) {
       return res.status(401).json({ message: "Authentication required" });
     }
     next();
