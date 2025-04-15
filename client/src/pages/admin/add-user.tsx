@@ -100,9 +100,22 @@ export default function AddUserPage() {
   const createUserMutation = useMutation({
     mutationFn: async (userData: UserFormValues) => {
       try {
-        console.log("Creating user with data:", JSON.stringify(userData));
+        // Log the exact data being sent
+        console.log("Creating user with data:", JSON.stringify(userData, null, 2));
+        
+        // Make a copy of the userData with all the required fields explicitly
+        const userDataToSend = {
+          username: userData.username,
+          password: userData.password,
+          email: userData.email,
+          name: userData.name,
+          roleId: userData.roleId,
+          profilePicture: userData.profilePicture || null,
+          isActive: userData.isActive !== undefined ? userData.isActive : true
+        };
+        
         // Use the register endpoint which is already working
-        const res = await apiRequest("POST", "/api/register", userData);
+        const res = await apiRequest("POST", "/api/register", userDataToSend);
         console.log("Response status:", res.status, res.statusText);
         
         if (!res.ok) {
@@ -134,6 +147,25 @@ export default function AddUserPage() {
 
   // Form submission handler
   function onSubmit(data: UserFormValues) {
+    console.log("Form submitted with values:", JSON.stringify(data, null, 2));
+    
+    // Check for any undefined values that might cause issues
+    Object.entries(data).forEach(([key, value]) => {
+      if (value === undefined) {
+        console.warn(`Warning: Form field '${key}' is undefined`);
+      }
+    });
+    
+    // Ensure roleId is a number if it exists in the form data
+    if (data.roleId) {
+      data.roleId = Number(data.roleId);
+    } else if (roles && roles.length > 0) {
+      // If roleId is missing but roles are loaded, set to default role
+      console.log("Setting default roleId from available roles");
+      const clientRole = roles.find(role => role.name.toLowerCase() === 'client');
+      data.roleId = clientRole ? clientRole.id : roles[0].id;
+    }
+    
     createUserMutation.mutate(data);
   }
 
@@ -225,7 +257,10 @@ export default function AddUserPage() {
                       <FormItem>
                         <FormLabel>Role</FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          onValueChange={(value) => {
+                            console.log("Role selected:", value);
+                            field.onChange(parseInt(value));
+                          }}
                           defaultValue={field.value?.toString()}
                           value={field.value?.toString()}
                         >
