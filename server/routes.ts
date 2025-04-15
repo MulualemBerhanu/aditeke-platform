@@ -453,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get projects for a specific client
-  app.get("/api/clients/:clientId/projects", requirePermission("projects", "read"), async (req, res) => {
+  app.get("/api/clients/:clientId/projects", async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {
@@ -466,7 +466,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Client not found" });
       }
       
-      const projects = await storage.getProjectsForClient(clientId);
+      // Check if user is authorized (either has permission or is the client themselves)
+      const isClient = req.user && (req.user.id === clientId || req.user.id === client.id);
+      const hasPermission = req.user && await storage.hasPermission(req.user.id, "projects", "read");
+      
+      if (!isClient && !hasPermission) {
+        console.log(`Unauthorized access: User ${req.user?.id} tried to access projects for client ${clientId}`);
+        return res.status(403).json({ message: "Unauthorized to view these projects" });
+      }
+      
+      // Get all projects and filter for the client
+      const allProjects = await storage.getAllProjects();
+      console.log(`Found ${allProjects.length} total projects`);
+      
+      // Filter to get only projects assigned to this client
+      const projects = allProjects.filter(project => 
+        project.clientId === clientId || 
+        project.clientId === Number(clientId) || 
+        String(project.clientId) === String(clientId)
+      );
+      
+      console.log(`Filtered ${projects.length} projects for client ${clientId}`);
       return res.json(projects);
     } catch (error) {
       console.error("Error fetching client projects:", error);
