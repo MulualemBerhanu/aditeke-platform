@@ -74,15 +74,24 @@ export class FirebaseStorage implements IStorage {
 
   async createUser(user: any): Promise<User> {
     try {
-      // Generate a unique ID
+      // Clean up any undefined values to prevent Firestore errors
+      const cleanUser = Object.fromEntries(
+        Object.entries(user).filter(([_, value]) => value !== undefined)
+      );
+      
+      // Generate a unique ID and ensure no undefined values
       const newUser = {
-        ...user,
+        ...cleanUser,
         id: Date.now(), // Simple ID generation
         createdAt: new Date().toISOString(),
         updatedAt: null,
-        lastLogin: null
+        lastLogin: null,
+        // Ensure these fields are never undefined
+        profilePicture: cleanUser.profilePicture || null,
+        isActive: typeof cleanUser.isActive === 'boolean' ? cleanUser.isActive : true
       };
       
+      console.log("Creating clean user:", newUser);
       await this.db.collection('users').add(newUser);
       
       return newUser as User;
