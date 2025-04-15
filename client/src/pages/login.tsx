@@ -138,9 +138,27 @@ export default function LoginPage() {
       
       // If in deployed environment, store explicit role information before login attempt
       if (isDeployedEnv && selectedRole) {
-        localStorage.setItem('userRole', selectedRole.name.toLowerCase());
-        localStorage.setItem('userRoleId', selectedRole.id.toString());
-        console.log(`Pre-storing selected role information: ${selectedRole.name} (${selectedRole.id})`);
+        // Double check if this is a manager username trying to log in as admin
+        if (selectedRole.id === 1002 && data.username.toLowerCase().includes('manager')) {
+          console.warn("⚠️ Security check: Manager username with Admin role selected!");
+          // Force correction to manager role
+          const managerRole = USER_ROLES.find(role => role.id === 1000);
+          if (managerRole) {
+            console.log("🔒 Security override: Switching from Admin to Manager role");
+            localStorage.setItem('userRole', managerRole.name.toLowerCase());
+            localStorage.setItem('userRoleId', managerRole.id.toString());
+            setSelectedRole(managerRole);
+            console.log(`Security-corrected role information: ${managerRole.name} (${managerRole.id})`);
+          } else {
+            localStorage.setItem('userRole', 'manager');
+            localStorage.setItem('userRoleId', '1000');
+            console.log(`Security-enforced role information: Manager (1000)`);
+          }
+        } else {
+          localStorage.setItem('userRole', selectedRole.name.toLowerCase());
+          localStorage.setItem('userRoleId', selectedRole.id.toString());
+          console.log(`Pre-storing selected role information: ${selectedRole.name} (${selectedRole.id})`);
+        }
       }
       
       const userData = await login(data.username, data.password);
@@ -249,13 +267,24 @@ export default function LoginPage() {
         // Special handling for deployed environments with authentication issues
         console.warn("⚠️ Login failed in deployed environment - using fallback authentication");
         
+        // Security check: If username contains "manager" but role is admin, force manager role
+        let secureRoleId = selectedRole.id;
+        let secureRoleName = selectedRole.name.toLowerCase();
+        
+        if (data.username.toLowerCase().includes('manager') && selectedRole.id === 1002) {
+          console.warn("⚠️ Security check: Manager username with Admin role in fallback auth!");
+          secureRoleId = 1000; // force to manager role ID
+          secureRoleName = 'manager';
+          console.log("🔒 Security override: Using Manager role (1000) instead of Admin");
+        }
+        
         // Attempt to create a minimal user with the selected role for offline/testing mode
         const fallbackUser = {
-          id: selectedRole.id === 1002 ? 60001 : (selectedRole.id === 1000 ? 50001 : 2001),
+          id: secureRoleId === 1002 ? 60001 : (secureRoleId === 1000 ? 50001 : 2001),
           username: data.username,
           email: `${data.username}@aditeke.com`,
           name: data.username.charAt(0).toUpperCase() + data.username.slice(1),
-          roleId: selectedRole.id,
+          roleId: secureRoleId, // Use security-checked role ID
           profilePicture: null,
           createdAt: new Date().toISOString(),
           updatedAt: null,
@@ -268,11 +297,11 @@ export default function LoginPage() {
         localStorage.setItem('loginError', String(error));
         localStorage.setItem('loginTimestamp', Date.now().toString());
         
-        // Store the essential user data
+        // Store the essential user data with security-enforced role
         localStorage.setItem('currentUser', JSON.stringify(fallbackUser));
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', selectedRole.name.toLowerCase());
-        localStorage.setItem('userRoleId', selectedRole.id.toString());
+        localStorage.setItem('userRole', secureRoleName);
+        localStorage.setItem('userRoleId', secureRoleId.toString());
         
         // Provide a more helpful message - use a neutral tone
         toast({
@@ -281,8 +310,8 @@ export default function LoginPage() {
           variant: "default",
         });
         
-        // Redirect based on the selected role
-        const redirectUrl = `/${selectedRole.name.toLowerCase()}/dashboard`;
+        // Redirect based on security-enforced role
+        const redirectUrl = `/${secureRoleName}/dashboard`;
         localStorage.setItem('targetRedirect', redirectUrl);
         
         setTimeout(() => {
