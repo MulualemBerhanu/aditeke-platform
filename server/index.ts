@@ -5,6 +5,26 @@ import { storage, PostgresStorage } from "./storage";
 import 'dotenv/config';
 
 const app = express();
+
+// Enhanced CORS settings for cross-domain deployment
+app.use((req, res, next) => {
+  // Get the origin from the request headers, or use a default value
+  const origin = req.headers.origin || '';
+  
+  // Set necessary CORS headers for all responses
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
