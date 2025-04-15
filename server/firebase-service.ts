@@ -162,6 +162,239 @@ export class FirebaseStorage implements IStorage {
   // Project methods, Testimonial methods, etc.
   // These would follow a similar pattern as the user and role methods above
 
+  // Client Communications methods
+  async getClientCommunications(clientId: number): Promise<ClientCommunication[]> {
+    try {
+      const commRef = this.db.collection('client_communications').where('clientId', '==', clientId);
+      const snapshot = await commRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map(doc => doc.data() as ClientCommunication)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } catch (error) {
+      console.error("Error getting client communications from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication> {
+    try {
+      const id = Date.now();
+      const createdAt = new Date();
+      const clientCommunication: ClientCommunication = {
+        ...communication,
+        id,
+        createdAt,
+        isRead: communication.isRead !== undefined ? communication.isRead : false,
+        // Ensure required fields are not undefined
+        type: communication.type || 'message',
+        subject: communication.subject || null,
+        attachments: communication.attachments || {}
+      };
+      
+      await this.db.collection('client_communications').add(clientCommunication);
+      return clientCommunication;
+    } catch (error) {
+      console.error("Error creating client communication in Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async markCommunicationAsRead(id: number): Promise<ClientCommunication> {
+    try {
+      const commRef = this.db.collection('client_communications').where('id', '==', id);
+      const snapshot = await commRef.get();
+      
+      if (snapshot.empty) {
+        throw new Error(`Communication with ID ${id} not found`);
+      }
+      
+      const docId = snapshot.docs[0].id;
+      const communication = snapshot.docs[0].data() as ClientCommunication;
+      communication.isRead = true;
+      
+      await this.db.collection('client_communications').doc(docId).update({ isRead: true });
+      return communication;
+    } catch (error) {
+      console.error("Error marking communication as read in Firestore:", error);
+      throw error;
+    }
+  }
+  
+  // Client Documents methods
+  async getClientDocuments(clientId: number, category?: string): Promise<ClientDocument[]> {
+    try {
+      let docsRef = this.db.collection('client_documents').where('clientId', '==', clientId);
+      const snapshot = await docsRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      let documents = snapshot.docs.map(doc => doc.data() as ClientDocument);
+      
+      if (category) {
+        documents = documents.filter(doc => doc.category === category);
+      }
+      
+      return documents.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+    } catch (error) {
+      console.error("Error getting client documents from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async uploadClientDocument(document: InsertClientDocument): Promise<ClientDocument> {
+    try {
+      const id = Date.now();
+      const uploadedAt = new Date();
+      const clientDocument: ClientDocument = {
+        ...document,
+        id,
+        uploadedAt,
+        // Ensure required fields are not undefined
+        description: document.description || null,
+        category: document.category || null,
+        projectId: document.projectId || null
+      };
+      
+      await this.db.collection('client_documents').add(clientDocument);
+      return clientDocument;
+    } catch (error) {
+      console.error("Error uploading client document to Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async getDocument(id: number): Promise<ClientDocument | undefined> {
+    try {
+      const docRef = this.db.collection('client_documents').where('id', '==', id);
+      const snapshot = await docRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      return snapshot.docs[0].data() as ClientDocument;
+    } catch (error) {
+      console.error("Error getting document from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async deleteDocument(id: number): Promise<boolean> {
+    try {
+      const docRef = this.db.collection('client_documents').where('id', '==', id);
+      const snapshot = await docRef.get();
+      
+      if (snapshot.empty) {
+        return false;
+      }
+      
+      const docId = snapshot.docs[0].id;
+      await this.db.collection('client_documents').doc(docId).delete();
+      return true;
+    } catch (error) {
+      console.error("Error deleting document from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  // Client Invoices methods
+  async getClientInvoices(clientId: number): Promise<ClientInvoice[]> {
+    try {
+      const invoicesRef = this.db.collection('client_invoices').where('clientId', '==', clientId);
+      const snapshot = await invoicesRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map(doc => doc.data() as ClientInvoice)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } catch (error) {
+      console.error("Error getting client invoices from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async getInvoice(id: number): Promise<ClientInvoice | undefined> {
+    try {
+      const invoiceRef = this.db.collection('client_invoices').where('id', '==', id);
+      const snapshot = await invoiceRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      return snapshot.docs[0].data() as ClientInvoice;
+    } catch (error) {
+      console.error("Error getting invoice from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async createClientInvoice(invoice: InsertClientInvoice): Promise<ClientInvoice> {
+    try {
+      const id = Date.now();
+      const createdAt = new Date();
+      const clientInvoice: ClientInvoice = {
+        ...invoice,
+        id,
+        createdAt,
+        updatedAt: null,
+        status: invoice.status || 'pending',
+        // Ensure required fields are not undefined
+        description: invoice.description || null,
+        notes: invoice.notes || null,
+        projectId: invoice.projectId || null,
+        paidDate: null,
+        paidAmount: null,
+        stripePaymentIntentId: null,
+        paymentMethod: null
+      };
+      
+      await this.db.collection('client_invoices').add(clientInvoice);
+      return clientInvoice;
+    } catch (error) {
+      console.error("Error creating client invoice in Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async updateInvoiceStatus(id: number, status: string, paymentData?: Partial<InsertClientInvoice>): Promise<ClientInvoice> {
+    try {
+      const invoiceRef = this.db.collection('client_invoices').where('id', '==', id);
+      const snapshot = await invoiceRef.get();
+      
+      if (snapshot.empty) {
+        throw new Error(`Invoice with ID ${id} not found`);
+      }
+      
+      const docId = snapshot.docs[0].id;
+      const invoice = snapshot.docs[0].data() as ClientInvoice;
+      const updatedInvoice: ClientInvoice = {
+        ...invoice,
+        ...paymentData,
+        status,
+        updatedAt: new Date()
+      };
+      
+      if (status === 'paid' && !updatedInvoice.paidDate) {
+        updatedInvoice.paidDate = new Date().toISOString();
+      }
+      
+      await this.db.collection('client_invoices').doc(docId).update(updatedInvoice);
+      return updatedInvoice;
+    } catch (error) {
+      console.error("Error updating invoice status in Firestore:", error);
+      throw error;
+    }
+  }
+  
   // For brevity, we'll add stub implementations for now
   // You can expand these as needed
   

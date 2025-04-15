@@ -5,6 +5,7 @@ import { setupAuth } from "./auth";
 import { z } from "zod";
 import { initializeDatabase } from "./db-init";
 import { updateFirebaseIds } from "./update-id-schema";
+import { authenticateJWT } from "./utils/authMiddleware";
 import {
   insertUserSchema,
   insertContactMessageSchema,
@@ -1527,6 +1528,271 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating project:", error);
       return res.status(500).json({ message: "Failed to update project" });
+    }
+  });
+
+  // Client Management API routes
+  // Client Communications
+  app.get('/api/client-communications/:clientId', authenticateJWT, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ error: "Invalid client ID" });
+      }
+      
+      const communications = await storage.getClientCommunications(clientId);
+      res.json(communications);
+    } catch (error) {
+      console.error("Error fetching client communications:", error);
+      res.status(500).json({ error: "Failed to fetch client communications" });
+    }
+  });
+  
+  app.post('/api/client-communications', authenticateJWT, async (req, res) => {
+    try {
+      const newCommunication = req.body;
+      const communication = await storage.createClientCommunication(newCommunication);
+      res.status(201).json(communication);
+    } catch (error) {
+      console.error("Error creating client communication:", error);
+      res.status(500).json({ error: "Failed to create client communication" });
+    }
+  });
+  
+  app.put('/api/client-communications/:id/read', authenticateJWT, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid communication ID" });
+      }
+      
+      const communication = await storage.markCommunicationAsRead(id);
+      res.json(communication);
+    } catch (error) {
+      console.error("Error marking communication as read:", error);
+      res.status(500).json({ error: "Failed to mark communication as read" });
+    }
+  });
+  
+  // Client Documents
+  app.get('/api/client-documents/:clientId', authenticateJWT, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ error: "Invalid client ID" });
+      }
+      
+      const category = req.query.category as string | undefined;
+      const documents = await storage.getClientDocuments(clientId, category);
+      res.json(documents);
+    } catch (error) {
+      console.error("Error fetching client documents:", error);
+      res.status(500).json({ error: "Failed to fetch client documents" });
+    }
+  });
+  
+  app.post('/api/client-documents', authenticateJWT, async (req, res) => {
+    try {
+      const newDocument = req.body;
+      const document = await storage.uploadClientDocument(newDocument);
+      res.status(201).json(document);
+    } catch (error) {
+      console.error("Error uploading client document:", error);
+      res.status(500).json({ error: "Failed to upload client document" });
+    }
+  });
+  
+  app.get('/api/client-documents/download/:id', authenticateJWT, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const document = await storage.getDocument(id);
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      
+      // In a real implementation, this would redirect to the document's URL
+      // or stream the file from storage. For now, we'll just return the document info.
+      res.json({ 
+        message: "Document download initiated", 
+        documentUrl: document.fileUrl 
+      });
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      res.status(500).json({ error: "Failed to download document" });
+    }
+  });
+  
+  app.delete('/api/client-documents/:id', authenticateJWT, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid document ID" });
+      }
+      
+      const success = await storage.deleteDocument(id);
+      if (success) {
+        res.json({ message: "Document deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Document not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      res.status(500).json({ error: "Failed to delete document" });
+    }
+  });
+  
+  // Client Invoices
+  app.get('/api/client-invoices/:clientId', authenticateJWT, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ error: "Invalid client ID" });
+      }
+      
+      const invoices = await storage.getClientInvoices(clientId);
+      res.json(invoices);
+    } catch (error) {
+      console.error("Error fetching client invoices:", error);
+      res.status(500).json({ error: "Failed to fetch client invoices" });
+    }
+  });
+  
+  app.get('/api/client-invoices/invoice/:id', authenticateJWT, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid invoice ID" });
+      }
+      
+      const invoice = await storage.getInvoice(id);
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      
+      res.json(invoice);
+    } catch (error) {
+      console.error("Error fetching invoice:", error);
+      res.status(500).json({ error: "Failed to fetch invoice" });
+    }
+  });
+  
+  app.post('/api/client-invoices', authenticateJWT, async (req, res) => {
+    try {
+      const newInvoice = req.body;
+      const invoice = await storage.createClientInvoice(newInvoice);
+      res.status(201).json(invoice);
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      res.status(500).json({ error: "Failed to create invoice" });
+    }
+  });
+  
+  app.put('/api/client-invoices/:id/status', authenticateJWT, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid invoice ID" });
+      }
+      
+      const { status, paymentData } = req.body;
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+      
+      const invoice = await storage.updateInvoiceStatus(id, status, paymentData);
+      res.json(invoice);
+    } catch (error) {
+      console.error("Error updating invoice status:", error);
+      res.status(500).json({ error: "Failed to update invoice status" });
+    }
+  });
+  
+  // Manual payment processing for client invoices
+  app.post('/api/mark-invoice-paid', authenticateJWT, async (req, res) => {
+    try {
+      const { invoiceId, paymentMethod, paidAmount, paymentDate, receiptNumber } = req.body;
+      
+      if (!invoiceId) {
+        return res.status(400).json({ error: "Invoice ID is required" });
+      }
+      
+      const numericInvoiceId = parseInt(invoiceId);
+      if (isNaN(numericInvoiceId)) {
+        return res.status(400).json({ error: "Invalid invoice ID" });
+      }
+      
+      // Get the invoice first to validate
+      const existingInvoice = await storage.getInvoice(numericInvoiceId);
+      if (!existingInvoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      
+      // Prepare payment data
+      const paymentData = {
+        paymentMethod: paymentMethod || 'manual',
+        paidAmount: paidAmount || existingInvoice.amount,
+        paidDate: paymentDate || new Date().toISOString(),
+        receiptNumber: receiptNumber || `RCP-${Date.now()}`
+      };
+      
+      // Update invoice status to paid
+      const updatedInvoice = await storage.updateInvoiceStatus(numericInvoiceId, 'paid', paymentData);
+      
+      // Generate PDF receipt (for future implementation)
+      // For now, just return success with receipt details
+      res.status(200).json({
+        success: true,
+        invoice: updatedInvoice,
+        receipt: {
+          receiptNumber: paymentData.receiptNumber,
+          date: paymentData.paidDate,
+          amount: paymentData.paidAmount,
+          method: paymentData.paymentMethod,
+          invoiceNumber: existingInvoice.invoiceNumber
+        }
+      });
+    } catch (error) {
+      console.error("Error processing manual payment:", error);
+      res.status(500).json({ error: "Failed to process payment" });
+    }
+  });
+  
+  // Generate receipt for already paid invoice
+  app.get('/api/generate-receipt/:invoiceId', authenticateJWT, async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.invoiceId);
+      if (isNaN(invoiceId)) {
+        return res.status(400).json({ error: "Invalid invoice ID" });
+      }
+      
+      // Get the invoice
+      const invoice = await storage.getInvoice(invoiceId);
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      
+      // Check if invoice is paid
+      if (invoice.status !== 'paid') {
+        return res.status(400).json({ error: "Cannot generate receipt for unpaid invoice" });
+      }
+      
+      // Return receipt data (in a real app, we might generate a PDF here)
+      res.json({
+        receiptNumber: invoice.receiptNumber || `RCP-${Date.now()}`,
+        invoiceNumber: invoice.invoiceNumber,
+        clientId: invoice.clientId,
+        paidDate: invoice.paidDate || new Date().toISOString(),
+        amount: invoice.amount,
+        paymentMethod: invoice.paymentMethod || 'manual',
+        items: invoice.items
+      });
+    } catch (error) {
+      console.error("Error generating receipt:", error);
+      res.status(500).json({ error: "Failed to generate receipt" });
     }
   });
 
