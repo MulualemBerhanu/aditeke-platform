@@ -414,11 +414,22 @@ export default function ManagerDashboard() {
                             </SelectTrigger>
                             <SelectContent>
                               {clients && clients.length > 0 ? (
-                                clients.map((client) => (
-                                  <SelectItem key={client.id} value={client.id.toString()}>
-                                    {client.name}
-                                  </SelectItem>
-                                ))
+                                clients.map((client) => {
+                                  // Defensive check to make sure client and client.id exist
+                                  if (!client || client.id === undefined || client.id === null) {
+                                    return null;
+                                  }
+                                  
+                                  // Make sure client.id and client.name are properly accessed
+                                  const clientId = typeof client.id === 'undefined' ? '' : client.id.toString();
+                                  const clientName = client.name || client.username || 'Unknown Client';
+                                  
+                                  return (
+                                    <SelectItem key={clientId} value={clientId}>
+                                      {clientName}
+                                    </SelectItem>
+                                  );
+                                })
                               ) : (
                                 <SelectItem value="none" disabled>
                                   No clients available
