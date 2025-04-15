@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { 
   Users, Layout, Mail, Calendar, ClipboardList,
   Clock, CheckCircle2, AlertCircle, Plus, Loader2,
-  FileText, PencilLine, UserPlus, Trash2, Edit
+  FileText, PencilLine, UserPlus, Trash2, Edit, X
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -35,8 +35,13 @@ export default function ManagerDashboard() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage] = React.useState(10);
   
-  // Search state
-  const [searchTerm, setSearchTerm] = React.useState("");
+  // Column-specific search state
+  const [filters, setFilters] = React.useState({
+    title: '',
+    client: '',
+    status: '',
+    deadline: ''
+  });
   
   // Format dates - handles various formats including Firestore timestamps
   const formatDate = (dateInput: any) => {
@@ -189,12 +194,9 @@ export default function ManagerDashboard() {
     }
   });
   
-  // Filter projects based on search term
+  // Filter projects based on column filters
   const filteredProjects = React.useMemo(() => {
     if (!projects) return [];
-    if (!searchTerm.trim()) return projects;
-    
-    const searchLower = searchTerm.toLowerCase();
     
     return projects.filter(project => {
       // Find client name for searching
@@ -205,16 +207,24 @@ export default function ManagerDashboard() {
         return cId === pClientId;
       });
       const clientName = client ? (client.name || client.username || '') : '';
+      const formattedDeadline = project.endDate ? formatDate(project.endDate) : 'No deadline';
       
-      // Check if search term is found in any field
-      return (
-        (project.title?.toLowerCase().includes(searchLower) || false) ||
-        (project.description?.toLowerCase().includes(searchLower) || false) ||
-        (project.status?.toLowerCase().includes(searchLower) || false) ||
-        (clientName.toLowerCase().includes(searchLower))
-      );
+      // Apply all filters (return true only if all active filters match)
+      const titleMatch = !filters.title || 
+        (project.title?.toLowerCase().includes(filters.title.toLowerCase()) || false);
+      
+      const clientMatch = !filters.client || 
+        clientName.toLowerCase().includes(filters.client.toLowerCase());
+      
+      const statusMatch = !filters.status || 
+        (project.status?.toLowerCase().includes(filters.status.toLowerCase()) || false);
+      
+      const deadlineMatch = !filters.deadline || 
+        formattedDeadline.toLowerCase().includes(filters.deadline.toLowerCase());
+      
+      return titleMatch && clientMatch && statusMatch && deadlineMatch;
     });
-  }, [projects, clients, searchTerm]);
+  }, [projects, clients, filters, formatDate]);
   
   // Calculate pagination
   const paginatedProjects = React.useMemo(() => {
@@ -351,17 +361,7 @@ export default function ManagerDashboard() {
                     New Project
                   </Button>
                 </div>
-                <div className="mt-4">
-                  <Input
-                    placeholder="Search projects by name, client, status..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1); // Reset to first page on search
-                    }}
-                    className="max-w-md"
-                  />
-                </div>
+                {/* Column-specific search fields will be added in the table header */}
               </CardHeader>
               <CardContent>
                 {isLoadingProjects ? (
@@ -387,6 +387,69 @@ export default function ManagerDashboard() {
                           <th className="text-left py-3 px-2 font-medium">Status</th>
                           <th className="text-left py-3 px-2 font-medium">Deadline</th>
                           <th className="text-left py-3 px-2 font-medium">Actions</th>
+                        </tr>
+                        <tr>
+                          <th className="py-2 px-2">
+                            <Input
+                              placeholder="Search project name..."
+                              value={filters.title}
+                              onChange={(e) => {
+                                setFilters(prev => ({ ...prev, title: e.target.value }));
+                                setCurrentPage(1); // Reset to first page on search
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          </th>
+                          <th className="py-2 px-2">
+                            <Input
+                              placeholder="Search client..."
+                              value={filters.client}
+                              onChange={(e) => {
+                                setFilters(prev => ({ ...prev, client: e.target.value }));
+                                setCurrentPage(1);
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          </th>
+                          <th className="py-2 px-2">
+                            <Input
+                              placeholder="Search status..."
+                              value={filters.status}
+                              onChange={(e) => {
+                                setFilters(prev => ({ ...prev, status: e.target.value }));
+                                setCurrentPage(1);
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          </th>
+                          <th className="py-2 px-2">
+                            <Input
+                              placeholder="Search deadline..."
+                              value={filters.deadline}
+                              onChange={(e) => {
+                                setFilters(prev => ({ ...prev, deadline: e.target.value }));
+                                setCurrentPage(1);
+                              }}
+                              className="h-8 text-sm"
+                            />
+                          </th>
+                          <th className="py-2 px-2">
+                            {/* Clear filters button */}
+                            {Object.values(filters).some(filter => filter.trim() !== '') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setFilters({ title: '', client: '', status: '', deadline: '' });
+                                  setCurrentPage(1);
+                                }}
+                                className="h-8 text-xs w-full"
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Clear
+                              </Button>
+                            )}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -438,7 +501,9 @@ export default function ManagerDashboard() {
                         ) : (
                           <tr>
                             <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                              {searchTerm ? 'No matching projects found' : 'No projects found'}
+                              {Object.values(filters).some(filter => filter.trim() !== '') 
+                                ? 'No matching projects found' 
+                                : 'No projects found'}
                             </td>
                           </tr>
                         )}
