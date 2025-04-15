@@ -278,7 +278,7 @@ export default function LoginPage() {
         toast({
           title: "Limited Access Mode",
           description: "Some features may be unavailable due to connection issues",
-          variant: "warning",
+          variant: "destructive", // Using destructive as warning isn't a valid variant
         });
         
         // Redirect based on the selected role

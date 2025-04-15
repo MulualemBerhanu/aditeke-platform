@@ -355,13 +355,28 @@ export function setupAuth(app: Express) {
       }
     }
     
-    // If we reach here with an API request, authentication failed
-    if (req.path.startsWith('/api/') && req.path !== '/api/login' && 
-        req.path !== '/api/register' && !req.path.startsWith('/api/public/')) {
+    // List of public API endpoints that should be accessible without authentication
+    const publicPaths = [
+      '/api/login',
+      '/api/register',
+      '/api/services',
+      '/api/projects',
+      '/api/testimonials',
+      '/api/blog'
+    ];
+    
+    // Check if the path starts with /api/public/ or is in the publicPaths list
+    const isPublicPath = req.path.startsWith('/api/public/') || 
+                         publicPaths.includes(req.path) ||
+                         // Special case for blog posts, testimonials, etc. with IDs
+                         req.path.match(/^\/api\/(services|projects|testimonials|blog)\/\d+$/);
+    
+    // If this is an API request but not a public path, require authentication
+    if (req.path.startsWith('/api/') && !isPublicPath) {
       return res.status(401).json({ message: "Authentication required" });
     }
     
-    // For non-API paths, continue to the next middleware
+    // For non-API paths or public API paths, continue to the next middleware
     next();
   };
   
