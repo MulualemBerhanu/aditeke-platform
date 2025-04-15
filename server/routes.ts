@@ -165,30 +165,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Hardcoded client data as a fallback
+  // Hardcoded client data as a fallback - now with sequential IDs
   const hardcodedClients = [
     {
-      id: 1,
+      id: 2000,
       name: "Client User 1",
       username: "client1",
       email: "client1@example.com",
-      roleId: 3,
+      roleId: 1001, // Updated to sequential ID (formerly 3)
       isActive: true
     },
     {
-      id: 2,
+      id: 2001,
       name: "Client User 2",
       username: "client2",
       email: "client2@example.com",
-      roleId: 3,
+      roleId: 1001, // Updated to sequential ID (formerly 3)
       isActive: true
     },
     {
-      id: 3,
+      id: 2002,
       name: "Client User 3",
       username: "client3",
       email: "client3@example.com",
-      roleId: 3,
+      roleId: 1001, // Updated to sequential ID (formerly 3)
       isActive: true
     }
   ];
