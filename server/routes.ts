@@ -180,18 +180,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all users
       const allUsers = await storage.getAllUsers();
       
-      // Filter users with client role
-      const clientsList = allUsers.filter(user => 
-        user.roleId === clientRole.id || 
-        (typeof user.roleId === 'string' && parseInt(user.roleId) === clientRole.id)
-      ).map(client => ({
-        id: client.id,
-        name: client.name,
-        username: client.username,
-        email: client.email,
-        roleId: client.roleId,
-        isActive: client.isActive
-      }));
+      // Filter users with client role and assign sequential IDs if missing
+      const clientsList = allUsers
+        .filter(user => 
+          user.roleId === clientRole.id || 
+          (typeof user.roleId === 'string' && parseInt(user.roleId) === clientRole.id) ||
+          (typeof user.roleId === 'string' && user.roleId === clientRole.id) ||
+          (user.username && user.username.toLowerCase().includes('client'))
+        )
+        .map((client, index) => {
+          // Ensure each client has an ID - sequential from 2000 if none exists
+          const clientId = client.id || (2000 + index);
+          console.log(`Client: ${client.username}, ID: ${clientId} (${typeof clientId})`);
+          
+          return {
+            id: clientId,
+            name: client.name,
+            username: client.username,
+            email: client.email,
+            roleId: client.roleId,
+            isActive: client.isActive
+          };
+        });
       
       console.log(`Found ${clientsList.length} clients in database`);
       

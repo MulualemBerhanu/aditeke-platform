@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -88,14 +88,23 @@ export default function ProjectForm({
     queryKey: [clientsEndpoint],
     queryFn: async () => {
       try {
+        console.log("Fetching clients from API...");
         const response = await apiRequest('GET', clientsEndpoint);
-        return await response.json();
+        const clientsData = await response.json();
+        console.log("Client data retrieved:", clientsData);
+        return clientsData;
       } catch (error) {
         console.error('Failed to fetch clients', error);
         return [];
       }
     },
   });
+  
+  // Log clients data for debugging
+  useEffect(() => {
+    console.log("Client list updated:", clients);
+    console.log("Loading state:", isLoadingClients);
+  }, [clients, isLoadingClients]);
 
   // Create project mutation
   const createProject = useMutation({
@@ -297,22 +306,44 @@ export default function ProjectForm({
                         ) : clients.length === 0 ? (
                           <SelectItem value="" disabled>No clients available</SelectItem>
                         ) : (
-                          clients.map((client: any) => {
-                            // Defensive check to make sure client and client.id exist
-                            if (!client || client.id === undefined || client.id === null) {
-                              return null;
-                            }
+                          <>
+                            {/* Debug info */}
+                            <div className="px-2 py-1 text-xs text-muted-foreground">
+                              Found {clients.length} clients
+                            </div>
+                            <Separator className="my-1" />
                             
-                            // Make sure client.id and client.name are properly accessed
-                            const clientId = typeof client.id === 'undefined' ? '' : client.id.toString();
-                            const clientName = client.name || client.username || 'Unknown Client';
-                            
-                            return (
-                              <SelectItem key={clientId} value={clientId}>
-                                {clientName}
-                              </SelectItem>
-                            );
-                          })
+                            {clients.map((client: any, index: number) => {
+                              // More verbose debugging to understand client object structure
+                              console.log("Rendering client:", client);
+                              
+                              // For clients from Firebase that might have document ID instead of numeric ID
+                              // or clients that use username as identifier
+                              let clientId: string;
+                              
+                              if (client.id !== undefined && client.id !== null) {
+                                // Use explicit ID if it exists
+                                clientId = client.id.toString();
+                              } else if (client.username) {
+                                // Use 2000 + index as ID for clients identified by username
+                                // This follows the sequential ID pattern for clients (2000+)
+                                clientId = (2000 + index).toString();
+                                console.log(`Assigned sequential ID ${clientId} to client ${client.username}`);
+                              } else {
+                                console.warn("Cannot identify client:", client);
+                                return null;
+                              }
+                              
+                              // Use name if available, fallback to username
+                              const clientName = client.name || client.username || 'Unknown Client';
+                              
+                              return (
+                                <SelectItem key={clientId} value={clientId}>
+                                  {clientName} (ID: {clientId})
+                                </SelectItem>
+                              );
+                            })}
+                          </>
                         )}
                       </SelectContent>
                     </Select>
