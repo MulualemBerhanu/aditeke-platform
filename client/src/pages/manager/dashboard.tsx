@@ -31,6 +31,13 @@ export default function ManagerDashboard() {
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
   const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = React.useState(false);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [itemsPerPage] = React.useState(10);
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = React.useState("");
+  
   // Format dates - handles various formats including Firestore timestamps
   const formatDate = (dateInput: any) => {
     if (!dateInput) return 'No deadline';
@@ -182,6 +189,40 @@ export default function ManagerDashboard() {
     }
   });
   
+  // Filter projects based on search term
+  const filteredProjects = React.useMemo(() => {
+    if (!projects) return [];
+    if (!searchTerm.trim()) return projects;
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    return projects.filter(project => {
+      // Find client name for searching
+      const client = clients?.find(c => {
+        if (!project.clientId) return false;
+        const cId = typeof c.id === 'string' ? parseInt(c.id) : c.id;
+        const pClientId = typeof project.clientId === 'string' ? parseInt(project.clientId) : project.clientId;
+        return cId === pClientId;
+      });
+      const clientName = client ? (client.name || client.username || '') : '';
+      
+      // Check if search term is found in any field
+      return (
+        (project.title?.toLowerCase().includes(searchLower) || false) ||
+        (project.description?.toLowerCase().includes(searchLower) || false) ||
+        (project.status?.toLowerCase().includes(searchLower) || false) ||
+        (clientName.toLowerCase().includes(searchLower))
+      );
+    });
+  }, [projects, clients, searchTerm]);
+  
+  // Calculate pagination
+  const paginatedProjects = React.useMemo(() => {
+    const indexOfLastProject = currentPage * itemsPerPage;
+    const indexOfFirstProject = indexOfLastProject - itemsPerPage;
+    return filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+  }, [filteredProjects, currentPage, itemsPerPage]);
+  
   // Calculate project statistics
   const projectStats = React.useMemo(() => {
     if (!projects) return { total: 0, inProgress: 0, completed: 0 };
@@ -310,6 +351,17 @@ export default function ManagerDashboard() {
                     New Project
                   </Button>
                 </div>
+                <div className="mt-4">
+                  <Input
+                    placeholder="Search projects by name, client, status..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1); // Reset to first page on search
+                    }}
+                    className="max-w-md"
+                  />
+                </div>
               </CardHeader>
               <CardContent>
                 {isLoadingProjects ? (
@@ -338,8 +390,8 @@ export default function ManagerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {projects && projects.length > 0 ? (
-                          projects.map((project) => {
+                        {filteredProjects.length > 0 ? (
+                          paginatedProjects.map((project) => {
                             // Find client name for the project if it has a clientId
                             // Handle both numeric and string IDs when comparing
                             const client = clients?.find(c => {
@@ -386,12 +438,117 @@ export default function ManagerDashboard() {
                         ) : (
                           <tr>
                             <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                              No projects found
+                              {searchTerm ? 'No matching projects found' : 'No projects found'}
                             </td>
                           </tr>
                         )}
                       </tbody>
                     </table>
+                    
+                    {/* Pagination controls */}
+                    {filteredProjects.length > 0 && (
+                      <div className="flex justify-between items-center mt-4">
+                        <div className="text-sm text-muted-foreground">
+                          Showing {Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)} to {Math.min(filteredProjects.length, currentPage * itemsPerPage)} of {filteredProjects.length} projects
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          >
+                            Previous
+                          </Button>
+                          <div className="flex items-center space-x-1">
+                            {(() => {
+                              const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+                              const maxVisiblePages = 5; // Show at most 5 page buttons at a time
+                              
+                              // Calculate which page buttons to show
+                              let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                              let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                              
+                              // Adjust if we're near the end
+                              if (endPage - startPage + 1 < maxVisiblePages) {
+                                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                              }
+                              
+                              const pageButtons = [];
+                              
+                              // First page button
+                              if (startPage > 1) {
+                                pageButtons.push(
+                                  <Button 
+                                    key="first"
+                                    variant={currentPage === 1 ? "default" : "outline"} 
+                                    size="sm"
+                                    className="w-8 h-8 p-0"
+                                    onClick={() => setCurrentPage(1)}
+                                  >
+                                    1
+                                  </Button>
+                                );
+                                
+                                // Ellipsis if there's a gap
+                                if (startPage > 2) {
+                                  pageButtons.push(
+                                    <span key="ellipsis1" className="px-2">...</span>
+                                  );
+                                }
+                              }
+                              
+                              // Page buttons
+                              for (let i = startPage; i <= endPage; i++) {
+                                pageButtons.push(
+                                  <Button 
+                                    key={i}
+                                    variant={currentPage === i ? "default" : "outline"} 
+                                    size="sm"
+                                    className="w-8 h-8 p-0"
+                                    onClick={() => setCurrentPage(i)}
+                                  >
+                                    {i}
+                                  </Button>
+                                );
+                              }
+                              
+                              // Last page button
+                              if (endPage < totalPages) {
+                                // Ellipsis if there's a gap
+                                if (endPage < totalPages - 1) {
+                                  pageButtons.push(
+                                    <span key="ellipsis2" className="px-2">...</span>
+                                  );
+                                }
+                                
+                                pageButtons.push(
+                                  <Button 
+                                    key="last"
+                                    variant={currentPage === totalPages ? "default" : "outline"} 
+                                    size="sm"
+                                    className="w-8 h-8 p-0"
+                                    onClick={() => setCurrentPage(totalPages)}
+                                  >
+                                    {totalPages}
+                                  </Button>
+                                );
+                              }
+                              
+                              return pageButtons;
+                            })()}
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            disabled={currentPage >= Math.ceil(filteredProjects.length / itemsPerPage)}
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredProjects.length / itemsPerPage)))}
+                          >
+                            Next
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 
