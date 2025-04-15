@@ -48,17 +48,24 @@ export default function ManagerEditProject() {
     getRoleId(userData) === 1000 // Using the sequential roleId for manager
   );
   
-  // Fetch project data based on ID
+  // Fetch project data based on ID using public endpoint
   const { data: project, isLoading, error } = useQuery({
-    queryKey: [`/api/projects/${projectId}`],
+    queryKey: [`/api/public/projects/${projectId}`],
     queryFn: async () => {
-      // Use a public API endpoint if available, or create one
+      // Use our public API endpoint to get project data
       try {
-        const res = await fetch(`/api/projects/${projectId}`);
+        console.log(`Fetching project with ID: ${projectId} from public endpoint`);
+        const res = await fetch(`/api/public/projects/${projectId}`);
+        
         if (!res.ok) {
-          throw new Error('Failed to fetch project');
+          const errorData = await res.json().catch(() => ({}));
+          console.error("Error response:", errorData);
+          throw new Error(errorData.message || 'Failed to fetch project');
         }
-        return res.json();
+        
+        const projectData = await res.json();
+        console.log("Retrieved project data:", projectData);
+        return projectData;
       } catch (err) {
         console.error('Error fetching project:', err);
         throw err;
@@ -118,6 +125,8 @@ export default function ManagerEditProject() {
             endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
             thumbnail: project.thumbnail || '',
           }}
+          projectId={parseInt(projectId!)}
+          isEditing={true}
           onSuccess={() => {
             // Additional logic after project update if needed
             setLocation('/manager/dashboard');

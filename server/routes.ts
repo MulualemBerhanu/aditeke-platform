@@ -1369,6 +1369,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   });
+  
+  // Public endpoint to get a project by ID - requires no authentication
+  app.get("/api/public/projects/:id", async (req, res) => {
+    try {
+      console.log("------- PUBLIC PROJECT FETCH API REQUEST -------");
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      console.log(`Fetching project with ID: ${id}`);
+      const project = await storage.getProject(id);
+      if (!project) {
+        console.log(`Project with ID ${id} not found`);
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      console.log(`Successfully retrieved project: ${project.title}`);
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Public endpoint to update a project - requires no authentication
+  app.put("/api/public/projects/:id", async (req, res) => {
+    try {
+      console.log("------- PUBLIC PROJECT UPDATE API REQUEST -------");
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      console.log(`Updating project with ID: ${id}`);
+      
+      // Check if project exists
+      const existingProject = await storage.getProject(id);
+      if (!existingProject) {
+        console.log(`Project with ID ${id} not found`);
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Get a copy of the request body to normalize before validation
+      const normalizedData = {...req.body};
+      console.log(`Received update data: ${JSON.stringify(normalizedData)}`);
+      
+      // Ensure clientId is a number if present
+      if (normalizedData.clientId && typeof normalizedData.clientId === 'string') {
+        normalizedData.clientId = parseInt(normalizedData.clientId, 10);
+        console.log(`Converted clientId from string to number: ${normalizedData.clientId}`);
+      }
+      
+      // Update the project
+      const updatedProject = await storage.updateProject(id, normalizedData);
+      console.log(`Successfully updated project: ${updatedProject.title}`);
+      
+      return res.json(updatedProject);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      return res.status(500).json({ message: "Failed to update project" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
