@@ -297,7 +297,7 @@ export default function ManagerDashboard() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Active Projects</CardTitle>
-                  <Button size="sm">
+                  <Button size="sm" onClick={() => setLocation('/manager/project/create')}>
                     <Plus className="mr-2 h-4 w-4" />
                     New Project
                   </Button>
