@@ -16,6 +16,7 @@ import Blog from "./pages/blog";
 import Contact from "./pages/contact";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
+import SecurityTest from "./pages/security-test";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/dashboard";
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/contact" component={Contact} />
       <Route path="/login" component={Login} />
+      <Route path="/security-test" component={SecurityTest} />
       
       {/* Legacy dashboard - will redirect to the appropriate role-based dashboard */}
       <Route path="/dashboard">
