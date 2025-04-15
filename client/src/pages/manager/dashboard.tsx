@@ -118,36 +118,31 @@ export default function ManagerDashboard() {
     }
   });
   
-  // Mutation to assign a project to a client - using test endpoint during development
+  // Mutation to assign a project to a client - using real API endpoint
   const assignProjectMutation = useMutation({
     mutationFn: async ({ projectId, clientId }: { projectId: number, clientId: number }) => {
       try {
-        console.log(`Assigning project ${projectId} to client ${clientId} via test endpoint`);
+        console.log(`Assigning project ${projectId} to client ${clientId} via API endpoint`);
         
-        // Create a synthetic success result for development/testing
-        console.log("Creating synthetic project assignment result for development");
+        // Make a real API call to the backend
+        const response = await fetch('/api/projects/assign', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ projectId, clientId }),
+        });
         
-        // Find client info from our local data
-        const clientInfo = clients?.find(c => c.id === clientId);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to assign project');
+        }
         
-        // Return a mock success response to bypass API issues
-        const mockData = {
-          success: true,
-          message: `Project ${projectId} assigned to client ${clientId}`,
-          project: {
-            id: projectId,
-            title: "Project assigned via client-side mock",
-            clientId: clientId,
-            clientName: clientInfo?.name || "Unknown Client"
-          }
-        };
+        // Parse and return the response
+        const data = await response.json();
+        console.log("Project assignment API response:", data);
         
-        console.log("Using client-side mock data:", mockData);
-        
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        return mockData;
+        return data;
       } catch (error) {
         console.error("Error in project assignment:", error);
         throw error;

@@ -1061,6 +1061,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint to assign a project to a client
+  app.post("/api/projects/assign", async (req, res) => {
+    try {
+      const { projectId, clientId } = req.body;
+      
+      if (!projectId || !clientId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing projectId or clientId in request body" 
+        });
+      }
+      
+      // First, get the project and client to ensure they exist
+      const project = await storage.getProject(Number(projectId));
+      const client = await storage.getUser(Number(clientId));
+      
+      if (!project) {
+        return res.status(404).json({ 
+          success: false, 
+          message: `Project with ID ${projectId} not found` 
+        });
+      }
+      
+      if (!client) {
+        return res.status(404).json({ 
+          success: false, 
+          message: `Client with ID ${clientId} not found` 
+        });
+      }
+      
+      // Check if client has the client role (roleId can be string or number)
+      // Convert roleId to string for comparison (handles both string and number types)
+      const clientRoleIdString = String(client.roleId);
+      if (clientRoleIdString !== "1001") {
+        return res.status(400).json({ 
+          success: false, 
+          message: "The specified user is not a client" 
+        });
+      }
+      
+      // Update the project with the client ID
+      const updatedProject = await storage.updateProject(Number(projectId), { 
+        clientId: Number(clientId) 
+      });
+      
+      // Return success response with the updated project
+      return res.status(200).json({
+        success: true,
+        message: `Project ${projectId} assigned to client ${clientId}`,
+        project: updatedProject
+      });
+    } catch (error) {
+      console.error("Error assigning project to client:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "An error occurred while assigning the project", 
+        error: String(error) 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
