@@ -49,6 +49,8 @@ type ProjectFormProps = {
   role: 'admin' | 'manager';
   submitLabel?: string;
   initialValues?: Partial<ProjectFormValues>;
+  projectId?: number; // Optional project ID for editing
+  isEditing?: boolean; // Flag to determine if we're editing or creating
 };
 
 export default function ProjectForm({
