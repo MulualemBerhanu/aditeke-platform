@@ -565,10 +565,34 @@ export default function ManagerDashboard() {
                           })
                         ) : (
                           <tr>
-                            <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                              {Object.values(filters).some(filter => filter.trim() !== '') 
-                                ? 'No matching projects found' 
-                                : 'No projects found'}
+                            <td colSpan={5} className="py-12 text-center">
+                              <div className="flex flex-col items-center justify-center gap-2">
+                                <FileText className="h-10 w-10 text-muted-foreground mb-2" />
+                                <p className="text-lg font-medium">
+                                  {Object.values(filters).some(filter => filter.trim() !== '') 
+                                    ? 'No matching projects found' 
+                                    : 'No projects found'}
+                                </p>
+                                <p className="text-muted-foreground text-sm max-w-md">
+                                  {Object.values(filters).some(filter => filter.trim() !== '')
+                                    ? 'Try adjusting your search filters or clear them to see all projects.'
+                                    : 'Get started by creating your first project with the "New Project" button.'}
+                                </p>
+                                {Object.values(filters).some(filter => filter.trim() !== '') && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setFilters({ title: '', client: '', status: '', deadline: '' });
+                                      setCurrentPage(1);
+                                    }}
+                                    className="mt-2"
+                                  >
+                                    <X className="h-4 w-4 mr-1" />
+                                    Clear all filters
+                                  </Button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         )}
@@ -577,9 +601,10 @@ export default function ManagerDashboard() {
                     
                     {/* Pagination controls */}
                     {filteredProjects.length > 0 && (
-                      <div className="flex justify-between items-center mt-4">
-                        <div className="text-sm text-muted-foreground">
-                          Showing {Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)} to {Math.min(filteredProjects.length, currentPage * itemsPerPage)} of {filteredProjects.length} projects
+                      <div className="flex justify-between items-center mt-6 bg-muted/40 p-3 rounded-md">
+                        <div className="text-sm text-muted-foreground flex items-center">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Showing <span className="font-medium mx-1">{Math.min(filteredProjects.length, (currentPage - 1) * itemsPerPage + 1)}</span> to <span className="font-medium mx-1">{Math.min(filteredProjects.length, currentPage * itemsPerPage)}</span> of <span className="font-medium mx-1">{filteredProjects.length}</span> projects
                         </div>
                         <div className="flex space-x-2">
                           <Button 
@@ -587,6 +612,7 @@ export default function ManagerDashboard() {
                             size="sm" 
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            className="h-8 px-3 hover:bg-background"
                           >
                             Previous
                           </Button>
@@ -613,7 +639,7 @@ export default function ManagerDashboard() {
                                     key="first"
                                     variant={currentPage === 1 ? "default" : "outline"} 
                                     size="sm"
-                                    className="w-8 h-8 p-0"
+                                    className="w-8 h-8 p-0 font-medium text-sm hover:bg-background"
                                     onClick={() => setCurrentPage(1)}
                                   >
                                     1
@@ -635,7 +661,7 @@ export default function ManagerDashboard() {
                                     key={i}
                                     variant={currentPage === i ? "default" : "outline"} 
                                     size="sm"
-                                    className="w-8 h-8 p-0"
+                                    className="w-8 h-8 p-0 font-medium text-sm hover:bg-background"
                                     onClick={() => setCurrentPage(i)}
                                   >
                                     {i}
@@ -673,6 +699,7 @@ export default function ManagerDashboard() {
                             size="sm" 
                             disabled={currentPage >= Math.ceil(filteredProjects.length / itemsPerPage)}
                             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(filteredProjects.length / itemsPerPage)))}
+                            className="h-8 px-3 hover:bg-background"
                           >
                             Next
                           </Button>
