@@ -150,17 +150,26 @@ export default function LoginPage() {
       // Handle multiple roleId formats (string or number)
       const userRoleId = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
       
-      // Map the roleId to a specific dashboard
+      console.log("🔍 DEBUG - User data:", userData);
+      console.log("🔍 DEBUG - Role ID type:", typeof userData.roleId);
+      console.log("🔍 DEBUG - Role ID value:", userData.roleId);
+      console.log("🔍 DEBUG - Parsed Role ID:", userRoleId);
+      
+      // Map the roleId to a specific dashboard - handle both numeric IDs and string IDs
       // These IDs match our sequential ID system: 1002=admin, 1000=manager, 1001=client
-      if (userRoleId === 1002) {
+      // For newly created users with Firebase document IDs as roleId, check if they contain the name
+      if (userRoleId === 1002 || 
+          (typeof userData.roleId === 'string' && userData.roleId.includes('admin'))) {
         redirectUrl = '/admin/dashboard';
-        console.log("Using roleId 1002 (admin) for redirect");
-      } else if (userRoleId === 1000) {
+        console.log("Using admin role for redirect");
+      } else if (userRoleId === 1000 || 
+                (typeof userData.roleId === 'string' && userData.roleId.includes('manager'))) {
         redirectUrl = '/manager/dashboard';
-        console.log("Using roleId 1000 (manager) for redirect");
-      } else if (userRoleId === 1001) {
+        console.log("Using manager role for redirect");
+      } else if (userRoleId === 1001 || 
+                (typeof userData.roleId === 'string' && userData.roleId.includes('client'))) {
         redirectUrl = '/client/dashboard';
-        console.log("Using roleId 1001 (client) for redirect");
+        console.log("Using client role for redirect");
       } else {
         // Fallback to using the selected role name if we can't determine from roleId
         let roleGuess = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
