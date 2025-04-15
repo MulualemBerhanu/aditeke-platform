@@ -9,29 +9,43 @@ export default function ManagerCreateProject() {
   const { user } = useAuth();
   const [_, setLocation] = useLocation();
 
+  // Load user data from localStorage if needed
+  const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
+
+  // Convert roleId to a number if it's stored as a string
+  const getRoleId = (user: any) => {
+    if (!user) return null;
+    return typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+  };
+
   // Redirect if not logged in or not a manager (using sequential IDs)
   React.useEffect(() => {
-    if (!user) {
+    if (!userData) {
       setLocation('/login');
-    } else if (user.roleId !== 1000) { // Using sequential ID for manager
+      return;
+    }
+    
+    const roleId = getRoleId(userData);
+    
+    if (roleId !== 1000) { // Using sequential ID for manager
       // Redirect to appropriate dashboard based on role
-      if (user.roleId === 1002) { // Admin
+      if (roleId === 1002) { // Admin
         setLocation('/admin/dashboard');
-      } else if (user.roleId === 1001) { // Client
+      } else if (roleId === 1001) { // Client
         setLocation('/client/dashboard');
       } else {
         setLocation('/');
       }
     }
-  }, [user, setLocation]);
+  }, [userData, setLocation]);
 
   // Check if user is a manager based on username or roleId
-  const isManager = user && (
-    user.username.toLowerCase().includes('manager') ||
-    user.roleId === 1000 // Using the sequential roleId for manager
+  const isManager = userData && (
+    userData.username.toLowerCase().includes('manager') ||
+    getRoleId(userData) === 1000 // Using the sequential roleId for manager
   );
 
-  if (!user || !isManager) {
+  if (!userData || !isManager) {
     return <div className="flex justify-center items-center min-h-screen">Redirecting...</div>;
   }
 
