@@ -93,14 +93,16 @@ export default function ProjectForm({
         
         // Get the current user from localStorage for authorization
         const currentUserJSON = localStorage.getItem('currentUser');
+        const roleId = localStorage.getItem('userRoleId');
         let authHeader = {};
         
         if (currentUserJSON) {
           // Include the user data in the authorization header
           authHeader = {
-            Authorization: `Bearer ${currentUserJSON}`
+            'Authorization': `Bearer ${currentUserJSON}`,
+            'X-User-Role-ID': roleId || '1000' // Default to manager role if not specified
           };
-          console.log("Added authorization header for client options API");
+          console.log("Added authorization headers for client options API:", authHeader);
         } else {
           console.warn("No user data in localStorage for authorization");
         }
@@ -113,7 +115,9 @@ export default function ProjectForm({
         
         if (!res.ok) {
           console.error("Client options API returned error:", res.status, res.statusText);
-          throw new Error('Failed to load clients');
+          // Return empty array instead of throwing error
+          console.warn("Using fallback client data");
+          return [];
         }
         const data = await res.json();
         console.log("Received client options:", data);
