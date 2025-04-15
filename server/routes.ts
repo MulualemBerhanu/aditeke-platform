@@ -544,6 +544,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Clear sessions to handle ID format change
+  app.get("/api/clear-sessions", (req, res) => {
+    // Block Vite middleware from intercepting this request
+    res.locals.isApiRoute = true;
+    
+    try {
+      // Destroy the current session
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error("Error destroying session:", err);
+            // Force pure JSON response with no HTML by ending request immediately
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ 
+              success: false, 
+              message: "Failed to clear session", 
+              error: err.message 
+            }));
+            return;
+          }
+          
+          // Force pure JSON response with no HTML by ending request immediately
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            success: true, 
+            message: "Session cleared successfully. You can now login with your username and password."
+          }));
+        });
+      } else {
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          message: "No active session found. You can now login with your username and password."
+        }));
+      }
+    } catch (error) {
+      console.error("Error clearing session:", error);
+      // Force pure JSON response with no HTML by ending request immediately
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        success: false, 
+        message: "Error clearing session", 
+        error: error instanceof Error ? error.message : String(error)
+      }));
+    }
+  });
+
+  // Fix client2 user with sequential ID
+  app.get("/api/fix-client2-user", async (req, res) => {
+    // Block Vite middleware from intercepting this request
+    res.locals.isApiRoute = true;
+    try {
+      // Delete the old client2 user if it exists
+      const oldClient = await storage.getUserByUsername("client2");
+      if (oldClient && oldClient.id !== 2001) {
+        console.log(`Found old client2 user with ID ${oldClient.id}. Creating new one with sequential ID.`);
+        
+        // Get client role
+        const clientRole = await storage.getRoleByName("client");
+        if (!clientRole) {
+          return res.status(404).json({ message: "Client role not found" });
+        }
+        
+        // Create new client with sequential ID - force ID to be 2001
+        const clientData = {
+          id: 2001, // Force the sequential ID in the client range
+          username: "client2",
+          password: "password123", // Plain text for now
+          email: "client2@example.com",
+          name: "Client User 2",
+          roleId: clientRole.id,
+          isActive: true
+        };
+        
+        const newClient = await storage.createUser(clientData);
+        
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: "Client2 user fixed with sequential ID",
+          oldId: oldClient.id,
+          newId: newClient.id
+        }));
+      } else if (oldClient) {
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: "Client2 already has sequential ID",
+          id: oldClient.id
+        }));
+      } else {
+        // Create new client with sequential ID
+        const clientRole = await storage.getRoleByName("client");
+        if (!clientRole) {
+          return res.status(404).json({ message: "Client role not found" });
+        }
+        
+        const clientData = {
+          id: 2001, // Force the sequential ID in the client range  
+          username: "client2",
+          password: "password123", // Plain text for now
+          email: "client2@example.com",
+          name: "Client User 2",
+          roleId: clientRole.id,
+          isActive: true
+        };
+        
+        const newClient = await storage.createUser(clientData);
+        
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: "Client2 user created with sequential ID",
+          id: newClient.id
+        }));
+      }
+    } catch (error) {
+      console.error("Error fixing client2 user:", error);
+      // Force pure JSON response with no HTML by ending request immediately
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        message: "Error fixing client2 user", 
+        error: error instanceof Error ? error.message : String(error)
+      }));
+    }
+  });
+
   // Fix manager2 user with sequential ID
   app.get("/api/fix-manager2-user", async (req, res) => {
     // Block Vite middleware from intercepting this request
@@ -560,8 +688,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "Manager role not found" });
         }
         
-        // Create new manager with sequential ID
+        // Create new manager with sequential ID - force ID to be 50001
         const managerData = {
+          id: 50001, // Force the sequential ID in the manager range
           username: "manager2",
           password: "password123", // Plain text for now
           email: "manager2@example.com",
@@ -594,6 +723,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         const managerData = {
+          id: 50001, // Force the sequential ID in the manager range  
           username: "manager2",
           password: "password123", // Plain text for now
           email: "manager2@example.com",
