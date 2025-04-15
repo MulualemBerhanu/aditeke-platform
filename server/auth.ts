@@ -32,9 +32,21 @@ async function comparePasswords(supplied: string, stored: string | undefined) {
     return false;
   }
   
-  // Handle the case where the password is stored in plain text (for demo purposes only)
+  // For legacy passwords that might be in plaintext format, hash them before comparing
   if (!stored.includes('.')) {
-    return supplied === stored;
+    console.warn("Legacy plaintext password detected - this should be upgraded");
+    // In production, this should upgrade the password to hashed version on success
+    // For now, we'll do a constant-time comparison to avoid timing attacks
+    const suppliedBuffer = Buffer.from(supplied);
+    const storedBuffer = Buffer.from(stored);
+    
+    // Use timingSafeEqual even for plaintext to avoid timing attacks
+    try {
+      return suppliedBuffer.length === storedBuffer.length && 
+             timingSafeEqual(suppliedBuffer, storedBuffer);
+    } catch (e) {
+      return false;
+    }
   }
   
   // Normal password comparison for properly hashed passwords

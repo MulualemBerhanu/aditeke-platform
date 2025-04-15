@@ -34,8 +34,17 @@ export async function apiRequest(
         "Expires": "0"
       };
       
+      // Add CSRF token for protection against CSRF attacks
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
+      
+      // Import the secure token utility
+      const { getAccessToken } = await import('./secureTokenStorage');
+      
       // Add JWT token for authentication if available
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = getAccessToken();
       if (accessToken) {
         headers['Authorization'] = `Bearer ${accessToken}`;
       }
@@ -147,8 +156,17 @@ export const getQueryFn: <T>(options: {
           "Expires": "0"
         };
         
+        // Add CSRF token for protection against CSRF attacks
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+          headers['X-CSRF-Token'] = csrfToken;
+        }
+        
+        // Import the secure token utility
+        const { getAccessToken } = await import('./secureTokenStorage');
+        
         // Add JWT token for authentication if available
-        const accessToken = localStorage.getItem('accessToken');
+        const accessToken = getAccessToken();
         if (accessToken) {
           headers['Authorization'] = `Bearer ${accessToken}`;
         }

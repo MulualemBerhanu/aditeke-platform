@@ -1,4 +1,5 @@
 import { apiRequest } from './queryClient';
+import { getRefreshToken, storeTokens, clearTokens } from './secureTokenStorage';
 
 // Track if a refresh is already in progress to prevent multiple simultaneous refreshes
 let isRefreshing = false;
@@ -19,7 +20,7 @@ export async function refreshTokens(): Promise<{ accessToken: string, refreshTok
     isRefreshing = true;
     
     refreshPromise = (async () => {
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = getRefreshToken();
       
       if (!refreshToken) {
         throw new Error('No refresh token available');
@@ -30,9 +31,8 @@ export async function refreshTokens(): Promise<{ accessToken: string, refreshTok
       const data = await response.json();
       
       if (data.accessToken && data.refreshToken) {
-        // Store new tokens
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+        // Store new tokens securely
+        storeTokens(data.accessToken, data.refreshToken);
         
         console.log('Token refresh successful');
         return data;
@@ -57,8 +57,7 @@ export async function refreshTokens(): Promise<{ accessToken: string, refreshTok
     console.error('Token refresh failed:', error);
     
     // Clear tokens on refresh failure - user needs to login again
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    clearTokens();
     
     throw error;
   }
