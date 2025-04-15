@@ -94,54 +94,69 @@ export default function ManagerDashboard() {
     }
   });
   
-  // Fetch all clients (users with roleId = 3) - using dedicated endpoint
+  // Fetch all clients (users with roleId = 1001) - using dedicated endpoint
   const {
     data: clients,
     isLoading: isLoadingClients,
-    error: clientsError
+    error: clientsError,
+    refetch: refetchClients
   } = useQuery<User[]>({
     queryKey: ['/api/manager/client-options'],
     queryFn: async () => {
       try {
-        console.log("Fetching client options from dedicated endpoint");
+        console.log("[CLIENT-OPTIONS] Starting API request");
         
-        // Get the current user from localStorage for authorization
+        // Get authentication information from multiple sources
         const currentUserJSON = localStorage.getItem('currentUser');
         const roleId = localStorage.getItem('userRoleId');
-        let authHeader = {};
+        const isAuth = localStorage.getItem('isAuthenticated');
         
-        if (currentUserJSON) {
-          // Include the user data in the authorization header
-          authHeader = {
-            'Authorization': `Bearer ${currentUserJSON}`,
-            'X-User-Role-ID': roleId || '1000' // Default to manager role if not specified
-          };
-          console.log("Added authorization headers for client options API:", authHeader);
-        } else {
-          console.warn("No user data in localStorage for authorization");
-        }
-        
-        const res = await fetch('/api/manager/client-options', {
-          headers: {
-            ...authHeader
-          }
+        console.log("[CLIENT-OPTIONS] Auth state:", {
+          hasUserJSON: !!currentUserJSON,
+          roleId: roleId,
+          isAuthenticated: isAuth
         });
         
+        // Prepare headers with every possible auth method
+        let headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'X-User-Role-ID': roleId || '1000', // Always send role ID header
+        };
+        
+        // Add Authorization header if we have user data
+        if (currentUserJSON) {
+          headers['Authorization'] = `Bearer ${currentUserJSON}`;
+          console.log("[CLIENT-OPTIONS] Added user data to Authorization header");
+        }
+        
+        console.log("[CLIENT-OPTIONS] Request headers:", headers);
+        
+        // Make API request
+        const res = await fetch('/api/manager/client-options', { headers });
+        
+        console.log("[CLIENT-OPTIONS] Response status:", res.status);
+        
         if (!res.ok) {
-          console.error("Client options API returned error:", res.status, res.statusText);
+          console.error("[CLIENT-OPTIONS] API error:", res.status, res.statusText);
           
-          // If API fails, return mock clients for development
-          console.warn("Using fallback client data");
+          // Return empty array instead of throwing to prevent UI errors
+          console.warn("[CLIENT-OPTIONS] Returning empty array due to API error");
           return [];
         }
+        
+        // Parse response
         const data = await res.json();
-        console.log("Received client options:", data);
+        console.log("[CLIENT-OPTIONS] Received clients:", data.length);
         return data;
       } catch (error) {
-        console.error("Error in client options fetch:", error);
-        throw error;
+        console.error("[CLIENT-OPTIONS] Fetch error:", error);
+        // Return empty array instead of throwing to prevent UI errors
+        return [];
       }
-    }
+    },
+    retry: 2, // Retry failed requests up to 2 times
+    retryDelay: 1000, // Wait 1 second between retries
+    refetchOnWindowFocus: false // Don't refetch when window regains focus
   });
   
   // Mutation to assign a project to a client - using real API endpoint

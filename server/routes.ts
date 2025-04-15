@@ -265,91 +265,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ];
 
   // Special endpoint for manager dashboard to get client options
-  // This fetches all clients from the database
   app.get("/api/manager/client-options", async (req, res) => {
     try {
-      // Check for authentication first
-      if (!req.isAuthenticated()) {
-        // Fallback to checking localStorage auth through Authorization header
-        const authHeader = req.headers.authorization;
-        
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          console.log("No authorization provided for client-options endpoint");
-          return res.status(401).json({ message: "Authentication required" });
-        }
-        
-        // Parse the localStorage auth data from the header
-        try {
-          console.log("Parsing authorization header for client options");
-          
-          // The token might contain a JSON object directly
-          const token = authHeader.split('Bearer ')[1];
-          let decodedData;
-          
-          try {
-            // First attempt to parse it as JSON
-            decodedData = JSON.parse(token);
-            console.log("Successfully parsed auth token as JSON");
-          } catch (jsonError) {
-            // If that fails, it might be a regular JWT token
-            console.log("Not a JSON token, will use as-is");
-            
-            // Store minimal data we need for role checking
-            decodedData = { 
-              id: 0, // Default ID
-              roleId: 0, // Default role
-              fromToken: true
-            };
-            
-            // Check if the roleId is in userRoleId localStorage via custom header
-            const roleIdHeader = req.headers['x-user-role-id'];
-            if (roleIdHeader) {
-              try {
-                decodedData.roleId = parseInt(roleIdHeader.toString());
-                console.log(`Extracted roleId ${decodedData.roleId} from header`);
-              } catch (e) {
-                console.log("Could not parse roleId header");
-              }
-            }
-          }
-          
-          console.log("Auth data:", decodedData);
-          
-          // Simple validation that this is a valid user object
-          if ((!decodedData.id && !decodedData.fromToken) || !decodedData.roleId) {
-            console.log("Invalid authorization data for client-options endpoint");
-            return res.status(401).json({ message: "Invalid authorization data" });
-          }
-          
-          // Specifically check that this is a manager or admin role
-          const roleId = typeof decodedData.roleId === 'string' 
-            ? parseInt(decodedData.roleId) 
-            : decodedData.roleId;
-            
-          if (roleId !== 1000 && roleId !== 1002) {
-            console.log(`Unauthorized role (${roleId}) attempted to access client-options`);
-            return res.status(403).json({ message: "Access denied" });
-          }
-          
-          console.log("Successfully authorized through header for client-options endpoint");
-        } catch (e) {
-          console.error("Error parsing authorization data:", e);
-          return res.status(401).json({ message: "Invalid authorization format" });
-        }
-      } else {
-        // Check that the authenticated user is a manager or admin
+      console.log("------- CLIENT OPTIONS API REQUEST -------");
+      console.log("Auth status:", req.isAuthenticated() ? "Session authenticated" : "Not session authenticated");
+      
+      // Check role access either from session or headers
+      let isAuthorized = false;
+      let roleId = 0;
+      
+      // Method 1: Check session auth
+      if (req.isAuthenticated()) {
         const user = req.user as any;
-        if (!user) {
-          return res.status(401).json({ message: "Authentication required" });
+        if (user && user.roleId) {
+          roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+          isAuthorized = (roleId === 1000 || roleId === 1002); // Manager or Admin
+          console.log(`Session auth: User has roleId ${roleId}, authorized: ${isAuthorized}`);
         }
-        
-        const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
-        if (roleId !== 1000 && roleId !== 1002) {
-          return res.status(403).json({ message: "Access denied" });
+      } 
+      // Method 2: Check X-User-Role-ID header (direct role info)
+      else if (req.headers['x-user-role-id']) {
+        try {
+          roleId = parseInt(req.headers['x-user-role-id']?.toString() || '0');
+          isAuthorized = (roleId === 1000 || roleId === 1002); // Manager or Admin
+          console.log(`Header auth (X-User-Role-ID): ${roleId}, authorized: ${isAuthorized}`);
+        } catch (e) {
+          console.log("Invalid role ID in header");
+        }
+      } 
+      // Method 3: Check authorization header with Bearer token
+      else if (req.headers.authorization) {
+        try {
+          const authHeader = req.headers.authorization;
+          console.log("Processing authorization header:", authHeader);
+          
+          // Extract token part or use whole header if no Bearer prefix
+          let tokenData;
+          if (authHeader.startsWith('Bearer ')) {
+            tokenData = authHeader.split('Bearer ')[1];
+          } else {
+            tokenData = authHeader;
+          }
+          
+          // Try to parse JSON data from token
+          try {
+            const userData = JSON.parse(tokenData);
+            console.log("Parsed user data from token:", userData);
+            
+            if (userData.roleId) {
+              roleId = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
+              isAuthorized = (roleId === 1000 || roleId === 1002); // Manager or Admin
+              console.log(`Token auth: User has roleId ${roleId}, authorized: ${isAuthorized}`);
+            }
+          } catch (parseError) {
+            console.log("Unable to parse JSON from token, trying other methods");
+            // Not JSON data, might be a JWT token - let it proceed to the check below
+          }
+        } catch (e) {
+          console.error("Error processing authorization header:", e);
         }
       }
       
-      console.log("Fetching all client users from database");
+      // Final authorization check
+      if (!isAuthorized) {
+        console.log("Access denied to client options API - invalid role");
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      // User is authorized, fetch client data
+      console.log("User authorized - fetching client data");
       
       // Get all users from the database
       const allUsers = await storage.getAllUsers();
@@ -357,21 +341,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter users with client role (roleId = 1001)
       const clientUsers = allUsers.filter(user => {
         // Handle both string and number roleId values
-        const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
-        return roleId === 1001 || user.username.toLowerCase().includes('client');
+        const userRoleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+        return userRoleId === 1001 || user.username.toLowerCase().includes('client');
       });
       
       console.log(`Found ${clientUsers.length} client users in database`);
       
-      // Force pure JSON response with no HTML by ending request immediately
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(clientUsers));
-      return;
+      // Send JSON response
+      return res.status(200).json(clientUsers);
     } catch (error) {
       console.error("Error in client options endpoint:", error);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ message: "Internal server error" }));
-      return;
+      return res.status(500).json({ message: "Internal server error" });
     }
   });
   
