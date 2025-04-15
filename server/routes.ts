@@ -289,6 +289,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Public API: Get client by ID for client profile view
+  app.get("/api/public/clients/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Verify this is a client user - either by roleId or username pattern
+      const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+      const isClient = roleId === 1001 || (user.username && user.username.toLowerCase().includes('client'));
+      
+      if (!isClient) {
+        return res.status(403).json({ message: "Requested user is not a client" });
+      }
+      
+      // Remove password from the response
+      const { password, ...safeUser } = user;
+      
+      console.log(`Fetched client details for ID: ${id}, username: ${user.username}`);
+      return res.json(safeUser);
+    } catch (error) {
+      console.error("Error fetching client details:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Public API: Get client projects by client ID
+  app.get("/api/public/client-projects/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      // Validate client exists
+      const client = await storage.getUser(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Get all projects
+      const allProjects = await storage.getAllProjects();
+      
+      // Filter projects by clientId
+      const clientProjects = allProjects.filter(project => {
+        const projectClientId = typeof project.clientId === 'string' ? 
+          parseInt(project.clientId) : project.clientId;
+        return projectClientId === clientId;
+      });
+      
+      console.log(`Found ${clientProjects.length} projects for client ID: ${clientId}`);
+      return res.json(clientProjects);
+    } catch (error) {
+      console.error("Error fetching client projects:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // API: Update client notes
+  app.patch("/api/clients/:id/notes", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      const { notes } = req.body;
+      if (notes === undefined) {
+        return res.status(400).json({ message: "Notes field is required" });
+      }
+      
+      // Verify client exists
+      const client = await storage.getUser(id);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Update client with notes
+      const updatedClient = await storage.updateUser(id, { notes });
+      
+      // Remove password from response
+      const { password, ...safeUpdatedClient } = updatedClient;
+      
+      console.log(`Updated notes for client ID: ${id}`);
+      return res.json(safeUpdatedClient);
+    } catch (error) {
+      console.error("Error updating client notes:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   // Create a public route for project creation (bypasses permission check)
   app.post("/api/public/projects", async (req, res) => {
     try {

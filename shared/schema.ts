@@ -60,6 +60,15 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at"),
   lastLogin: timestamp("last_login"),
   isActive: boolean("is_active").notNull().default(true),
+  // Added client-specific fields
+  company: text("company"),
+  phone: text("phone"),
+  website: text("website"),
+  notes: text("notes"),
+  industry: text("industry"),
+  referralSource: text("referral_source"),
+  isVip: boolean("is_vip").default(false),
+  isPriority: boolean("is_priority").default(false),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -70,6 +79,14 @@ export const insertUserSchema = createInsertSchema(users).pick({
   roleId: true,
   profilePicture: true,
   isActive: true,
+  company: true,
+  phone: true,
+  website: true,
+  notes: true,
+  industry: true,
+  referralSource: true,
+  isVip: true,
+  isPriority: true,
 });
 
 // Project schema
@@ -83,6 +100,10 @@ export const projects = pgTable("projects", {
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date"),
   status: text("status").notNull().default("in-progress"),
+  // Add additional project fields needed for client profile view
+  progress: integer("progress").default(0),
+  budget: integer("budget"),
+  teamSize: integer("team_size"),
 });
 
 // Create a custom project schema that accepts string dates
@@ -95,6 +116,9 @@ export const insertProjectSchema = z.object({
   startDate: z.string().or(z.date()), // Accept both string and date
   endDate: z.string().optional().or(z.date().optional()), // Optional string or date
   status: z.string(),
+  progress: z.number().optional(),
+  budget: z.number().optional(),
+  teamSize: z.number().optional(),
 });
 
 // Testimonial schema

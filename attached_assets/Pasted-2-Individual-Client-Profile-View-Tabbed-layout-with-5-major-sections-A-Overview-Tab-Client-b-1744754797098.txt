@@ -1,0 +1,89 @@
+2. Individual Client Profile View
+Tabbed layout with 5 major sections:
+ 
+A. Overview Tab
+	•	Client basic info
+	•	Project Summary Cards
+	•	Activity Feed
+	•	Notes section
+	•	Tags/Labels (VIP, High Priority)
+ 
+B. Projects Tab
+	•	List of linked projects
+	•	Status: On Hold, In Progress, Completed
+	•	Progress bars + deadlines
+	•	Quick button: Create New Project(you already implement on project tab we can use projectForm.)
+ 
+C. Pricing & Billing Tab 
+ 
+ 
+1. Payment Structure Section
+When creating an invoice or a project:
+	•	Select Payment Plan:
+	◦	Fixed Full Payment
+	◦	40% Upfront + Remaining on Completion
+	◦	Custom Milestones (Optional future upgrade)
+If "40% Upfront" is selected:
+	•	Auto-calculate 40% of the total project price
+	•	Allow user to override and pay more (e.g. 60%, 100%)
+	•	Save the balance (remaining amount) as Pending Payment
+ 
+2. Billing Timeline UI
+Show a visual timeline or table like:
+Payment Phase
+Amount
+Status
+Due Date
+Initial (40%)
+$2,000
+Paid
+Apr 15
+Remaining (60%)
+$3,000
+Pending
+May 10
+	•	Each phase shows: status badge, due date, and payment button if pending
+	•	Can be marked as “Paid” by admin or auto-tracked if integrated with Stripe/PayPal
+ 
+3. Receipt System Enhancements
+	•	Send separate receipts for:
+	◦	Initial Payment (40% receipt)
+	◦	Final Payment (remaining amount)
+	•	Show status: "Partially Paid", "Fully Paid", "Overdue"
+This creates trust and professional transparency for clients
+ 
+4. Notifications / Automation
+	•	Automatically send:
+	◦	Receipt when initial payment is confirmed
+	◦	Reminder email when final payment is due
+	•	Use Firebase Cloud Functions for automation (free-tier friendly)
+ 
+5. Manager View Controls
+Managers can:
+	•	View payment breakdown per client/project
+	•	Edit payment terms (e.g. change to 50/50 split if needed)
+	•	Resend payment links or download receipts
+	•	Add manual payment confirmation (if payment was offline)
+ 
+ 
+ 
+ 
+ 
+ 
+Pricing Section:
+	•	Assign packages or create custom pricing
+	•	Save client-specific rates
+Invoice Generator:
+	•	Add services/hours
+	•	Tax, discounts, currency
+	•	Preview as PDF
+Billing History:
+	•	Table of previous invoices
+	•	Status (Paid, Due, Overdue)
+	•	Download Receipt (PDF)
+	•	Send to Client (via email or link)
+ 
+D. Files & Docs
+	•	Upload/download contracts, reports, feedback
+	•	Show thumbnails for PDFs, Word, images
+	•	Tag files by category
