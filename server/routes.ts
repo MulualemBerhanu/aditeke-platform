@@ -602,8 +602,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Received project creation request:", JSON.stringify(req.body));
       
-      // Parse and validate the data first
-      const projectData = insertProjectSchema.parse(req.body);
+      // Get a copy of the request body to normalize before validation
+      const normalizedData = {...req.body};
+      
+      // Ensure clientId is a number (Zod validation may fail if it's a string)
+      if (normalizedData.clientId && typeof normalizedData.clientId === 'string') {
+        normalizedData.clientId = parseInt(normalizedData.clientId, 10);
+        console.log(`Converted clientId from string to number: ${normalizedData.clientId}`);
+      }
+      
+      // Parse and validate the data
+      const projectData = insertProjectSchema.parse(normalizedData);
       console.log("Project data validated successfully:", JSON.stringify(projectData));
       
       // Convert string dates to Date objects for storage
@@ -616,7 +625,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // If endDate is present and a string, convert it to a Date, otherwise keep as is
         endDate: projectData.endDate && typeof projectData.endDate === 'string'
           ? new Date(projectData.endDate)
-          : projectData.endDate
+          : projectData.endDate,
+        // Add creator information if available
+        createdBy: req.user?.id || null,
+        creatorUsername: req.user?.username || null
       };
       
       // Create the project

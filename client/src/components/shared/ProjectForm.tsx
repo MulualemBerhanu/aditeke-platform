@@ -307,9 +307,19 @@ export default function ProjectForm({
                           <SelectItem value="" disabled>No clients available</SelectItem>
                         ) : (
                           <>
-                            {/* Debug info */}
+                            {/* Clients count */}
                             <div className="px-2 py-1 text-xs text-muted-foreground">
                               Found {clients.length} clients
+                            </div>
+                            <Separator className="my-1" />
+                            
+                            {/* Debug list of all clients for troubleshooting */}
+                            <div className="px-2 py-1 mb-2 text-xs text-muted-foreground">
+                              {clients.map((c: any, i: number) => (
+                                <div key={i} className="text-xs">
+                                  {c.name || c.username} {c.id ? `(ID: ${c.id})` : ''}
+                                </div>
+                              ))}
                             </div>
                             <Separator className="my-1" />
                             
