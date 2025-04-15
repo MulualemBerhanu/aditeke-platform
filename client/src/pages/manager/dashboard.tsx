@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/components/auth/AuthContext';
+import ManagerLayout from '@/components/manager/ManagerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -233,17 +234,9 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Manager Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="font-medium">{userData.name}</p>
-            <p className="text-sm text-muted-foreground">Project Manager</p>
-          </div>
-          <Button variant="outline" onClick={() => logout()}>Logout</Button>
-        </div>
-      </div>
+    <ManagerLayout>
+      <div className="container mx-auto py-2">
+        <h2 className="text-2xl font-semibold mb-6">Projects Overview</h2>
 
       <Tabs defaultValue="projects" className="mb-8">
         <TabsList className="grid grid-cols-4 w-full max-w-3xl">
@@ -582,6 +575,7 @@ export default function ManagerDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </ManagerLayout>
   );
 }
