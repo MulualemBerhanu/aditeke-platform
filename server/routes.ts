@@ -544,6 +544,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Fix manager2 user with sequential ID
+  app.get("/api/fix-manager2-user", async (req, res) => {
+    // Block Vite middleware from intercepting this request
+    res.locals.isApiRoute = true;
+    try {
+      // Delete the old manager2 user if it exists
+      const oldManager = await storage.getUserByUsername("manager2");
+      if (oldManager && oldManager.id !== 50000 && oldManager.id !== 50001) {
+        console.log(`Found old manager2 user with ID ${oldManager.id}. Creating new one with sequential ID.`);
+        
+        // Get manager role
+        const managerRole = await storage.getRoleByName("manager");
+        if (!managerRole) {
+          return res.status(404).json({ message: "Manager role not found" });
+        }
+        
+        // Create new manager with sequential ID
+        const managerData = {
+          username: "manager2",
+          password: "password123", // Plain text for now
+          email: "manager2@example.com",
+          name: "Manager User 2",
+          roleId: managerRole.id,
+          isActive: true
+        };
+        
+        const newManager = await storage.createUser(managerData);
+        
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: "Manager2 user fixed with sequential ID",
+          oldId: oldManager.id,
+          newId: newManager.id
+        }));
+      } else if (oldManager) {
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: "Manager2 already has sequential ID",
+          id: oldManager.id
+        }));
+      } else {
+        // Create new manager with sequential ID
+        const managerRole = await storage.getRoleByName("manager");
+        if (!managerRole) {
+          return res.status(404).json({ message: "Manager role not found" });
+        }
+        
+        const managerData = {
+          username: "manager2",
+          password: "password123", // Plain text for now
+          email: "manager2@example.com",
+          name: "Manager User 2",
+          roleId: managerRole.id,
+          isActive: true
+        };
+        
+        const newManager = await storage.createUser(managerData);
+        
+        // Force pure JSON response with no HTML by ending request immediately
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: "Manager2 user created with sequential ID",
+          id: newManager.id
+        }));
+      }
+    } catch (error) {
+      console.error("Error fixing manager2 user:", error);
+      // Force pure JSON response with no HTML by ending request immediately
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        message: "Error fixing manager2 user", 
+        error: error instanceof Error ? error.message : String(error)
+      }));
+    }
+  });
+  
   // Special endpoint for getting project assignments - avoid middleware issues
   app.post("/api/projects/:id/assign-test", async (req, res, next) => {
     // Block Vite middleware from intercepting this request
