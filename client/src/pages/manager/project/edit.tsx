@@ -121,8 +121,12 @@ export default function ManagerEditProject() {
             category: project.category,
             status: project.status,
             clientId: project.clientId,
-            startDate: project.startDate ? new Date(project.startDate).toISOString().split('T')[0] : '',
-            endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+            startDate: project.startDate && project.startDate._seconds 
+              ? new Date(project.startDate._seconds * 1000).toISOString().split('T')[0] 
+              : '',
+            endDate: project.endDate && project.endDate._seconds 
+              ? new Date(project.endDate._seconds * 1000).toISOString().split('T')[0]
+              : '',
             thumbnail: project.thumbnail || '',
           }}
           projectId={parseInt(projectId!)}

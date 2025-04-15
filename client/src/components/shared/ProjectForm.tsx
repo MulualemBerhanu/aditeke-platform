@@ -25,6 +25,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
 
 // Project creation schema
+// Define a schema for Firebase timestamp format
+const firebaseTimestampSchema = z.object({
+  _seconds: z.number(),
+  _nanoseconds: z.number()
+});
+
+// Modified project schema that accepts both string dates and Firebase timestamps
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long" }),
   description: z.string().min(10, { message: "Description must be at least 10 characters long" }),
@@ -34,8 +41,18 @@ const projectSchema = z.object({
     z.number({ required_error: "Please select a client" }),
     z.string().transform(val => parseInt(val, 10)) // Allow string that can be converted to number
   ]),
-  startDate: z.string({ required_error: "Please specify a start date" }),
-  endDate: z.string().optional().or(z.literal('')).nullable(),
+  // Accept either a string date or a Firebase timestamp
+  startDate: z.union([
+    z.string({ required_error: "Please specify a start date" }),
+    firebaseTimestampSchema
+  ]),
+  // Optional end date, can be string, timestamp, empty string, or null
+  endDate: z.union([
+    z.string(),
+    firebaseTimestampSchema,
+    z.literal(''),
+    z.null()
+  ]).optional(),
   status: z.string({ required_error: "Please select a status" }),
 });
 
@@ -132,11 +149,15 @@ export default function ProjectForm({
       
       // Determine if we're updating or creating
       const isUpdate = isEditing && projectId;
+      
+      // Use our public API endpoints that don't require authentication
       const endpoint = isUpdate 
-        ? `/api/projects/${projectId}` 
+        ? `/api/public/projects/${projectId}` 
         : '/api/public/projects'; // Use public endpoint for creation
         
       const method = isUpdate ? 'PUT' : 'POST';
+      
+      console.log(`${isUpdate ? 'Updating' : 'Creating'} project using ${method} to ${endpoint}`);
       
       // Make the API request
       const response = await fetch(endpoint, {
@@ -169,9 +190,13 @@ export default function ProjectForm({
       
       // Invalidate all project-related queries
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      
+      // Also invalidate public endpoints
       if (projectId) {
         queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/public/projects/${projectId}`] });
       }
+      queryClient.invalidateQueries({ queryKey: ['/api/public/projects'] });
       
       // Call custom success handler if provided
       if (onSuccess) {
@@ -200,10 +225,16 @@ export default function ProjectForm({
       thumbnail: data.thumbnail && data.thumbnail.trim() !== '' ? data.thumbnail : undefined,
       // Ensure clientId is a number
       clientId: typeof data.clientId === 'string' ? parseInt(data.clientId, 10) : data.clientId,
-      // Keep dates as strings in format YYYY-MM-DD
-      startDate: data.startDate,
+      // Format dates for Firebase compatibility - convert YYYY-MM-DD to timestamp objects
+      startDate: data.startDate ? {
+        _seconds: Math.floor(new Date(data.startDate).getTime() / 1000),
+        _nanoseconds: 0
+      } : undefined,
       // Pass undefined for empty endDate (better for optional fields)
-      endDate: data.endDate && data.endDate.trim() !== '' ? data.endDate : undefined,
+      endDate: data.endDate && data.endDate.trim() !== '' ? {
+        _seconds: Math.floor(new Date(data.endDate).getTime() / 1000),
+        _nanoseconds: 0
+      } : undefined,
     };
     
     console.log(`${isEditing ? 'Updating' : 'Creating'} project data:`, formattedData);
