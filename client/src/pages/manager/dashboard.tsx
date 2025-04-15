@@ -378,63 +378,123 @@ export default function ManagerDashboard() {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
+                  <div className="overflow-x-auto rounded-md border shadow-sm">
+                    <table className="w-full divide-y divide-gray-200">
+                      <thead className="bg-muted/50">
                         <tr className="border-b">
-                          <th className="text-left py-3 px-2 font-medium">Project Name</th>
-                          <th className="text-left py-3 px-2 font-medium">Client</th>
-                          <th className="text-left py-3 px-2 font-medium">Status</th>
-                          <th className="text-left py-3 px-2 font-medium">Deadline</th>
-                          <th className="text-left py-3 px-2 font-medium">Actions</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Project Name</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Client</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Status</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Deadline</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Actions</th>
                         </tr>
                         <tr>
-                          <th className="py-2 px-2">
-                            <Input
-                              placeholder="Search project name..."
-                              value={filters.title}
-                              onChange={(e) => {
-                                setFilters(prev => ({ ...prev, title: e.target.value }));
-                                setCurrentPage(1); // Reset to first page on search
-                              }}
-                              className="h-8 text-sm"
-                            />
+                          <th className="py-2 px-4">
+                            <div className="relative">
+                              <Input
+                                placeholder="Search project name..."
+                                value={filters.title}
+                                onChange={(e) => {
+                                  setFilters(prev => ({ ...prev, title: e.target.value }));
+                                  setCurrentPage(1); // Reset to first page on search
+                                }}
+                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
+                              />
+                              {filters.title && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setFilters(prev => ({ ...prev, title: '' }));
+                                    setCurrentPage(1);
+                                  }}
+                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </th>
-                          <th className="py-2 px-2">
-                            <Input
-                              placeholder="Search client..."
-                              value={filters.client}
-                              onChange={(e) => {
-                                setFilters(prev => ({ ...prev, client: e.target.value }));
-                                setCurrentPage(1);
-                              }}
-                              className="h-8 text-sm"
-                            />
+                          <th className="py-2 px-4">
+                            <div className="relative">
+                              <Input
+                                placeholder="Search client..."
+                                value={filters.client}
+                                onChange={(e) => {
+                                  setFilters(prev => ({ ...prev, client: e.target.value }));
+                                  setCurrentPage(1);
+                                }}
+                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
+                              />
+                              {filters.client && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setFilters(prev => ({ ...prev, client: '' }));
+                                    setCurrentPage(1);
+                                  }}
+                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </th>
-                          <th className="py-2 px-2">
-                            <Input
-                              placeholder="Search status..."
-                              value={filters.status}
-                              onChange={(e) => {
-                                setFilters(prev => ({ ...prev, status: e.target.value }));
-                                setCurrentPage(1);
-                              }}
-                              className="h-8 text-sm"
-                            />
+                          <th className="py-2 px-4">
+                            <div className="relative">
+                              <Input
+                                placeholder="Search status..."
+                                value={filters.status}
+                                onChange={(e) => {
+                                  setFilters(prev => ({ ...prev, status: e.target.value }));
+                                  setCurrentPage(1);
+                                }}
+                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
+                              />
+                              {filters.status && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setFilters(prev => ({ ...prev, status: '' }));
+                                    setCurrentPage(1);
+                                  }}
+                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </th>
-                          <th className="py-2 px-2">
-                            <Input
-                              placeholder="Search deadline..."
-                              value={filters.deadline}
-                              onChange={(e) => {
-                                setFilters(prev => ({ ...prev, deadline: e.target.value }));
-                                setCurrentPage(1);
-                              }}
-                              className="h-8 text-sm"
-                            />
+                          <th className="py-2 px-4">
+                            <div className="relative">
+                              <Input
+                                placeholder="Search deadline..."
+                                value={filters.deadline}
+                                onChange={(e) => {
+                                  setFilters(prev => ({ ...prev, deadline: e.target.value }));
+                                  setCurrentPage(1);
+                                }}
+                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
+                              />
+                              {filters.deadline && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setFilters(prev => ({ ...prev, deadline: '' }));
+                                    setCurrentPage(1);
+                                  }}
+                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </th>
-                          <th className="py-2 px-2">
-                            {/* Clear filters button */}
+                          <th className="py-2 px-4">
+                            {/* Global clear filters button */}
                             {Object.values(filters).some(filter => filter.trim() !== '') && (
                               <Button
                                 variant="ghost"
@@ -443,10 +503,10 @@ export default function ManagerDashboard() {
                                   setFilters({ title: '', client: '', status: '', deadline: '' });
                                   setCurrentPage(1);
                                 }}
-                                className="h-8 text-xs w-full"
+                                className="h-8 text-xs w-full flex items-center justify-center border border-dashed"
                               >
                                 <X className="h-3 w-3 mr-1" />
-                                Clear
+                                Clear all
                               </Button>
                             )}
                           </th>
@@ -466,11 +526,11 @@ export default function ManagerDashboard() {
                             const clientName = client ? (client.name || client.username || 'Unknown') : 'Unassigned';
                             
                             return (
-                              <tr key={project.id} className="border-b">
-                                <td className="py-3 px-2">{project.title}</td>
-                                <td className="py-3 px-2">{clientName}</td>
-                                <td className="py-3 px-2">
-                                  <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
+                              <tr key={project.id} className="border-b hover:bg-muted/30 transition-colors">
+                                <td className="py-4 px-4 font-medium">{project.title}</td>
+                                <td className="py-4 px-4">{clientName}</td>
+                                <td className="py-4 px-4">
+                                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
                                     project.status === 'Completed' ? 'bg-green-100 text-green-800' :
                                     project.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
                                     project.status === 'Delayed' ? 'bg-red-100 text-red-800' :
@@ -479,21 +539,26 @@ export default function ManagerDashboard() {
                                     {project.status}
                                   </span>
                                 </td>
-                                <td className="py-3 px-2">
+                                <td className="py-4 px-4 text-muted-foreground">
                                   {project.endDate ? formatDate(project.endDate) : 'No deadline'}
                                 </td>
-                                <td className="py-3 px-2 flex space-x-1">
-                                  <Button variant="ghost" size="sm">View</Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => {
-                                      setLocation(`/manager/project/edit/${project.id}`);
-                                    }}
-                                  >
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    Edit
-                                  </Button>
+                                <td className="py-4 px-4">
+                                  <div className="flex space-x-2">
+                                    <Button variant="outline" size="sm" className="h-8 px-3">
+                                      View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="h-8 px-3"
+                                      onClick={() => {
+                                        setLocation(`/manager/project/edit/${project.id}`);
+                                      }}
+                                    >
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                  </div>
                                 </td>
                               </tr>
                             );
