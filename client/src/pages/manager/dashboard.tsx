@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { 
   Users, Layout, Mail, Calendar, ClipboardList,
   Clock, CheckCircle2, AlertCircle, Plus, Loader2,
-  FileText, PencilLine, UserPlus, Trash2
+  FileText, PencilLine, UserPlus, Trash2, Edit
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -373,12 +373,11 @@ export default function ManagerDashboard() {
                                     variant="ghost" 
                                     size="sm"
                                     onClick={() => {
-                                      setSelectedProjectId(project.id.toString());
-                                      setIsAssignProjectDialogOpen(true);
+                                      setLocation(`/manager/project/edit/${project.id}`);
                                     }}
                                   >
-                                    <UserPlus className="h-4 w-4 mr-1" />
-                                    Assign
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit
                                   </Button>
                                 </td>
                               </tr>

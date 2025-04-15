@@ -60,7 +60,9 @@ export default function ProjectForm({
   description,
   role,
   submitLabel = "Create Project",
-  initialValues
+  initialValues,
+  projectId,
+  isEditing = false
 }: ProjectFormProps) {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
@@ -121,16 +123,24 @@ export default function ProjectForm({
     console.log("Loading state:", isLoadingClients);
   }, [clients, isLoadingClients]);
 
-  // Create project mutation with authentication
-  const createProject = useMutation({
+  // Project mutation with authentication (for both create and update)
+  const projectMutation = useMutation({
     mutationFn: async (data: ProjectFormValues) => {
       // Get authentication information
       const currentUserJSON = localStorage.getItem('currentUser');
       const roleId = localStorage.getItem('userRoleId');
       
-      // Use the public endpoint that bypasses authentication
-      const response = await fetch('/api/public/projects', {
-        method: 'POST',
+      // Determine if we're updating or creating
+      const isUpdate = isEditing && projectId;
+      const endpoint = isUpdate 
+        ? `/api/projects/${projectId}` 
+        : '/api/public/projects'; // Use public endpoint for creation
+        
+      const method = isUpdate ? 'PUT' : 'POST';
+      
+      // Make the API request
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-Token': document.cookie.replace(/(?:(?:^|.*;\s*)csrf_token\s*=\s*([^;]*).*$)|^.*$/, '$1'),
@@ -144,17 +154,24 @@ export default function ProjectForm({
       if (!response.ok) {
         // Parse error message
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create project');
+        throw new Error(errorData.message || `Failed to ${isUpdate ? 'update' : 'create'} project`);
       }
       
       return response;
     },
     onSuccess: (response) => {
+      const action = isEditing ? "updated" : "created";
+      
       toast({
-        title: "Project created",
-        description: "Project has been successfully created",
+        title: `Project ${action}`,
+        description: `Project has been successfully ${action}`,
       });
+      
+      // Invalidate all project-related queries
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
+      }
       
       // Call custom success handler if provided
       if (onSuccess) {
@@ -166,7 +183,7 @@ export default function ProjectForm({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create project",
+        description: error.message || `Failed to ${isEditing ? 'update' : 'create'} project`,
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -189,8 +206,8 @@ export default function ProjectForm({
       endDate: data.endDate && data.endDate.trim() !== '' ? data.endDate : undefined,
     };
     
-    console.log("Submitting project data:", formattedData);
-    createProject.mutate(formattedData);
+    console.log(`${isEditing ? 'Updating' : 'Creating'} project data:`, formattedData);
+    projectMutation.mutate(formattedData);
   }
 
   return (
