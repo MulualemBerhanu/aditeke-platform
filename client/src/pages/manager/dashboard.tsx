@@ -430,97 +430,49 @@ export default function ManagerDashboard() {
                             />
                           </th>
                           <th className="py-2 px-4">
-                            <div className="relative">
-                              <Input
-                                placeholder="Search client..."
-                                value={filters.client}
-                                onChange={(e) => {
-                                  setFilters(prev => ({ ...prev, client: e.target.value }));
-                                  setCurrentPage(1);
-                                }}
-                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
-                              />
-                              {filters.client && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFilters(prev => ({ ...prev, client: '' }));
-                                    setCurrentPage(1);
-                                  }}
-                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
+                            <FilterInput 
+                              placeholder="Search client..."
+                              value={filters.client}
+                              onChange={(value) => {
+                                setFilters(prev => ({ ...prev, client: value }));
+                                setCurrentPage(1);
+                              }}
+                            />
                           </th>
                           <th className="py-2 px-4">
-                            <div className="relative">
-                              <Input
-                                placeholder="Search status..."
-                                value={filters.status}
-                                onChange={(e) => {
-                                  setFilters(prev => ({ ...prev, status: e.target.value }));
-                                  setCurrentPage(1);
-                                }}
-                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
-                              />
-                              {filters.status && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFilters(prev => ({ ...prev, status: '' }));
-                                    setCurrentPage(1);
-                                  }}
-                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
+                            <FilterInput 
+                              placeholder="Search status..."
+                              value={filters.status}
+                              onChange={(value) => {
+                                setFilters(prev => ({ ...prev, status: value }));
+                                setCurrentPage(1);
+                              }}
+                            />
                           </th>
                           <th className="py-2 px-4">
-                            <div className="relative">
-                              <Input
-                                placeholder="Search deadline..."
-                                value={filters.deadline}
-                                onChange={(e) => {
-                                  setFilters(prev => ({ ...prev, deadline: e.target.value }));
-                                  setCurrentPage(1);
-                                }}
-                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
-                              />
-                              {filters.deadline && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFilters(prev => ({ ...prev, deadline: '' }));
-                                    setCurrentPage(1);
-                                  }}
-                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
+                            <FilterInput 
+                              placeholder="Search deadline..."
+                              value={filters.deadline}
+                              onChange={(value) => {
+                                setFilters(prev => ({ ...prev, deadline: value }));
+                                setCurrentPage(1);
+                              }}
+                            />
                           </th>
                           <th className="py-2 px-4">
                             {/* Global clear filters button */}
                             {Object.values(filters).some(filter => filter.trim() !== '') && (
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={() => {
                                   setFilters({ title: '', client: '', status: '', deadline: '' });
                                   setCurrentPage(1);
                                 }}
-                                className="h-8 text-xs w-full flex items-center justify-center border border-dashed"
+                                className="h-8 text-xs w-full flex items-center justify-center border border-dashed hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-colors"
                               >
                                 <X className="h-3 w-3 mr-1" />
-                                Clear all
+                                Clear all filters
                               </Button>
                             )}
                           </th>
@@ -600,7 +552,7 @@ export default function ManagerDashboard() {
                                       setFilters({ title: '', client: '', status: '', deadline: '' });
                                       setCurrentPage(1);
                                     }}
-                                    className="mt-2"
+                                    className="mt-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-colors"
                                   >
                                     <X className="h-4 w-4 mr-1" />
                                     Clear all filters
