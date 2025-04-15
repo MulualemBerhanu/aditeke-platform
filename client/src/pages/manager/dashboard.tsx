@@ -16,7 +16,7 @@ import {
   Eye, MoreHorizontal, Building, Star, Briefcase, Zap,
   Download, Search, DollarSign, MessageSquare, PlusCircle,
   CheckCircle, FolderPlus, Upload, Folder, FileIcon as FileIconLucide, Table,
-  Info, Send, Download as FileDownIcon
+  Info, Send, Download as FileDownIcon, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -2034,17 +2034,760 @@ export default function ManagerDashboard() {
         </TabsContent>
 
         <TabsContent value="team">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Management</CardTitle>
-              <CardDescription>
-                Manage team members and their assignments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Team management interface will be implemented here</p>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <div className="text-2xl font-bold">12</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Current Utilization</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <Clock className="mr-2 h-4 w-4 text-amber-500" />
+                  <div className="text-2xl font-bold">85%</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Project Assignments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <Briefcase className="mr-2 h-4 w-4 text-blue-500" />
+                  <div className="text-2xl font-bold">24</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="col-span-1 lg:col-span-2">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Team Members</CardTitle>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Add Member
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Team Member</DialogTitle>
+                        <DialogDescription>Add a new developer or designer to your team.</DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="name" className="text-right">Full Name</Label>
+                          <Input id="name" className="col-span-3" placeholder="John Smith" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="email" className="text-right">Email</Label>
+                          <Input id="email" className="col-span-3" placeholder="john.smith@example.com" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="role" className="text-right">Role</Label>
+                          <Select>
+                            <SelectTrigger id="role" className="col-span-3">
+                              <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="frontend">Frontend Developer</SelectItem>
+                              <SelectItem value="backend">Backend Developer</SelectItem>
+                              <SelectItem value="fullstack">Full Stack Developer</SelectItem>
+                              <SelectItem value="ui">UI Designer</SelectItem>
+                              <SelectItem value="ux">UX Designer</SelectItem>
+                              <SelectItem value="qa">QA Engineer</SelectItem>
+                              <SelectItem value="pm">Project Manager</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="level" className="text-right">Level</Label>
+                          <Select>
+                            <SelectTrigger id="level" className="col-span-3">
+                              <SelectValue placeholder="Select a level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="junior">Junior</SelectItem>
+                              <SelectItem value="mid">Mid-Level</SelectItem>
+                              <SelectItem value="senior">Senior</SelectItem>
+                              <SelectItem value="lead">Team Lead</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit">Add Team Member</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto rounded-md border shadow-sm">
+                  <table className="w-full divide-y divide-gray-200">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          <div className="flex items-center gap-1">
+                            Name
+                            <div className="flex flex-col ml-1">
+                              <ChevronUp className="h-3 w-3 text-muted-foreground/70" />
+                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                            </div>
+                          </div>
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Role</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Projects</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">
+                          <div className="flex items-center gap-1">
+                            Utilization
+                            <div className="flex flex-col ml-1">
+                              <ChevronUp className="h-3 w-3 text-muted-foreground/70" />
+                              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                            </div>
+                          </div>
+                        </th>
+                        <th className="text-right py-3 px-4 font-medium text-sm">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-background divide-y divide-gray-200">
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-3">
+                              JS
+                            </div>
+                            <div>
+                              <div className="font-medium">James Smith</div>
+                              <div className="text-sm text-muted-foreground">james.smith@example.com</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">Full Stack Developer</Badge>
+                            <div className="text-sm text-muted-foreground mt-1">Senior</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span>3 projects</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1 w-32">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">90%</span>
+                              <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">High</Badge>
+                            </div>
+                            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-orange-500 rounded-full" style={{ width: '90%' }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Eye className="h-4 w-4 mr-1" />
+                              Profile
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-3">
+                              EW
+                            </div>
+                            <div>
+                              <div className="font-medium">Emily Williams</div>
+                              <div className="text-sm text-muted-foreground">emily.williams@example.com</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <Badge variant="outline" className="bg-violet-50 text-violet-700 hover:bg-violet-50">UI Designer</Badge>
+                            <div className="text-sm text-muted-foreground mt-1">Mid-Level</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span>2 projects</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1 w-32">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">75%</span>
+                              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Medium</Badge>
+                            </div>
+                            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-yellow-500 rounded-full" style={{ width: '75%' }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Eye className="h-4 w-4 mr-1" />
+                              Profile
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-3">
+                              AJ
+                            </div>
+                            <div>
+                              <div className="font-medium">Alex Johnson</div>
+                              <div className="text-sm text-muted-foreground">alex.johnson@example.com</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50">Backend Developer</Badge>
+                            <div className="text-sm text-muted-foreground mt-1">Senior</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span>4 projects</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1 w-32">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">100%</span>
+                              <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Overload</Badge>
+                            </div>
+                            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-red-500 rounded-full" style={{ width: '100%' }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Eye className="h-4 w-4 mr-1" />
+                              Profile
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-3">
+                              RL
+                            </div>
+                            <div>
+                              <div className="font-medium">Rachel Lee</div>
+                              <div className="text-sm text-muted-foreground">rachel.lee@example.com</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <Badge variant="outline" className="bg-rose-50 text-rose-700 hover:bg-rose-50">QA Engineer</Badge>
+                            <div className="text-sm text-muted-foreground mt-1">Junior</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span>2 projects</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1 w-32">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">50%</span>
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Low</Badge>
+                            </div>
+                            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-green-500 rounded-full" style={{ width: '50%' }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Eye className="h-4 w-4 mr-1" />
+                              Profile
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-3">
+                              MK
+                            </div>
+                            <div>
+                              <div className="font-medium">Michael Kim</div>
+                              <div className="text-sm text-muted-foreground">michael.kim@example.com</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <Badge variant="outline" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-50">Frontend Developer</Badge>
+                            <div className="text-sm text-muted-foreground mt-1">Mid-Level</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <span>3 projects</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-1 w-32">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">85%</span>
+                              <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">High</Badge>
+                            </div>
+                            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-orange-500 rounded-full" style={{ width: '85%' }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Eye className="h-4 w-4 mr-1" />
+                              Profile
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 px-2">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Team Skills Distribution</CardTitle>
+                <CardDescription>Overview of team skill composition</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">Full Stack</div>
+                      <div className="text-sm text-muted-foreground">3 members</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '25%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">Frontend</div>
+                      <div className="text-sm text-muted-foreground">4 members</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '33%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">Backend</div>
+                      <div className="text-sm text-muted-foreground">2 members</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: '17%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">UI/UX Design</div>
+                      <div className="text-sm text-muted-foreground">2 members</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-violet-500 rounded-full" style={{ width: '17%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">QA</div>
+                      <div className="text-sm text-muted-foreground">1 member</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-rose-500 rounded-full" style={{ width: '8%' }}></div>
+                    </div>
+                  </div>
+
+                  <Separator className="my-2" />
+                  
+                  <div>
+                    <h4 className="font-medium mb-3">Experience Level</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <div className="font-medium text-xl">2</div>
+                        <div className="text-sm text-muted-foreground">Senior</div>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <div className="font-medium text-xl">5</div>
+                        <div className="text-sm text-muted-foreground">Mid-Level</div>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <div className="font-medium text-xl">3</div>
+                        <div className="text-sm text-muted-foreground">Junior</div>
+                      </div>
+                      <div className="bg-muted/50 rounded-lg p-3 text-center">
+                        <div className="font-medium text-xl">2</div>
+                        <div className="text-sm text-muted-foreground">Lead</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            <Card className="col-span-1 lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Current Project Assignments</CardTitle>
+                <CardDescription>Team member project allocations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto rounded-md border shadow-sm">
+                  <table className="w-full divide-y divide-gray-200">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Project</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Team Member</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Role</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Time Allocated</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-background divide-y divide-gray-200">
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="font-medium">E-commerce Platform</div>
+                          <div className="text-sm text-muted-foreground">TechCorp Solutions</div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-2">
+                              JS
+                            </div>
+                            <div>James Smith</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">Lead Developer</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>40 hours/week</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Active</Badge>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="font-medium">Mobile Banking App</div>
+                          <div className="text-sm text-muted-foreground">Finance Plus Inc</div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-2">
+                              AJ
+                            </div>
+                            <div>Alex Johnson</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">Backend Developer</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>30 hours/week</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Active</Badge>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="font-medium">CRM System Redesign</div>
+                          <div className="text-sm text-muted-foreground">Global Services Ltd</div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-2">
+                              EW
+                            </div>
+                            <div>Emily Williams</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">UI Designer</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>25 hours/week</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Planning</Badge>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="font-medium">Healthcare Portal</div>
+                          <div className="text-sm text-muted-foreground">MediCare Systems</div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-2">
+                              MK
+                            </div>
+                            <div>Michael Kim</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">Frontend Developer</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>35 hours/week</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Active</Badge>
+                        </td>
+                      </tr>
+
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="font-medium">Inventory Management System</div>
+                          <div className="text-sm text-muted-foreground">Retail Solutions Co</div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium mr-2">
+                              RL
+                            </div>
+                            <div>Rachel Lee</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">QA Engineer</td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>20 hours/week</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Testing</Badge>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle>Resource Allocation</CardTitle>
+                <CardDescription>Weekly hours by project</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">E-commerce Platform</div>
+                      <div className="text-sm">90 hours</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '30%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">Mobile Banking App</div>
+                      <div className="text-sm">75 hours</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full" style={{ width: '25%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">CRM System Redesign</div>
+                      <div className="text-sm">60 hours</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-violet-500 rounded-full" style={{ width: '20%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">Healthcare Portal</div>
+                      <div className="text-sm">45 hours</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-500 rounded-full" style={{ width: '15%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <div className="font-medium text-sm">Inventory Management</div>
+                      <div className="text-sm">30 hours</div>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-rose-500 rounded-full" style={{ width: '10%' }}></div>
+                    </div>
+                  </div>
+
+                  <Separator className="my-2" />
+
+                  <div className="pt-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="w-full">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Assign New Project
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Assign Project</DialogTitle>
+                          <DialogDescription>
+                            Assign team members to a project and allocate their time.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="project">Project</Label>
+                            <Select>
+                              <SelectTrigger id="project">
+                                <SelectValue placeholder="Select project" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ecommerce">E-commerce Platform</SelectItem>
+                                <SelectItem value="banking">Mobile Banking App</SelectItem>
+                                <SelectItem value="crm">CRM System Redesign</SelectItem>
+                                <SelectItem value="healthcare">Healthcare Portal</SelectItem>
+                                <SelectItem value="inventory">Inventory Management</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="member">Team Member</Label>
+                            <Select>
+                              <SelectTrigger id="member">
+                                <SelectValue placeholder="Select team member" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="james">James Smith</SelectItem>
+                                <SelectItem value="emily">Emily Williams</SelectItem>
+                                <SelectItem value="alex">Alex Johnson</SelectItem>
+                                <SelectItem value="rachel">Rachel Lee</SelectItem>
+                                <SelectItem value="michael">Michael Kim</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="role">Project Role</Label>
+                            <Input id="role" placeholder="e.g. Lead Developer" />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="hours">Weekly Hours</Label>
+                            <Input id="hours" type="number" min="1" max="40" placeholder="Hours per week" />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="status">Status</Label>
+                            <Select>
+                              <SelectTrigger id="status">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="planning">Planning</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="testing">Testing</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="submit">Assign</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="reports">
