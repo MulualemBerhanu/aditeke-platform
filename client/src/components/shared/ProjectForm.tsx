@@ -296,7 +296,7 @@ export default function ProjectForm({
                         ) : clients.length === 0 ? (
                           <SelectItem value="" disabled>No clients available</SelectItem>
                         ) : (
-                          clients.map((client) => {
+                          clients.map((client: any) => {
                             // Defensive check to make sure client and client.id exist
                             if (!client || client.id === undefined || client.id === null) {
                               return null;

@@ -165,6 +165,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get all client users (for project forms)
+  app.get("/api/users/clients", async (req, res) => {
+    try {
+      // Get all users from the database
+      const allUsers = await storage.getAllUsers();
+      
+      // Filter users with client role (roleId = 1001)
+      const clientUsers = allUsers.filter(user => {
+        // Handle both string and number roleId values
+        const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+        return roleId === 1001 || user.username.toLowerCase().includes('client');
+      });
+      
+      // Remove passwords before sending to client
+      const safeClientUsers = clientUsers.map(user => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      console.log(`Found ${safeClientUsers.length} client users for client endpoint`);
+      
+      return res.json(safeClientUsers);
+    } catch (error) {
+      console.error("Error fetching client users:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   // Hardcoded client data as a fallback - now with sequential IDs
   const hardcodedClients = [
     {
