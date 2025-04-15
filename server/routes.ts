@@ -1711,55 +1711,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Manual payment processing for client invoices
-  app.post('/api/mark-invoice-paid', authenticateJWT, async (req, res) => {
+  // New endpoint for manual payment processing with receipt generation
+  app.post('/api/client-invoices/:id/payment-receipt', authenticateJWT, async (req, res) => {
     try {
-      const { invoiceId, paymentMethod, paidAmount, paymentDate, receiptNumber } = req.body;
-      
-      if (!invoiceId) {
-        return res.status(400).json({ error: "Invoice ID is required" });
-      }
-      
-      const numericInvoiceId = parseInt(invoiceId);
-      if (isNaN(numericInvoiceId)) {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid invoice ID" });
       }
       
-      // Get the invoice first to validate
-      const existingInvoice = await storage.getInvoice(numericInvoiceId);
-      if (!existingInvoice) {
-        return res.status(404).json({ error: "Invoice not found" });
+      const { 
+        paymentMethod, 
+        paidAmount, 
+        paymentDate,
+        notes 
+      } = req.body;
+      
+      if (!paymentMethod) {
+        return res.status(400).json({ error: "Payment method is required" });
       }
       
-      // Prepare payment data
+      if (!paidAmount) {
+        return res.status(400).json({ error: "Paid amount is required" });
+      }
+      
+      // Generate a unique receipt number
+      const receiptNumber = `RCPT-${Date.now()}`;
+      
+      // Update the invoice status and add payment details
       const paymentData = {
-        paymentMethod: paymentMethod || 'manual',
-        paidAmount: paidAmount || existingInvoice.amount,
+        paymentMethod,
+        paidAmount,
         paidDate: paymentDate || new Date().toISOString(),
-        receiptNumber: receiptNumber || `RCP-${Date.now()}`
+        receiptNumber,
+        notes: notes || null
       };
       
-      // Update invoice status to paid
-      const updatedInvoice = await storage.updateInvoiceStatus(numericInvoiceId, 'paid', paymentData);
+      const invoice = await storage.updateInvoiceStatus(id, 'paid', paymentData);
       
-      // Generate PDF receipt (for future implementation)
-      // For now, just return success with receipt details
-      res.status(200).json({
+      res.status(201).json({
         success: true,
-        invoice: updatedInvoice,
+        message: "Payment processed successfully",
+        invoice,
         receipt: {
-          receiptNumber: paymentData.receiptNumber,
-          date: paymentData.paidDate,
-          amount: paymentData.paidAmount,
-          method: paymentData.paymentMethod,
-          invoiceNumber: existingInvoice.invoiceNumber
+          receiptNumber: invoice.receiptNumber,
+          invoiceNumber: invoice.invoiceNumber,
+          clientId: invoice.clientId,
+          paidAmount: invoice.paidAmount,
+          paymentMethod: invoice.paymentMethod,
+          paidDate: invoice.paidDate,
+          status: invoice.status
         }
       });
     } catch (error) {
-      console.error("Error processing manual payment:", error);
+      console.error("Error processing payment:", error);
       res.status(500).json({ error: "Failed to process payment" });
     }
   });
+  
+  // This functionality is now handled by /api/client-invoices/:id/payment-receipt
   
   // Generate receipt for already paid invoice
   app.get('/api/generate-receipt/:invoiceId', authenticateJWT, async (req, res) => {
