@@ -280,11 +280,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Parse the localStorage auth data from the header
         try {
+          console.log("Parsing authorization header for client options");
+          
+          // The token might contain a JSON object directly
           const token = authHeader.split('Bearer ')[1];
-          const decodedData = JSON.parse(token);
+          let decodedData;
+          
+          try {
+            // First attempt to parse it as JSON
+            decodedData = JSON.parse(token);
+            console.log("Successfully parsed auth token as JSON");
+          } catch (jsonError) {
+            // If that fails, it might be a regular JWT token
+            console.log("Not a JSON token, will use as-is");
+            
+            // Store minimal data we need for role checking
+            decodedData = { 
+              id: 0, // Default ID
+              roleId: 0, // Default role
+              fromToken: true
+            };
+            
+            // Check if the roleId is in userRoleId localStorage via custom header
+            const roleIdHeader = req.headers['x-user-role-id'];
+            if (roleIdHeader) {
+              try {
+                decodedData.roleId = parseInt(roleIdHeader.toString());
+                console.log(`Extracted roleId ${decodedData.roleId} from header`);
+              } catch (e) {
+                console.log("Could not parse roleId header");
+              }
+            }
+          }
+          
+          console.log("Auth data:", decodedData);
           
           // Simple validation that this is a valid user object
-          if (!decodedData.id || !decodedData.roleId) {
+          if ((!decodedData.id && !decodedData.fromToken) || !decodedData.roleId) {
             console.log("Invalid authorization data for client-options endpoint");
             return res.status(401).json({ message: "Invalid authorization data" });
           }
