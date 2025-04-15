@@ -80,38 +80,19 @@ export default function ProjectForm({
     },
   });
 
-  // Fetch all clients using the exact same implementation as manager dashboard
+  // Fetch all clients using the public API endpoint
   const {
     data: clients = [],
     isLoading: isLoadingClients,
     error: clientsError
   } = useQuery<any[]>({
-    queryKey: ['/api/manager/client-options'],
+    queryKey: ['/api/public/client-options'],
     queryFn: async () => {
       try {
-        console.log("Fetching client options from dedicated endpoint");
+        console.log("Fetching client options from public endpoint");
         
-        // Get the current user from localStorage for authorization
-        const currentUserJSON = localStorage.getItem('currentUser');
-        const roleId = localStorage.getItem('userRoleId');
-        let authHeader = {};
-        
-        if (currentUserJSON) {
-          // Include the user data in the authorization header
-          authHeader = {
-            'Authorization': `Bearer ${currentUserJSON}`,
-            'X-User-Role-ID': roleId || '1000' // Default to manager role if not specified
-          };
-          console.log("Added authorization headers for client options API:", authHeader);
-        } else {
-          console.warn("No user data in localStorage for authorization");
-        }
-        
-        const res = await fetch('/api/manager/client-options', {
-          headers: {
-            ...authHeader
-          }
-        });
+        // Use the public endpoint that requires no authentication
+        const res = await fetch('/api/public/client-options');
         
         if (!res.ok) {
           console.error("Client options API returned error:", res.status, res.statusText);
@@ -120,11 +101,11 @@ export default function ProjectForm({
           return [];
         }
         const data = await res.json();
-        console.log("Received client options:", data);
+        console.log("Received client options:", data.length, "clients");
         return data;
       } catch (error) {
         console.error("Error in client options fetch:", error);
-        throw error;
+        return []; // Return empty array instead of throwing
       }
     }
   });
@@ -333,7 +314,7 @@ export default function ProjectForm({
                             Loading clients...
                           </div>
                         ) : clients.length === 0 ? (
-                          <SelectItem value="" disabled>No clients available</SelectItem>
+                          <SelectItem value="no-clients" disabled>No clients available</SelectItem>
                         ) : (
                           <>
                             {/* Clients count */}
@@ -350,7 +331,8 @@ export default function ProjectForm({
                               }
                               
                               // Make sure client.id and client.name are properly accessed
-                              const clientId = typeof client.id === 'undefined' ? '' : client.id.toString();
+                              // Ensure we never have an empty string for clientId
+                              const clientId = typeof client.id === 'undefined' || client.id === null ? 'unknown-client' : client.id.toString();
                               const clientName = client.name || client.username || 'Unknown Client';
                               
                               return (
