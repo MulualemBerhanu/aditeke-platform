@@ -134,6 +134,101 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     );
   }
 
-  // Render children if authenticated
+  // Check role-based access if a requiredRole is specified
+  if (requiredRole && user) {
+    // Extract the role from the user object
+    const userRole = typeof user.role === 'object' && user.role ? user.role.name : 
+                     typeof user.roleName === 'string' ? user.roleName : 
+                     'unknown';
+    
+    console.log("Role check:", { requiredRole, userRole, roleId: user.roleId });
+    
+    // Get roleId and convert to a consistent format
+    const roleId = user.roleId || 
+                  (user.role && typeof user.role === 'object' ? user.role.id : null);
+    
+    // Map role names to IDs for consistency
+    const roleIdMap: Record<string, number> = {
+      'admin': 1002,
+      'manager': 1000,
+      'client': 1001
+    };
+    
+    // Check path for security - this adds defense in depth
+    const path = window.location.pathname;
+    const isAdminPath = path.startsWith('/admin');
+    const isManagerPath = path.startsWith('/manager');
+    const isClientPath = path.startsWith('/client');
+    
+    // Security logic checks both role name and ID when possible
+    const hasAdminAccess = userRole.toLowerCase() === 'admin' || roleId === roleIdMap.admin;
+    const hasManagerAccess = userRole.toLowerCase() === 'manager' || roleId === roleIdMap.manager;
+    const hasClientAccess = userRole.toLowerCase() === 'client' || roleId === roleIdMap.client;
+    
+    // Apply security policy based on path and role
+    let accessDenied = false;
+    
+    if (isAdminPath && !hasAdminAccess) {
+      accessDenied = true;
+      console.warn("Access denied: Non-admin user attempted to access admin page");
+    } else if (isManagerPath && !hasManagerAccess && !hasAdminAccess) {
+      accessDenied = true;
+      console.warn("Access denied: User attempted to access manager page without proper role");
+    } else if (isClientPath && !hasClientAccess && !hasManagerAccess && !hasAdminAccess) {
+      accessDenied = true;
+      console.warn("Access denied: User attempted to access client page without proper role");
+    }
+    
+    // If access is denied, redirect to appropriate dashboard
+    if (accessDenied) {
+      console.error("Unauthorized access attempt. Redirecting to appropriate dashboard.");
+      
+      // Redirect to the appropriate dashboard based on role
+      if (hasAdminAccess) {
+        setLocation('/admin/dashboard');
+        return (
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-gray-500">Redirecting to Admin Dashboard...</p>
+            </div>
+          </div>
+        );
+      } else if (hasManagerAccess) {
+        setLocation('/manager/dashboard');
+        return (
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-gray-500">Redirecting to Manager Dashboard...</p>
+            </div>
+          </div>
+        );
+      } else if (hasClientAccess) {
+        setLocation('/client/dashboard');
+        return (
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-gray-500">Redirecting to Client Dashboard...</p>
+            </div>
+          </div>
+        );
+      } else {
+        // If we can't determine the role, redirect to login
+        setLocation('/login');
+        return (
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-gray-500">Redirecting to Login...</p>
+            </div>
+          </div>
+        );
+      }
+    }
+  }
+  
+  // Render children if authenticated and authorized
   return <>{children}</>;
 }

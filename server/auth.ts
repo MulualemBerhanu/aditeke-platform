@@ -392,15 +392,38 @@ export function setupAuth(app: Express) {
     });
   });
 
-  // Get current user endpoint
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated() || !req.user) {
-      return res.status(401).json({ message: "Not authenticated" });
+  // Get current user endpoint with role information
+  app.get("/api/user", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Get the user's role information from the database
+      const role = await storage.getRole(req.user.roleId);
+      
+      // Add role information to the user object
+      const userWithRole = {
+        ...req.user,
+        role: role || null,
+        roleName: role ? role.name : 'unknown'
+      };
+      
+      // Log for debugging
+      console.log("Role information for user:", { 
+        userId: req.user.id, 
+        username: req.user.username,
+        roleId: req.user.roleId,
+        roleName: role ? role.name : 'unknown' 
+      });
+      
+      // Return user without sensitive information, but with role details
+      const { password, ...userWithoutPassword } = userWithRole;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error retrieving user with role:", error);
+      res.status(500).json({ message: "Error retrieving user information" });
     }
-    
-    // Return user without sensitive information
-    const { password, ...userWithoutPassword } = req.user;
-    res.json(userWithoutPassword);
   });
 
   // Middleware to verify token authentication for cross-domain requests
@@ -423,9 +446,19 @@ export function setupAuth(app: Express) {
           const user = await storage.getUser(userData.id);
           
           if (user && user.username === userData.username) {
+            // Get the role information
+            const role = await storage.getRole(user.roleId);
+            
+            // Add role information to the user object
+            const userWithRole = {
+              ...user,
+              role: role || null,
+              roleName: role ? role.name : 'unknown'
+            };
+            
             // Manually set the user on the request
-            (req as any).user = user;
-            console.log(`JWT authentication successful for user ${user.username}`);
+            (req as any).user = userWithRole;
+            console.log(`JWT authentication successful for user ${user.username} with role ${role?.name || 'unknown'}`);
             return next();
           }
         }

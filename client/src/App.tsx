@@ -60,73 +60,73 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
-      {/* Admin Routes - Protected with ProtectedRoute */}
+      {/* Admin Routes - Protected with ProtectedRoute and role requirement */}
       <Route path="/admin/dashboard">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <AdminDashboard />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/user-management">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <UserManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/add-user">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <AddUser />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/content-management">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <AdminContentManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/content-management/blog">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <BlogManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/content-management/services">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <ServiceManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/content-management/testimonials">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <TestimonialManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/project-management">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <ProjectManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/project-management/create">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <CreateProject />
         </ProtectedRoute>
       </Route>
       <Route path="/admin/settings">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <AdminSettings />
         </ProtectedRoute>
       </Route>
       
       {/* Manager Routes */}
       <Route path="/manager/dashboard">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="manager">
           <ManagerDashboard />
         </ProtectedRoute>
       </Route>
       <Route path="/manager/project/create">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="manager">
           <ManagerCreateProject />
         </ProtectedRoute>
       </Route>
       
       {/* Client Routes */}
       <Route path="/client/dashboard">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="client">
           <ClientDashboard />
         </ProtectedRoute>
       </Route>
