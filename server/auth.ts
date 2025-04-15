@@ -149,7 +149,9 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production", // Only use secure cookies in production
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" // Essential for cross-domain cookies in production
     }
   };
 
