@@ -17,7 +17,7 @@ import {
   Download, Search, DollarSign, MessageSquare, PlusCircle,
   CheckCircle, FolderPlus, Upload, Folder, FileIcon as FileIconLucide,
   Info, Send, Download as FileDownIcon, ChevronUp, ChevronDown, 
-  Phone, Briefcase as BriefcaseIcon
+  Phone, Briefcase as BriefcaseIcon, BarChart2 
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
