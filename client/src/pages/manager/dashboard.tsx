@@ -198,18 +198,30 @@ export default function ManagerDashboard() {
     // Check role permissions and redirect if needed
     const userData = user || (storedUser ? JSON.parse(storedUser) : null);
     if (userData) {
-      // Get numeric roleId - either directly or convert from string if needed
-      const roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
+      const username = userData.username.toLowerCase();
       
-      // If not a manager (roleId 2), redirect
-      if (roleIdNum !== 2) {
-        console.log("⚠️ Not authorized as manager, redirecting");
-        if (roleIdNum === 1) {
+      // First, check role based on username (most reliable)
+      if (!username.includes('manager')) {
+        console.log("⚠️ Not authorized as manager based on username, redirecting");
+        if (username.includes('admin')) {
           window.location.href = '/admin/dashboard';
-        } else if (roleIdNum === 3) {
+        } else if (username.includes('client')) {
           window.location.href = '/client/dashboard';
         } else {
-          window.location.href = '/';
+          // Try to get numeric roleId - either directly or convert from string if needed
+          const roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
+          
+          // If still can't determine role, use roleId
+          if (roleIdNum !== 1000) { // 1000 is the manager role ID in Firebase
+            console.log("⚠️ Not authorized as manager based on roleId, redirecting");
+            if (roleIdNum === 1002) { // 1002 is the admin role ID in Firebase
+              window.location.href = '/admin/dashboard';
+            } else if (roleIdNum === 1001) { // 1001 is the client role ID in Firebase
+              window.location.href = '/client/dashboard';
+            } else {
+              window.location.href = '/';
+            }
+          }
         }
       }
     }
@@ -218,11 +230,8 @@ export default function ManagerDashboard() {
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
 
-  // Get numeric roleId for validation
-  const roleIdNum = userData ? (typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId) : null;
-  
-  // Check if user is a manager (roleId 2)
-  const isManager = userData && roleIdNum === 2;
+  // Check if user is a manager based on username (most reliable method)
+  const isManager = userData && userData.username.toLowerCase().includes('manager');
 
   if (!userData || !isManager) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
