@@ -223,7 +223,11 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
   const formatDate = (dateInput: string | Date) => {
     try {
       if (!dateInput) return 'N/A';
+      // Validate date before formatting
       const date = new Date(dateInput);
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
       return format(date, 'MMM dd, yyyy');
     } catch (error) {
       console.error('Error formatting date:', error);
