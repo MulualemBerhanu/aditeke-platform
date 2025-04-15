@@ -354,7 +354,8 @@ export class FirebaseStorage implements IStorage {
         paidDate: null,
         paidAmount: null,
         stripePaymentIntentId: null,
-        paymentMethod: null
+        paymentMethod: null,
+        receiptNumber: null  // New field for manual receipts
       };
       
       await this.db.collection('client_invoices').add(clientInvoice);
@@ -365,7 +366,7 @@ export class FirebaseStorage implements IStorage {
     }
   }
   
-  async updateInvoiceStatus(id: number, status: string, paymentData?: Partial<InsertClientInvoice>): Promise<ClientInvoice> {
+  async updateInvoiceStatus(id: number, status: string, paymentData?: any): Promise<ClientInvoice> {
     try {
       const invoiceRef = this.db.collection('client_invoices').where('id', '==', id);
       const snapshot = await invoiceRef.get();
@@ -376,15 +377,43 @@ export class FirebaseStorage implements IStorage {
       
       const docId = snapshot.docs[0].id;
       const invoice = snapshot.docs[0].data() as ClientInvoice;
+      
+      // Handle manual payment data
       const updatedInvoice: ClientInvoice = {
         ...invoice,
-        ...paymentData,
         status,
         updatedAt: new Date()
       };
       
-      if (status === 'paid' && !updatedInvoice.paidDate) {
-        updatedInvoice.paidDate = new Date().toISOString();
+      // Process payment data for manual receipts
+      if (status === 'paid') {
+        // Set paid date if not provided
+        if (paymentData?.paidDate) {
+          updatedInvoice.paidDate = paymentData.paidDate;
+        } else if (!updatedInvoice.paidDate) {
+          updatedInvoice.paidDate = new Date().toISOString();
+        }
+        
+        // Set payment method
+        if (paymentData?.paymentMethod) {
+          updatedInvoice.paymentMethod = paymentData.paymentMethod;
+        } else if (!updatedInvoice.paymentMethod) {
+          updatedInvoice.paymentMethod = 'manual';
+        }
+        
+        // Set paid amount
+        if (paymentData?.paidAmount) {
+          updatedInvoice.paidAmount = paymentData.paidAmount;
+        } else if (!updatedInvoice.paidAmount) {
+          updatedInvoice.paidAmount = updatedInvoice.amount;
+        }
+        
+        // Set receipt number
+        if (paymentData?.receiptNumber) {
+          updatedInvoice.receiptNumber = paymentData.receiptNumber;
+        } else if (!updatedInvoice.receiptNumber) {
+          updatedInvoice.receiptNumber = `RCPT-${Date.now()}`;
+        }
       }
       
       await this.db.collection('client_invoices').doc(docId).update(updatedInvoice);

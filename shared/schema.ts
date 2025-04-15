@@ -336,6 +336,7 @@ export const clientInvoices = pgTable("client_invoices", {
   issueDate: date("issue_date").notNull(),
   dueDate: date("due_date").notNull(),
   paidDate: date("paid_date"),
+  paidAmount: decimal("paid_amount", { precision: 10, scale: 2 }), // Amount actually paid
   description: text("description"),
   items: json("items").notNull(), // JSON array of line items
   notes: text("notes"),
@@ -343,6 +344,7 @@ export const clientInvoices = pgTable("client_invoices", {
   updatedAt: timestamp("updated_at"),
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   paymentMethod: text("payment_method"),
+  receiptNumber: text("receipt_number"), // Manual receipt number
 });
 
 export const insertClientInvoiceSchema = createInsertSchema(clientInvoices).pick({
@@ -355,11 +357,13 @@ export const insertClientInvoiceSchema = createInsertSchema(clientInvoices).pick
   issueDate: true,
   dueDate: true,
   paidDate: true,
+  paidAmount: true,
   description: true,
   items: true,
   notes: true,
   stripePaymentIntentId: true,
   paymentMethod: true,
+  receiptNumber: true,
 });
 
 // Type exports for new schemas
