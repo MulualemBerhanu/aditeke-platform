@@ -36,6 +36,70 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
   const [selectedPaymentPlan, setSelectedPaymentPlan] = React.useState('fixed');
   const [customAmount, setCustomAmount] = React.useState('');
   
+  // Invoice form state
+  const [invoiceFormData, setInvoiceFormData] = React.useState({
+    projectId: '',
+    amount: '',
+    dueDate: '',
+    description: '',
+    invoiceNumber: `INV-${Date.now().toString().substring(6)}`
+  });
+  
+  // Create invoice mutation
+  const createInvoice = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest('POST', '/api/client-invoices', {
+        clientId: Number(clientId),
+        projectId: data.projectId ? Number(data.projectId) : null,
+        invoiceNumber: data.invoiceNumber,
+        amount: data.amount,
+        currency: 'USD',
+        status: 'pending',
+        issueDate: new Date().toISOString().split('T')[0],
+        dueDate: data.dueDate,
+        description: data.description,
+        items: [
+          {
+            description: data.description || 'Services',
+            amount: parseFloat(data.amount),
+            quantity: 1
+          }
+        ],
+        notes: ''
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create invoice');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Invoice Created',
+        description: 'The invoice has been created successfully.',
+      });
+      // Reset form and close dialog
+      setInvoiceFormData({
+        projectId: '',
+        amount: '',
+        dueDate: '',
+        description: '',
+        invoiceNumber: `INV-${Date.now().toString().substring(6)}`
+      });
+      // Refresh invoices data
+      queryClient.invalidateQueries({ queryKey: ['/api/client-invoices', clientId] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error Creating Invoice',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+  
   // Fetch client details
   const { 
     data: client, 
@@ -758,46 +822,102 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                             Generate a new invoice for this client.
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="invoice-project" className="text-right">
-                              Project
-                            </Label>
-                            <Select>
-                              <SelectTrigger id="invoice-project" className="col-span-3">
-                                <SelectValue placeholder="Select project" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {clientProjects?.map(project => (
-                                  <SelectItem key={project.id} value={project.id.toString()}>
-                                    {project.title}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          createInvoice.mutate(invoiceFormData);
+                        }}>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="invoice-project" className="text-right">
+                                Project
+                              </Label>
+                              <Select 
+                                onValueChange={(value) => 
+                                  setInvoiceFormData({...invoiceFormData, projectId: value})
+                                }
+                                value={invoiceFormData.projectId}
+                              >
+                                <SelectTrigger id="invoice-project" className="col-span-3">
+                                  <SelectValue placeholder="Select project" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {clientProjects?.map(project => (
+                                    <SelectItem key={project.id} value={project.id.toString()}>
+                                      {project.title}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="invoice-amount" className="text-right">
+                                Amount
+                              </Label>
+                              <Input 
+                                id="invoice-amount" 
+                                type="number" 
+                                className="col-span-3" 
+                                placeholder="0.00" 
+                                value={invoiceFormData.amount}
+                                onChange={(e) => 
+                                  setInvoiceFormData({...invoiceFormData, amount: e.target.value})
+                                }
+                                required
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="invoice-date" className="text-right">
+                                Due Date
+                              </Label>
+                              <Input 
+                                id="invoice-date" 
+                                type="date" 
+                                className="col-span-3" 
+                                value={invoiceFormData.dueDate}
+                                onChange={(e) => 
+                                  setInvoiceFormData({...invoiceFormData, dueDate: e.target.value})
+                                }
+                                required
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="invoice-description" className="text-right">
+                                Description
+                              </Label>
+                              <Textarea 
+                                id="invoice-description" 
+                                className="col-span-3" 
+                                placeholder="Invoice details..." 
+                                value={invoiceFormData.description}
+                                onChange={(e) => 
+                                  setInvoiceFormData({...invoiceFormData, description: e.target.value})
+                                }
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="invoice-number" className="text-right">
+                                Invoice #
+                              </Label>
+                              <Input 
+                                id="invoice-number" 
+                                className="col-span-3" 
+                                value={invoiceFormData.invoiceNumber}
+                                onChange={(e) => 
+                                  setInvoiceFormData({...invoiceFormData, invoiceNumber: e.target.value})
+                                }
+                                required
+                              />
+                            </div>
                           </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="invoice-amount" className="text-right">
-                              Amount
-                            </Label>
-                            <Input id="invoice-amount" type="number" className="col-span-3" placeholder="0.00" />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="invoice-date" className="text-right">
-                              Due Date
-                            </Label>
-                            <Input id="invoice-date" type="date" className="col-span-3" />
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="invoice-description" className="text-right">
-                              Description
-                            </Label>
-                            <Textarea id="invoice-description" className="col-span-3" placeholder="Invoice details..." />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button type="submit">Create Invoice</Button>
-                        </DialogFooter>
+                          <DialogFooter>
+                            <Button 
+                              type="submit" 
+                              disabled={createInvoice.isPending}
+                            >
+                              {createInvoice.isPending ? 'Creating...' : 'Create Invoice'}
+                            </Button>
+                          </DialogFooter>
+                        </form>
                       </DialogContent>
                     </Dialog>
                   </div>
