@@ -237,14 +237,14 @@ export default function ManagerDashboard() {
     <ManagerLayout>
       <div className="container mx-auto py-2">
         <h2 className="text-2xl font-semibold mb-6">Projects Overview</h2>
-
-      <Tabs defaultValue="projects" className="mb-8">
-        <TabsList className="grid grid-cols-4 w-full max-w-3xl">
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-          <TabsTrigger value="clients">Clients</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-        </TabsList>
+        
+        <Tabs defaultValue="projects" className="mb-8">
+          <TabsList className="grid grid-cols-4 w-full max-w-3xl">
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="clients">Clients</TabsTrigger>
+            <TabsTrigger value="team">Team</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="projects" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -574,7 +574,7 @@ export default function ManagerDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
       </div>
     </ManagerLayout>
   );
