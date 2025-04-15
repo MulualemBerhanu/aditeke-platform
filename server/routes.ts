@@ -194,14 +194,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ];
 
   // Special endpoint for manager dashboard to get client options
-  // This avoids the issue with /api/users/clients
+  // This fetches all clients from the database
   app.get("/api/manager/client-options", async (req, res) => {
     try {
-      console.log("Returning hardcoded client options for manager dashboard");
+      console.log("Fetching all client users from database");
       
-      // Most important - force pure JSON response with no HTML by ending request immediately
+      // Get all users from the database
+      const allUsers = await storage.getAllUsers();
+      
+      // Filter users with client role (roleId = 1001)
+      const clientUsers = allUsers.filter(user => {
+        // Handle both string and number roleId values
+        const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+        return roleId === 1001 || user.username.toLowerCase().includes('client');
+      });
+      
+      console.log(`Found ${clientUsers.length} client users in database`);
+      
+      // Force pure JSON response with no HTML by ending request immediately
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(hardcodedClients));
+      res.end(JSON.stringify(clientUsers));
       return;
     } catch (error) {
       console.error("Error in client options endpoint:", error);
