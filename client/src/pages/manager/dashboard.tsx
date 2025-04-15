@@ -446,6 +446,11 @@ export default function ManagerDashboard() {
                               <SelectValue placeholder="Select a client" />
                             </SelectTrigger>
                             <SelectContent>
+                              {/* Always ensure a default option for when client list is empty */}
+                              {(!clients || clients.length === 0) && (
+                                <SelectItem value="no-client">No clients available</SelectItem>
+                              )}
+                              
                               {clients && clients.length > 0 ? (
                                 clients.map((client) => {
                                   // Defensive check to make sure client and client.id exist
