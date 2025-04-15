@@ -1594,7 +1594,7 @@ export default function ManagerDashboard() {
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-medium">Invoice Generator</h3>
                         <Button className="gap-1">
-                          <FileDown className="h-4 w-4" />
+                          <FileDownIcon className="h-4 w-4" />
                           Generate Invoice
                         </Button>
                       </div>
