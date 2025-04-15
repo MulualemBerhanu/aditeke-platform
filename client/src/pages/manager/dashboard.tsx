@@ -104,14 +104,33 @@ export default function ManagerDashboard() {
     queryFn: async () => {
       try {
         console.log("Fetching client options from dedicated endpoint");
-        const res = await fetch('/api/manager/client-options');
+        
+        // Get the current user from localStorage for authorization
+        const currentUserJSON = localStorage.getItem('currentUser');
+        let authHeader = {};
+        
+        if (currentUserJSON) {
+          // Include the user data in the authorization header
+          authHeader = {
+            Authorization: `Bearer ${currentUserJSON}`
+          };
+          console.log("Added authorization header for client options API");
+        } else {
+          console.warn("No user data in localStorage for authorization");
+        }
+        
+        const res = await fetch('/api/manager/client-options', {
+          headers: {
+            ...authHeader
+          }
+        });
+        
         if (!res.ok) {
           console.error("Client options API returned error:", res.status, res.statusText);
           throw new Error('Failed to load clients');
         }
         const data = await res.json();
         console.log("Received client options:", data);
-        return data;
       } catch (error) {
         console.error("Error in client options fetch:", error);
         throw error;

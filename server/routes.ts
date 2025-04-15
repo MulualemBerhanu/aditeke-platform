@@ -268,6 +268,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // This fetches all clients from the database
   app.get("/api/manager/client-options", async (req, res) => {
     try {
+      // Check for authentication first
+      if (!req.isAuthenticated()) {
+        // Fallback to checking localStorage auth through Authorization header
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          console.log("No authorization provided for client-options endpoint");
+          return res.status(401).json({ message: "Authentication required" });
+        }
+        
+        // Parse the localStorage auth data from the header
+        try {
+          const token = authHeader.split('Bearer ')[1];
+          const decodedData = JSON.parse(token);
+          
+          // Simple validation that this is a valid user object
+          if (!decodedData.id || !decodedData.roleId) {
+            console.log("Invalid authorization data for client-options endpoint");
+            return res.status(401).json({ message: "Invalid authorization data" });
+          }
+          
+          // Specifically check that this is a manager or admin role
+          const roleId = typeof decodedData.roleId === 'string' 
+            ? parseInt(decodedData.roleId) 
+            : decodedData.roleId;
+            
+          if (roleId !== 1000 && roleId !== 1002) {
+            console.log(`Unauthorized role (${roleId}) attempted to access client-options`);
+            return res.status(403).json({ message: "Access denied" });
+          }
+          
+          console.log("Successfully authorized through header for client-options endpoint");
+        } catch (e) {
+          console.error("Error parsing authorization data:", e);
+          return res.status(401).json({ message: "Invalid authorization format" });
+        }
+      } else {
+        // Check that the authenticated user is a manager or admin
+        const user = req.user as any;
+        if (!user) {
+          return res.status(401).json({ message: "Authentication required" });
+        }
+        
+        const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+        if (roleId !== 1000 && roleId !== 1002) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+      
       console.log("Fetching all client users from database");
       
       // Get all users from the database
