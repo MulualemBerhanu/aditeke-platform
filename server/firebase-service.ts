@@ -41,14 +41,23 @@ export class FirebaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     try {
+      // Prevent Firestore error with undefined or empty username
+      if (!username) {
+        console.log("Invalid username parameter: empty or undefined");
+        return undefined;
+      }
+      
+      console.log(`Looking for user with username: ${username}`);
       const userRef = this.db.collection('users').where('username', '==', username);
       const snapshot = await userRef.get();
       
       if (snapshot.empty) {
+        console.log(`No user found with username: ${username}`);
         return undefined;
       }
       
       const userData = snapshot.docs[0].data();
+      console.log(`User found with username: ${username}`);
       return userData as User;
     } catch (error) {
       console.error("Error getting user by username from Firestore:", error);
