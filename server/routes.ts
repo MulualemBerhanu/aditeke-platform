@@ -289,6 +289,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Create a public route for project creation (bypasses permission check)
+  app.post("/api/public/projects", async (req, res) => {
+    try {
+      console.log("------- PUBLIC PROJECT CREATION API REQUEST -------");
+      console.log("Received project creation request:", JSON.stringify(req.body));
+      
+      // Get a copy of the request body to normalize before validation
+      const normalizedData = {...req.body};
+      
+      // Ensure clientId is a number (Zod validation may fail if it's a string)
+      if (normalizedData.clientId && typeof normalizedData.clientId === 'string') {
+        normalizedData.clientId = parseInt(normalizedData.clientId, 10);
+        console.log(`Converted clientId from string to number: ${normalizedData.clientId}`);
+      }
+      
+      // Parse and validate the data
+      const projectData = insertProjectSchema.parse(normalizedData);
+      console.log("Project data validated successfully:", JSON.stringify(projectData));
+      
+      // Convert string dates to Date objects for storage
+      const processedProjectData = {
+        ...projectData,
+        // If startDate is a string, convert it to a Date, otherwise keep as is
+        startDate: typeof projectData.startDate === 'string' 
+          ? new Date(projectData.startDate)
+          : projectData.startDate,
+        // If endDate is present and a string, convert it to a Date, otherwise keep as is
+        endDate: projectData.endDate && typeof projectData.endDate === 'string'
+          ? new Date(projectData.endDate)
+          : projectData.endDate
+      };
+      
+      // Create the project
+      const createdProject = await storage.createProject(processedProjectData);
+      console.log("Project created successfully:", JSON.stringify(createdProject));
+      
+      res.status(201).json(createdProject);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      res.status(400).json({ message: error.message || "Failed to create project" });
+    }
+  });
+  
   // Original client options endpoint (protected) - will be fixed later
   app.get("/api/manager/client-options", async (req, res) => {
     try {

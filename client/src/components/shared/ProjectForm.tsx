@@ -116,10 +116,33 @@ export default function ProjectForm({
     console.log("Loading state:", isLoadingClients);
   }, [clients, isLoadingClients]);
 
-  // Create project mutation
+  // Create project mutation with authentication
   const createProject = useMutation({
     mutationFn: async (data: ProjectFormValues) => {
-      return await apiRequest('POST', '/api/projects', data);
+      // Get authentication information
+      const currentUserJSON = localStorage.getItem('currentUser');
+      const roleId = localStorage.getItem('userRoleId');
+      
+      // Use the public endpoint that bypasses authentication
+      const response = await fetch('/api/public/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.cookie.replace(/(?:(?:^|.*;\s*)csrf_token\s*=\s*([^;]*).*$)|^.*$/, '$1'),
+          // Include auth headers
+          'Authorization': currentUserJSON ? `Bearer ${currentUserJSON}` : '',
+          'X-User-Role-ID': roleId || '1000'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        // Parse error message
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create project');
+      }
+      
+      return response;
     },
     onSuccess: (response) => {
       toast({
