@@ -268,13 +268,8 @@ export function setupAuth(app: Express) {
           roleId: user.roleId
         });
         
-        // Set the access token as an HTTP-only cookie for added security
-        res.cookie('accessToken', tokens.accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 1000, // 1 hour
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-        });
+        // Set the token cookies using the utility function
+        setTokenCookies(res, tokens);
         
         // Return user data with tokens for cross-domain authentication
         res.status(200).json({
@@ -320,13 +315,8 @@ export function setupAuth(app: Express) {
           roleId: user.roleId
         });
         
-        // Set the access token as an HTTP-only cookie for added security
-        res.cookie('accessToken', tokens.accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 60 * 60 * 1000, // 1 hour
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-        });
+        // Set the token cookies using the utility function
+        setTokenCookies(res, tokens);
         
         // Return user data with tokens for cross-domain authentication
         res.status(200).json({
