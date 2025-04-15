@@ -752,8 +752,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Starting Firebase ID update process...");
       const result = await updateFirebaseIds();
       
+      // Force pure JSON response with no HTML by ending request immediately
       if (result) {
-        return res.json({ 
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
           success: true, 
           message: "Firebase IDs updated successfully to sequential format",
           idRanges: {
@@ -764,20 +766,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
             testimonials: "Starting at 4000",
             blogPosts: "Starting at 5000"
           }
-        });
+        }));
       } else {
-        return res.status(500).json({ 
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
           success: false, 
           message: "Failed to update Firebase IDs" 
-        });
+        }));
       }
     } catch (error) {
       console.error("Error updating Firebase IDs:", error);
-      return res.status(500).json({ 
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
         success: false, 
         message: "Error updating Firebase IDs", 
         error: String(error) 
-      });
+      }));
+    }
+  });
+  
+  // Debug endpoint to update Firebase IDs (temporary - not protected)
+  app.post("/api/debug/update-firebase-ids", async (req, res) => {
+    try {
+      console.log("Starting Firebase ID update process (DEBUG mode)...");
+      const result = await updateFirebaseIds();
+      
+      // Force pure JSON response with no HTML by ending request immediately
+      if (result) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          message: "Firebase IDs updated successfully to sequential format",
+          idRanges: {
+            projects: "Starting at 500",
+            clients: "Starting at 2000",
+            roles: "Starting at 1000",
+            services: "Starting at 3000",
+            testimonials: "Starting at 4000",
+            blogPosts: "Starting at 5000"
+          }
+        }));
+      } else {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+          success: false, 
+          message: "Failed to update Firebase IDs" 
+        }));
+      }
+    } catch (error) {
+      console.error("Error updating Firebase IDs:", error);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        success: false, 
+        message: "Error updating Firebase IDs", 
+        error: String(error) 
+      }));
     }
   });
   
