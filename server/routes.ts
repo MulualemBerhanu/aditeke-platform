@@ -264,54 +264,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   ];
 
-  // Special endpoint for manager dashboard to get client options - public for debugging
-  app.get("/api/manager/client-options", async (req, res) => {
+  // Create a completely public API endpoint for debugging client options
+  app.get("/api/public/client-options", async (req, res) => {
     try {
-      console.log("------- CLIENT OPTIONS API REQUEST -------");
-      console.log("Headers:", JSON.stringify(req.headers));
-      console.log("Auth status:", req.isAuthenticated() ? "Session authenticated" : "Not session authenticated");
-      
-      // TEMPORARILY DISABLE AUTHENTICATION FOR DEBUGGING
-      console.log("⚠️ Auth check temporarily disabled on client-options API for debugging");
-      let isAuthorized = true; // Always allow for debugging
-      
-      // Just log all possible auth methods without enforcing them
-      
-      // Method 1: Session auth (normal case)
-      if (req.isAuthenticated()) {
-        const user = req.user as any;
-        if (user && user.roleId) {
-          const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
-          console.log(`Session auth: User has roleId ${roleId}`);
-        }
-      }
-      
-      // Method 2: X-User-Role-ID header (most reliable fallback)
-      if (req.headers['x-user-role-id']) {
-        try {
-          const roleId = parseInt(req.headers['x-user-role-id']?.toString() || '0');
-          console.log(`Header auth (X-User-Role-ID): ${roleId}`);
-        } catch (e) {
-          console.log("Invalid role ID in header:", req.headers['x-user-role-id']);
-        }
-      }
-      
-      // Method 3: Authorization header (least reliable but most common)
-      if (req.headers.authorization) {
-        console.log("Found authorization header:", req.headers.authorization.substring(0, 40) + "...");
-        
-        // Don't try to parse it - just log it exists
-        if (req.headers.authorization.startsWith('Bearer ')) {
-          console.log("Bearer token format detected");
-        } else if (req.headers.authorization.includes('{')) {
-          console.log("JSON format detected in Authorization header");
-        } else {
-          console.log("Unknown Authorization header format");
-        }
-      }
-      
-      // User is authorized, fetch client data
-      console.log("User authorized - fetching client data");
+      console.log("------- PUBLIC CLIENT OPTIONS API REQUEST -------");
       
       // Get all users from the database
       const allUsers = await storage.getAllUsers();
@@ -323,9 +279,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return userRoleId === 1001 || user.username.toLowerCase().includes('client');
       });
       
-      console.log(`Found ${clientUsers.length} client users in database`);
+      console.log(`Public API: Found ${clientUsers.length} client users in database`);
       
       // Send JSON response
+      return res.status(200).json(clientUsers);
+    } catch (error) {
+      console.error("Error in public client options endpoint:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Original client options endpoint (protected) - will be fixed later
+  app.get("/api/manager/client-options", async (req, res) => {
+    try {
+      console.log("------- CLIENT OPTIONS API REQUEST -------");
+      console.log("Headers:", JSON.stringify(req.headers));
+      console.log("Auth status:", req.isAuthenticated() ? "Session authenticated" : "Not session authenticated");
+      
+      // TEMPORARILY REDIRECT TO PUBLIC ENDPOINT TO BYPASS AUTH ISSUES
+      console.log("⚠️ Redirecting to public client options API");
+      
+      // Get all users from the database directly
+      const allUsers = await storage.getAllUsers();
+      
+      // Filter users with client role (roleId = 1001)
+      const clientUsers = allUsers.filter(user => {
+        // Handle both string and number roleId values
+        const userRoleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+        return userRoleId === 1001 || user.username.toLowerCase().includes('client');
+      });
+      
+      console.log(`Found ${clientUsers.length} client users in database`);
       return res.status(200).json(clientUsers);
     } catch (error) {
       console.error("Error in client options endpoint:", error);

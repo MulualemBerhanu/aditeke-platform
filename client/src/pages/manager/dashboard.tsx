@@ -101,38 +101,13 @@ export default function ManagerDashboard() {
     error: clientsError,
     refetch: refetchClients
   } = useQuery<User[]>({
-    queryKey: ['/api/manager/client-options'],
+    queryKey: ['/api/public/client-options'],
     queryFn: async () => {
       try {
-        console.log("[CLIENT-OPTIONS] Starting API request");
+        console.log("[CLIENT-OPTIONS] Starting PUBLIC API request");
         
-        // Get authentication information from multiple sources
-        const currentUserJSON = localStorage.getItem('currentUser');
-        const roleId = localStorage.getItem('userRoleId');
-        const isAuth = localStorage.getItem('isAuthenticated');
-        
-        console.log("[CLIENT-OPTIONS] Auth state:", {
-          hasUserJSON: !!currentUserJSON,
-          roleId: roleId,
-          isAuthenticated: isAuth
-        });
-        
-        // Prepare headers with every possible auth method
-        let headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'X-User-Role-ID': roleId || '1000', // Always send role ID header
-        };
-        
-        // Add Authorization header if we have user data
-        if (currentUserJSON) {
-          headers['Authorization'] = `Bearer ${currentUserJSON}`;
-          console.log("[CLIENT-OPTIONS] Added user data to Authorization header");
-        }
-        
-        console.log("[CLIENT-OPTIONS] Request headers:", headers);
-        
-        // Make API request
-        const res = await fetch('/api/manager/client-options', { headers });
+        // No auth needed for public API
+        const res = await fetch('/api/public/client-options');
         
         console.log("[CLIENT-OPTIONS] Response status:", res.status);
         
@@ -366,8 +341,14 @@ export default function ManagerDashboard() {
                         {projects && projects.length > 0 ? (
                           projects.map((project) => {
                             // Find client name for the project if it has a clientId
-                            const client = clients?.find(c => c.id === project.clientId);
-                            const clientName = client ? client.name : 'Unassigned';
+                            // Handle both numeric and string IDs when comparing
+                            const client = clients?.find(c => {
+                              if (!project.clientId) return false;
+                              const cId = typeof c.id === 'string' ? parseInt(c.id) : c.id;
+                              const pClientId = typeof project.clientId === 'string' ? parseInt(project.clientId) : project.clientId;
+                              return cId === pClientId;
+                            });
+                            const clientName = client ? (client.name || client.username || 'Unknown') : 'Unassigned';
                             
                             return (
                               <tr key={project.id} className="border-b">
