@@ -28,11 +28,14 @@ import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long" }),
   description: z.string().min(10, { message: "Description must be at least 10 characters long" }),
-  thumbnail: z.string().url({ message: "Please enter a valid URL for the thumbnail" }).optional().or(z.literal('')),
+  thumbnail: z.string().url({ message: "Please enter a valid URL for the thumbnail" }).optional().or(z.literal('')).nullable(),
   category: z.string({ required_error: "Please select a category" }),
-  clientId: z.number({ required_error: "Please select a client" }),
+  clientId: z.union([
+    z.number({ required_error: "Please select a client" }),
+    z.string().transform(val => parseInt(val, 10)) // Allow string that can be converted to number
+  ]),
   startDate: z.string({ required_error: "Please specify a start date" }),
-  endDate: z.string().optional().or(z.literal('')),
+  endDate: z.string().optional().or(z.literal('')).nullable(),
   status: z.string({ required_error: "Please select a status" }),
 });
 
@@ -171,13 +174,17 @@ export default function ProjectForm({
   async function onSubmit(data: ProjectFormValues) {
     setIsSubmitting(true);
     
-    // Format the data correctly for submission - send dates as strings
+    // Ensure all required fields are present and properly formatted
     const formattedData = {
       ...data,
+      // Ensure thumbnail is never an empty string (use undefined instead for optional fields)
+      thumbnail: data.thumbnail && data.thumbnail.trim() !== '' ? data.thumbnail : undefined,
+      // Ensure clientId is a number
+      clientId: typeof data.clientId === 'string' ? parseInt(data.clientId, 10) : data.clientId,
       // Keep dates as strings in format YYYY-MM-DD
       startDate: data.startDate,
-      // Pass empty string as undefined for optional endDate
-      endDate: data.endDate || undefined,
+      // Pass undefined for empty endDate (better for optional fields)
+      endDate: data.endDate && data.endDate.trim() !== '' ? data.endDate : undefined,
     };
     
     console.log("Submitting project data:", formattedData);
@@ -296,8 +303,12 @@ export default function ProjectForm({
                     <FormLabel>Thumbnail URL</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="https://example.com/image.jpg" 
-                        {...field} 
+                        placeholder="https://example.com/image.jpg"
+                        name={field.name}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormDescription>
@@ -322,8 +333,13 @@ export default function ProjectForm({
                   <FormItem>
                     <FormLabel>Client</FormLabel>
                     <Select 
-                      onValueChange={(value) => field.onChange(parseInt(value))} 
-                      defaultValue={field.value?.toString()}
+                      onValueChange={(value) => {
+                        // Handle conversion safely - fallback to undefined if NaN
+                        const numValue = parseInt(value, 10);
+                        field.onChange(isNaN(numValue) ? undefined : numValue);
+                        console.log("Setting clientId to:", isNaN(numValue) ? "undefined" : numValue);
+                      }} 
+                      defaultValue={field.value !== undefined ? field.value.toString() : undefined}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -385,8 +401,12 @@ export default function ProjectForm({
                           <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                           <Input 
                             type="date" 
-                            className="pl-9" 
-                            {...field} 
+                            className="pl-9"
+                            name={field.name}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            value={field.value || ''}
                           />
                         </div>
                       </FormControl>
@@ -406,8 +426,12 @@ export default function ProjectForm({
                           <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                           <Input 
                             type="date" 
-                            className="pl-9" 
-                            {...field}
+                            className="pl-9"
+                            name={field.name}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            value={field.value || ''}
                           />
                         </div>
                       </FormControl>
