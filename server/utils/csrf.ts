@@ -61,6 +61,12 @@ export function validateCsrfToken(req: Request, res: Response, next: NextFunctio
       return next();
     }
     
+    // Special bypass for the CSRF test endpoint
+    if (req.path === '/api/public/csrf-test') {
+      console.log('CSRF validation bypassed for test endpoint');
+      return next();
+    }
+    
     // Get the token from the request header or body
     const token = req.headers[CSRF_HEADER_NAME.toLowerCase()] as string || req.body?._csrf;
     

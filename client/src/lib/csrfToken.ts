@@ -13,12 +13,19 @@ const CSRF_HEADER_NAME = 'X-CSRF-Token';
  */
 export function getCsrfToken(): string | null {
   const cookies = document.cookie.split(';');
+  console.log('Debug - All cookies:', document.cookie);
+  
   for (const cookie of cookies) {
     const [name, value] = cookie.trim().split('=');
+    console.log('Debug - Cookie:', name, value);
+    
     if (name === CSRF_COOKIE_NAME) {
+      console.log('Debug - Found CSRF token in cookies:', value);
       return decodeURIComponent(value);
     }
   }
+  
+  console.log('Debug - CSRF token not found in cookies');
   return null;
 }
 
@@ -57,11 +64,25 @@ export function addCsrfHeader(options: RequestInit = {}): RequestInit {
 export function fetchWithCsrf(url: string, options: RequestInit = {}): Promise<Response> {
   // Only add CSRF for non-GET requests that change state
   if (!options.method || options.method === 'GET') {
+    console.log('Debug - Skipping CSRF for GET request');
     return fetch(url, options);
   }
   
+  // Manually include CSRF token cookie value in header for testing
+  const token = getCsrfToken();
   const optionsWithCsrf = addCsrfHeader(options);
-  return fetch(url, optionsWithCsrf);
+  
+  console.log('Debug - Sending request with CSRF token:', token);
+  console.log('Debug - Request URL:', url);
+  console.log('Debug - Request method:', options.method);
+  
+  // Create a proper RequestInit object with credentials
+  const finalOptions: RequestInit = {
+    ...optionsWithCsrf,
+    credentials: 'include'
+  };
+  
+  return fetch(url, finalOptions);
 }
 
 /**

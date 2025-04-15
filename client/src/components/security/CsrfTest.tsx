@@ -35,11 +35,22 @@ export function CsrfTest() {
     setTestResult(null);
     
     try {
+      // Check if we have a CSRF token already
+      if (!csrfToken) {
+        console.log('No CSRF token found, refreshing page to get one');
+        // Fetch it first
+        const tokenResponse = await fetch('/api/public/csrf-test');
+        const tokenData = await tokenResponse.json();
+        setCsrfToken(tokenData.csrfToken);
+        console.log('Got CSRF token:', tokenData.csrfToken);
+      }
+      
       // Use our fetchWithCsrf utility which should automatically add the CSRF token
       const response = await fetchWithCsrf('/api/public/csrf-test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken || '', // Manually add token for testing
         },
         body: JSON.stringify({ test: 'CSRF protection test' }),
       });

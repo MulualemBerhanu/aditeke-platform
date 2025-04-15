@@ -1261,10 +1261,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Test endpoint that requires CSRF protection (POST) but not authentication
   app.post("/api/public/csrf-test", (req, res) => {
+    // Log CSRF token information to help debug
+    console.log('CSRF Debug Info:');
+    console.log('- Cookie token:', req.cookies?.csrf_token);
+    console.log('- Header token:', req.headers['x-csrf-token']);
+    console.log('- Request method:', req.method);
+    console.log('- Request path:', req.path);
+    
     res.json({
       success: true,
       message: "CSRF protected POST request successful",
-      requestBody: req.body
+      requestBody: req.body,
+      csrfInfo: {
+        cookieToken: req.cookies?.csrf_token || 'No cookie token',
+        headerToken: req.headers['x-csrf-token'] || 'No header token',
+        tokensMatch: req.cookies?.csrf_token === req.headers['x-csrf-token']
+      }
     });
   });
 
