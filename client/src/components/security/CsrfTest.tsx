@@ -17,7 +17,7 @@ export function CsrfTest() {
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        const response = await fetch('/api/csrf-test');
+        const response = await fetch('/api/public/csrf-test');
         const data = await response.json();
         setCsrfToken(data.csrfToken);
       } catch (error) {
@@ -36,7 +36,7 @@ export function CsrfTest() {
     
     try {
       // Use our fetchWithCsrf utility which should automatically add the CSRF token
-      const response = await fetchWithCsrf('/api/csrf-test', {
+      const response = await fetchWithCsrf('/api/public/csrf-test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

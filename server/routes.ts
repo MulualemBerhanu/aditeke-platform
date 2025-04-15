@@ -1251,16 +1251,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test endpoint for CSRF protection
-  app.get("/api/csrf-test", (req, res) => {
+  // Test endpoint for CSRF protection (public, no authentication required)
+  app.get("/api/public/csrf-test", (req, res) => {
     res.json({
       message: "CSRF test endpoint",
       csrfToken: req.cookies?.csrf_token || "No CSRF token found"
     });
   });
   
-  // Test endpoint that requires CSRF protection (POST)
-  app.post("/api/csrf-test", (req, res) => {
+  // Test endpoint that requires CSRF protection (POST) but not authentication
+  app.post("/api/public/csrf-test", (req, res) => {
     res.json({
       success: true,
       message: "CSRF protected POST request successful",
