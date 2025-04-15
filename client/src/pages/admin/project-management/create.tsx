@@ -52,22 +52,22 @@ export default function CreateProject() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center mb-6">
-        <Button variant="ghost" onClick={() => setLocation('/admin/project-management')} className="mr-4">
+        <Button variant="ghost" onClick={() => setLocation('/admin/dashboard')} className="mr-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Projects
+          Back to Dashboard
         </Button>
         <h1 className="text-3xl font-bold">Create New Project</h1>
       </div>
 
       <ProjectForm
         role="admin"
-        returnPath="/admin/project-management"
+        returnPath="/admin/dashboard"
         title="Project Details"
         description="Enter the details of the new project"
         submitLabel="Create Project"
         onSuccess={() => {
-          // Additional logic after project creation if needed
-          setLocation('/admin/project-management');
+          // Redirect to admin dashboard after successful creation
+          setLocation('/admin/dashboard');
         }}
       />
     </div>

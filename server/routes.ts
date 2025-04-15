@@ -165,40 +165,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Simple endpoint to get clients for project forms - no authentication required
-  app.get("/api/clients/list", (req, res) => {
-    console.log("Returning hardcoded clients list for project forms");
-    
-    // Define hardcoded client data with sequential IDs for development
-    const clientsList = [
-      {
-        id: 2000,
-        name: "Client User 1",
-        username: "client1",
-        email: "client1@example.com", 
-        roleId: 1001,
-        isActive: true
-      },
-      {
-        id: 2001,
-        name: "Client User 2",
-        username: "client2",
-        email: "client2@example.com",
-        roleId: 1001,
-        isActive: true
-      },
-      {
-        id: 2002,
-        name: "Client User 3",
-        username: "client3",
-        email: "client3@example.com",
-        roleId: 1001,
-        isActive: true
+  // Endpoint to get clients for project forms from the database
+  app.get("/api/clients/list", async (req, res) => {
+    try {
+      console.log("Fetching clients list from database for project forms");
+      
+      // Get client role ID first
+      const clientRole = await storage.getRoleByName("client");
+      if (!clientRole) {
+        console.log("Client role not found");
+        return res.status(404).json({ message: "Client role not found" });
       }
-    ];
-    
-    // Send direct response with no async operations
-    return res.json(clientsList);
+      
+      // Get all users
+      const allUsers = await storage.getAllUsers();
+      
+      // Filter users with client role
+      const clientsList = allUsers.filter(user => 
+        user.roleId === clientRole.id || 
+        (typeof user.roleId === 'string' && parseInt(user.roleId) === clientRole.id)
+      ).map(client => ({
+        id: client.id,
+        name: client.name,
+        username: client.username,
+        email: client.email,
+        roleId: client.roleId,
+        isActive: client.isActive
+      }));
+      
+      console.log(`Found ${clientsList.length} clients in database`);
+      
+      // If no clients found in DB, use fallback hardcoded list for development
+      if (clientsList.length === 0) {
+        console.log("No clients found in database, using fallback data");
+        const fallbackClients = [
+          {
+            id: 2000,
+            name: "Client User 1",
+            username: "client1",
+            email: "client1@example.com", 
+            roleId: 1001,
+            isActive: true
+          },
+          {
+            id: 2001,
+            name: "Client User 2",
+            username: "client2",
+            email: "client2@example.com",
+            roleId: 1001,
+            isActive: true
+          }
+        ];
+        return res.json(fallbackClients);
+      }
+      
+      return res.json(clientsList);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      return res.status(500).json({ message: "Error fetching clients" });
+    }
   });
   
   // Hardcoded client data as a fallback - now with sequential IDs
