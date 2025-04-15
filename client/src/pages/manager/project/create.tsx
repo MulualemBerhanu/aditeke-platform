@@ -9,33 +9,30 @@ export default function ManagerCreateProject() {
   const { user } = useAuth();
   const [_, setLocation] = useLocation();
 
-  // Load user data from localStorage if not available in context
-  const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);
-
-  // Check if user is a manager based on username or roleId
-  const isManager = userData && (
-    userData.username.toLowerCase().includes('manager') ||
-    userData.roleId === 1000 // Using the sequential roleId for manager
-  );
-
-  // Redirect if not logged in or not a manager
+  // Redirect if not logged in or not a manager (using sequential IDs)
   React.useEffect(() => {
-    if (!userData) {
+    if (!user) {
       setLocation('/login');
-    } else if (!isManager) {
+    } else if (user.roleId !== 1000) { // Using sequential ID for manager
       // Redirect to appropriate dashboard based on role
-      if (userData.roleId === 1001) {
-        setLocation('/client/dashboard');
-      } else if (userData.roleId === 1002) {
+      if (user.roleId === 1002) { // Admin
         setLocation('/admin/dashboard');
+      } else if (user.roleId === 1001) { // Client
+        setLocation('/client/dashboard');
       } else {
         setLocation('/');
       }
     }
-  }, [userData, isManager, setLocation]);
+  }, [user, setLocation]);
 
-  if (!userData || !isManager) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  // Check if user is a manager based on username or roleId
+  const isManager = user && (
+    user.username.toLowerCase().includes('manager') ||
+    user.roleId === 1000 // Using the sequential roleId for manager
+  );
+
+  if (!user || !isManager) {
+    return <div className="flex justify-center items-center min-h-screen">Redirecting...</div>;
   }
 
   return (
@@ -51,8 +48,8 @@ export default function ManagerCreateProject() {
       <ProjectForm
         role="manager"
         returnPath="/manager/dashboard"
-        title="New Project Details"
-        description="Create a new project for a client"
+        title="Project Details"
+        description="Enter the details of the new project"
         submitLabel="Create Project"
         onSuccess={() => {
           // Additional logic after project creation if needed
