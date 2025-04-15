@@ -35,31 +35,31 @@ type UserRole = {
 // Available user roles
 const USER_ROLES: UserRole[] = [
   {
-    id: 1,
+    id: 1002, // Match Firebase roleId
     name: 'Admin',
     icon: <UserCog className="h-10 w-10 mb-2" />,
     description: 'Full access to all features and settings',
     emailPattern: 'admin@aditeke.com',
-    username: 'admin',  // Use username, not email
-    password: 'password123',
+    username: '', // No default username
+    password: '', // No default password
   },
   {
-    id: 2,
+    id: 1000, // Match Firebase roleId
     name: 'Manager',
     icon: <Building2 className="h-10 w-10 mb-2" />,
     description: 'Manage projects and team members',
     emailPattern: 'manager@aditeke.com',
-    username: 'manager2',  // Updated to use the new manager account with proper password
-    password: 'password123',
+    username: '', // No default username
+    password: '', // No default password
   },
   {
-    id: 3,
+    id: 1001, // Match Firebase roleId
     name: 'Client',
     icon: <UsersRound className="h-10 w-10 mb-2" />,
     description: 'View and track project progress',
-    emailPattern: 'client@example.com',  // Updated to match database initialization
-    username: 'client2',  // Updated to use the new client account with proper password
-    password: 'password123',
+    emailPattern: 'client@example.com',
+    username: '', // No default username
+    password: '', // No default password
   },
 ];
 
@@ -99,10 +99,6 @@ export default function LoginPage() {
       if (foundRole) {
         console.log("⚠️ Found matching role:", foundRole.name);
         setSelectedRole(foundRole);
-        
-        // Pre-fill the form with role's default username
-        form.setValue('username', foundRole.username);
-        form.setValue('password', foundRole.password);
         
         // Save to localStorage for persistence
         localStorage.setItem('selectedRole', JSON.stringify(foundRole));
@@ -295,10 +291,6 @@ export default function LoginPage() {
       if (adminRole) {
         setSelectedRole(adminRole);
         
-        // Pre-fill the form with admin credentials
-        form.setValue('username', adminRole.username);
-        form.setValue('password', adminRole.password);
-        
         // Store it in localStorage for persistence
         localStorage.setItem('selectedRole', JSON.stringify(adminRole));
       }
@@ -313,10 +305,7 @@ export default function LoginPage() {
     setSelectedRole(role);
     localStorage.setItem('selectedRole', JSON.stringify(role));
     
-    // Pre-fill the form with role's credentials
-    form.setValue('username', role.username);
-    form.setValue('password', role.password);
-    
+    // Close the dialog
     setIsRoleDialogOpen(false);
   };
   
