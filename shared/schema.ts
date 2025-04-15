@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, date, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -273,3 +273,101 @@ export type InsertNewsletterSubscriber = z.infer<typeof insertNewsletterSubscrib
 
 export type Job = typeof jobs.$inferSelect;
 export type InsertJob = z.infer<typeof insertJobSchema>;
+
+// Client Communications schema
+export const clientCommunications = pgTable("client_communications", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  managerId: integer("manager_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  isRead: boolean("is_read").notNull().default(false),
+  subject: text("subject"),
+  type: text("type").notNull().default("email"), // email, call, meeting, etc.
+  attachments: json("attachments"), // JSON array of attachment URLs
+});
+
+export const insertClientCommunicationSchema = createInsertSchema(clientCommunications).pick({
+  clientId: true,
+  managerId: true,
+  message: true,
+  subject: true,
+  type: true,
+  attachments: true,
+  isRead: true,
+});
+
+// Client Documents schema
+export const clientDocuments = pgTable("client_documents", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  uploadedById: integer("uploaded_by_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  filename: text("filename").notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileType: text("file_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+  category: text("category"), // contract, proposal, invoice, etc.
+  description: text("description"),
+  projectId: integer("project_id").references(() => projects.id),
+});
+
+export const insertClientDocumentSchema = createInsertSchema(clientDocuments).pick({
+  clientId: true,
+  uploadedById: true,
+  filename: true,
+  fileUrl: true,
+  fileType: true,
+  fileSize: true,
+  category: true,
+  description: true,
+  projectId: true,
+});
+
+// Client Invoices schema
+export const clientInvoices = pgTable("client_invoices", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectId: integer("project_id").references(() => projects.id),
+  invoiceNumber: text("invoice_number").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: text("currency").notNull().default("USD"),
+  status: text("status").notNull().default("pending"), // pending, paid, overdue, cancelled
+  issueDate: date("issue_date").notNull(),
+  dueDate: date("due_date").notNull(),
+  paidDate: date("paid_date"),
+  description: text("description"),
+  items: json("items").notNull(), // JSON array of line items
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  paymentMethod: text("payment_method"),
+});
+
+export const insertClientInvoiceSchema = createInsertSchema(clientInvoices).pick({
+  clientId: true,
+  projectId: true,
+  invoiceNumber: true,
+  amount: true,
+  currency: true,
+  status: true,
+  issueDate: true,
+  dueDate: true,
+  paidDate: true,
+  description: true,
+  items: true,
+  notes: true,
+  stripePaymentIntentId: true,
+  paymentMethod: true,
+});
+
+// Type exports for new schemas
+export type ClientCommunication = typeof clientCommunications.$inferSelect;
+export type InsertClientCommunication = z.infer<typeof insertClientCommunicationSchema>;
+
+export type ClientDocument = typeof clientDocuments.$inferSelect;
+export type InsertClientDocument = z.infer<typeof insertClientDocumentSchema>;
+
+export type ClientInvoice = typeof clientInvoices.$inferSelect;
+export type InsertClientInvoice = z.infer<typeof insertClientInvoiceSchema>;

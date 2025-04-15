@@ -1,6 +1,11 @@
 import { getFirestoreDb, getFirebaseAuth } from './firebase-admin';
 import { IStorage } from './storage';
-import { User, Role, Permission, Project, Testimonial, Service, BlogPost, ContactMessage, NewsletterSubscriber, Job } from '@shared/schema';
+import { 
+  User, Role, Permission, Project, Testimonial, Service, BlogPost, 
+  ContactMessage, NewsletterSubscriber, Job, ClientCommunication, 
+  ClientDocument, ClientInvoice, InsertClientCommunication, 
+  InsertClientDocument, InsertClientInvoice 
+} from '@shared/schema';
 
 /**
  * Implementation of the IStorage interface using Firebase Firestore

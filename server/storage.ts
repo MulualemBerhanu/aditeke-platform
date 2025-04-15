@@ -13,7 +13,10 @@ import {
   blogPosts, type BlogPost, type InsertBlogPost,
   contactMessages, type ContactMessage, type InsertContactMessage,
   newsletterSubscribers, type NewsletterSubscriber, type InsertNewsletterSubscriber,
-  jobs, type Job, type InsertJob
+  jobs, type Job, type InsertJob,
+  clientCommunications, type ClientCommunication, type InsertClientCommunication,
+  clientDocuments, type ClientDocument, type InsertClientDocument,
+  clientInvoices, type ClientInvoice, type InsertClientInvoice
 } from "@shared/schema";
 
 export interface IStorage {
@@ -82,6 +85,23 @@ export interface IStorage {
   getAllJobs(): Promise<Job[]>;
   getJob(id: number): Promise<Job | undefined>;
   createJob(job: InsertJob): Promise<Job>;
+  
+  // Client Communications methods
+  getClientCommunications(clientId: number): Promise<ClientCommunication[]>;
+  createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication>;
+  markCommunicationAsRead(id: number): Promise<ClientCommunication>;
+  
+  // Client Documents methods
+  getClientDocuments(clientId: number, category?: string): Promise<ClientDocument[]>;
+  uploadClientDocument(document: InsertClientDocument): Promise<ClientDocument>;
+  getDocument(id: number): Promise<ClientDocument | undefined>;
+  deleteDocument(id: number): Promise<boolean>;
+  
+  // Client Invoices methods
+  getClientInvoices(clientId: number): Promise<ClientInvoice[]>;
+  getInvoice(id: number): Promise<ClientInvoice | undefined>;
+  createClientInvoice(invoice: InsertClientInvoice): Promise<ClientInvoice>;
+  updateInvoiceStatus(id: number, status: string, paymentData?: Partial<InsertClientInvoice>): Promise<ClientInvoice>;
 }
 
 export class MemStorage implements IStorage {
@@ -96,6 +116,9 @@ export class MemStorage implements IStorage {
   private contactMessages: Map<number, ContactMessage>;
   private newsletterSubscribers: Map<number, NewsletterSubscriber>;
   private jobs: Map<number, Job>;
+  private clientCommunications: Map<number, ClientCommunication>;
+  private clientDocuments: Map<number, ClientDocument>;
+  private clientInvoices: Map<number, ClientInvoice>;
   
   private userIdCounter: number;
   private roleIdCounter: number;
@@ -108,6 +131,9 @@ export class MemStorage implements IStorage {
   private contactMessageIdCounter: number;
   private newsletterSubscriberIdCounter: number;
   private jobIdCounter: number;
+  private clientCommunicationIdCounter: number;
+  private clientDocumentIdCounter: number;
+  private clientInvoiceIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -121,6 +147,9 @@ export class MemStorage implements IStorage {
     this.contactMessages = new Map();
     this.newsletterSubscribers = new Map();
     this.jobs = new Map();
+    this.clientCommunications = new Map();
+    this.clientDocuments = new Map();
+    this.clientInvoices = new Map();
     
     this.userIdCounter = 1;
     this.roleIdCounter = 1;
@@ -133,6 +162,9 @@ export class MemStorage implements IStorage {
     this.contactMessageIdCounter = 1;
     this.newsletterSubscriberIdCounter = 1;
     this.jobIdCounter = 1;
+    this.clientCommunicationIdCounter = 1;
+    this.clientDocumentIdCounter = 1;
+    this.clientInvoiceIdCounter = 1;
 
     // Add initial demo data
     try {
@@ -579,6 +611,115 @@ export class MemStorage implements IStorage {
     const job: Job = { ...insertJob, id, postedDate };
     this.jobs.set(id, job);
     return job;
+  }
+  
+  // Client Communications methods
+  async getClientCommunications(clientId: number): Promise<ClientCommunication[]> {
+    return Array.from(this.clientCommunications.values())
+      .filter(comm => comm.clientId === clientId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  
+  async createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication> {
+    const id = this.clientCommunicationIdCounter++;
+    const createdAt = new Date();
+    const clientCommunication: ClientCommunication = {
+      ...communication,
+      id,
+      createdAt,
+      isRead: communication.isRead !== undefined ? communication.isRead : false
+    };
+    this.clientCommunications.set(id, clientCommunication);
+    return clientCommunication;
+  }
+  
+  async markCommunicationAsRead(id: number): Promise<ClientCommunication> {
+    const communication = this.clientCommunications.get(id);
+    if (!communication) {
+      throw new Error(`Communication with id ${id} not found`);
+    }
+    
+    communication.isRead = true;
+    this.clientCommunications.set(id, communication);
+    return communication;
+  }
+  
+  // Client Documents methods
+  async getClientDocuments(clientId: number, category?: string): Promise<ClientDocument[]> {
+    let documents = Array.from(this.clientDocuments.values())
+      .filter(doc => doc.clientId === clientId);
+      
+    if (category) {
+      documents = documents.filter(doc => doc.category === category);
+    }
+    
+    return documents.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+  }
+  
+  async uploadClientDocument(document: InsertClientDocument): Promise<ClientDocument> {
+    const id = this.clientDocumentIdCounter++;
+    const uploadedAt = new Date();
+    const clientDocument: ClientDocument = {
+      ...document,
+      id,
+      uploadedAt
+    };
+    this.clientDocuments.set(id, clientDocument);
+    return clientDocument;
+  }
+  
+  async getDocument(id: number): Promise<ClientDocument | undefined> {
+    return this.clientDocuments.get(id);
+  }
+  
+  async deleteDocument(id: number): Promise<boolean> {
+    return this.clientDocuments.delete(id);
+  }
+  
+  // Client Invoices methods
+  async getClientInvoices(clientId: number): Promise<ClientInvoice[]> {
+    return Array.from(this.clientInvoices.values())
+      .filter(invoice => invoice.clientId === clientId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  
+  async getInvoice(id: number): Promise<ClientInvoice | undefined> {
+    return this.clientInvoices.get(id);
+  }
+  
+  async createClientInvoice(invoice: InsertClientInvoice): Promise<ClientInvoice> {
+    const id = this.clientInvoiceIdCounter++;
+    const createdAt = new Date();
+    const clientInvoice: ClientInvoice = {
+      ...invoice,
+      id,
+      createdAt,
+      updatedAt: null,
+      status: invoice.status || 'pending'
+    };
+    this.clientInvoices.set(id, clientInvoice);
+    return clientInvoice;
+  }
+  
+  async updateInvoiceStatus(id: number, status: string, paymentData?: Partial<InsertClientInvoice>): Promise<ClientInvoice> {
+    const invoice = this.clientInvoices.get(id);
+    if (!invoice) {
+      throw new Error(`Invoice with id ${id} not found`);
+    }
+    
+    const updatedInvoice: ClientInvoice = {
+      ...invoice,
+      ...paymentData,
+      status,
+      updatedAt: new Date()
+    };
+    
+    if (status === 'paid' && !updatedInvoice.paidDate) {
+      updatedInvoice.paidDate = new Date();
+    }
+    
+    this.clientInvoices.set(id, updatedInvoice);
+    return updatedInvoice;
   }
 
   // Initialize sample data methods
