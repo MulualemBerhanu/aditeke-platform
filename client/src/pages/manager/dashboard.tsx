@@ -15,8 +15,9 @@ import {
   FileText, PencilLine, UserPlus, Trash2, Edit, X,
   Eye, MoreHorizontal, Building, Star, Briefcase, Zap,
   Download, Search, DollarSign, MessageSquare, PlusCircle,
-  CheckCircle, FolderPlus, Upload, Folder, FileIcon as FileIconLucide, Table,
-  Info, Send, Download as FileDownIcon, ChevronUp, ChevronDown
+  CheckCircle, FolderPlus, Upload, Folder, FileIcon as FileIconLucide,
+  Info, Send, Download as FileDownIcon, ChevronUp, ChevronDown, 
+  Phone, Briefcase as BriefcaseIcon
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -30,6 +31,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Project, User } from '@shared/schema';
+import ClientProfileView from '@/components/shared/ClientProfileView';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from '@/components/ui/table';
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ManagerDashboard() {
   const { user, logout } = useAuth();
@@ -42,6 +52,8 @@ export default function ManagerDashboard() {
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage] = React.useState(10);
+  const [clientPage, setClientPage] = React.useState(1);
+  const [clientsPerPage] = React.useState(10);
   
   // Column-specific search state
   const [filters, setFilters] = React.useState({
@@ -50,6 +62,19 @@ export default function ManagerDashboard() {
     status: '',
     deadline: ''
   });
+  
+  // Client filter state
+  const [clientFilters, setClientFilters] = React.useState({
+    name: '',
+    email: '',
+    company: '',
+    status: ''
+  });
+  
+  // Function to handle viewing client profile
+  const handleViewClient = (clientId: string | number) => {
+    setSelectedClientId(String(clientId));
+  };
   
   // Format dates - handles various formats including Firestore timestamps
   const formatDate = (dateInput: any) => {
