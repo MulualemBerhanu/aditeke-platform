@@ -80,27 +80,29 @@ export default function ProjectForm({
     },
   });
 
-  // Use the exact same API endpoint as the manager dashboard
-  const { 
-    data: clients = [], 
-    isLoading: isLoadingClients 
-  } = useQuery({
+  // Fetch all clients using the exact same implementation as manager dashboard
+  const {
+    data: clients = [],
+    isLoading: isLoadingClients,
+    error: clientsError
+  } = useQuery<any[]>({
     queryKey: ['/api/manager/client-options'],
     queryFn: async () => {
       try {
-        console.log("Fetching clients from manager API endpoint...");
-        const response = await fetch('/api/manager/client-options');
-        if (!response.ok) {
+        console.log("Fetching client options from dedicated endpoint");
+        const res = await fetch('/api/manager/client-options');
+        if (!res.ok) {
+          console.error("Client options API returned error:", res.status, res.statusText);
           throw new Error('Failed to load clients');
         }
-        const clientsData = await response.json();
-        console.log("Received clients:", clientsData.length);
-        return clientsData;
+        const data = await res.json();
+        console.log("Received client options:", data);
+        return data;
       } catch (error) {
-        console.error('Failed to fetch clients', error);
-        return [];
+        console.error("Error in client options fetch:", error);
+        throw error;
       }
-    },
+    }
   });
   
   // Log clients data for debugging
@@ -316,27 +318,20 @@ export default function ProjectForm({
                             </div>
                             <Separator className="my-1" />
                             
-                            {/* Render all clients directly from the server API */}
-                            {clients.map((client: any, index: number) => {
-                              // For clients from Firebase that might have document ID instead of numeric ID
-                              // Convert client ID to string for compatibility
-                              const clientId = client.id ? client.id.toString() : '';
-                              
-                              // Skip clients without IDs
-                              if (!clientId) {
-                                console.warn("Client missing ID:", client);
+                            {/* Render clients - exact match to manager dashboard */}
+                            {clients.map((client: any) => {
+                              // Defensive check to make sure client and client.id exist
+                              if (!client || client.id === undefined || client.id === null) {
                                 return null;
                               }
                               
-                              // Use name if available, fallback to username
+                              // Make sure client.id and client.name are properly accessed
+                              const clientId = typeof client.id === 'undefined' ? '' : client.id.toString();
                               const clientName = client.name || client.username || 'Unknown Client';
                               
-                              // Create a unique key using client ID and index
-                              const uniqueKey = `client-${clientId}-${index}`;
-                              
                               return (
-                                <SelectItem key={uniqueKey} value={clientId}>
-                                  {clientName} (ID: {clientId})
+                                <SelectItem key={clientId} value={clientId}>
+                                  {clientName}
                                 </SelectItem>
                               );
                             })}
