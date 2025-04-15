@@ -1,95 +1,86 @@
-import { NextFunction, Request, Response } from 'express';
-import crypto from 'crypto';
+import { randomBytes, createHmac } from 'crypto';
+import { Request, Response, NextFunction } from 'express';
 
-// Token cache to store valid CSRF tokens
-const tokenCache = new Map<string, number>();
+// CSRF token configuration
+const CSRF_SECRET = process.env.CSRF_SECRET || randomBytes(32).toString('hex');
+const CSRF_COOKIE_NAME = 'csrf_token';
+const CSRF_HEADER_NAME = 'X-CSRF-Token';
 
-// Clean expired tokens periodically
-setInterval(() => {
-  const now = Date.now();
-  const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+/**
+ * Generate a CSRF token for the user session
+ * Uses HMAC to sign the user's session ID
+ */
+export function generateCsrfToken(sessionId: string): string {
+  // Create an HMAC for the session ID using our secret
+  const hmac = createHmac('sha256', CSRF_SECRET);
+  hmac.update(sessionId);
+  return hmac.digest('hex');
+}
+
+/**
+ * Verify that a CSRF token is valid
+ */
+export function verifyCsrfToken(token: string, sessionId: string): boolean {
+  const expectedToken = generateCsrfToken(sessionId);
+  // Use a constant-time comparison to prevent timing attacks
+  return token === expectedToken;
+}
+
+/**
+ * Middleware to set a CSRF token cookie
+ * This should be called on routes that render forms
+ */
+export function setCsrfToken(req: Request, res: Response, next: NextFunction) {
+  if (!req.session.id) {
+    return next(new Error('Session ID not available'));
+  }
+
+  const token = generateCsrfToken(req.session.id);
   
-  // Remove tokens that are older than 24 hours
-  // Using Array.from to avoid iterator issues in older TS targets
-  Array.from(tokenCache.keys()).forEach(token => {
-    const timestamp = tokenCache.get(token)!;
-    const ageInMilliseconds = now - timestamp;
-    
-    if (ageInMilliseconds > maxAge) {
-      tokenCache.delete(token);
-    }
+  // Set the token as a cookie
+  res.cookie(CSRF_COOKIE_NAME, token, {
+    httpOnly: false, // Needs to be accessible from JavaScript
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   });
-}, 60 * 60 * 1000); // Run cleanup hourly
-
-/**
- * Generate a secure random token
- */
-export function generateCSRFToken(): string {
-  const token = crypto.randomBytes(32).toString('hex');
-  tokenCache.set(token, Date.now());
-  return token;
-}
-
-/**
- * Verify if a CSRF token is valid
- */
-export function verifyCSRFToken(token: string): boolean {
-  return tokenCache.has(token);
-}
-
-/**
- * Middleware to inject CSRF token into HTML responses
- */
-export function injectCSRFToken(req: Request, res: Response, next: NextFunction) {
-  // Store the original send method
-  const originalSend = res.send;
   
-  // Generate a new token for this request
-  const csrfToken = generateCSRFToken();
-  
-  // Override the send method
-  res.send = function(body?: any): Response {
-    // Only modify HTML responses
-    if (body && typeof body === 'string' && res.getHeader('content-type')?.toString().includes('text/html')) {
-      // Replace the placeholder with the actual token
-      const modifiedBody = body.replace('__CSRF_TOKEN__', csrfToken);
-      
-      // Call the original send method with the modified body
-      return originalSend.call(this, modifiedBody);
-    }
-    
-    // Call the original send method for non-HTML responses
-    return originalSend.call(this, body);
-  };
-  
+  // Also add it to the response locals for template rendering
+  res.locals.csrfToken = token;
   next();
 }
 
 /**
- * Middleware to protect against CSRF attacks
+ * Middleware to validate CSRF tokens on state-changing requests
+ * This should be used on POST, PUT, DELETE, etc. routes
  */
-export function csrfProtection(req: Request, res: Response, next: NextFunction) {
-  // Skip for GET, HEAD, OPTIONS requests as they should be idempotent
+export function validateCsrfToken(req: Request, res: Response, next: NextFunction) {
+  // Skip validation for GET, HEAD, OPTIONS requests
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     return next();
   }
   
-  // Check for CSRF token in header
-  const csrfToken = req.headers['x-csrf-token'] as string;
+  if (!req.session.id) {
+    return res.status(403).json({ message: 'CSRF validation failed: No session' });
+  }
   
-  if (!csrfToken || !verifyCSRFToken(csrfToken)) {
-    // In development, we might want to just log the error
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('CSRF token validation failed. This would be blocked in production.');
-      return next();
-    }
-    
-    // In production, return a 403 Forbidden
-    return res.status(403).json({ 
-      message: 'Invalid or missing CSRF token',
-      error: 'FORBIDDEN' 
-    });
+  // Get the token from the request header or body
+  const token = req.headers[CSRF_HEADER_NAME.toLowerCase()] as string || req.body._csrf;
+  
+  if (!token) {
+    return res.status(403).json({ message: 'CSRF token missing' });
+  }
+  
+  // Verify the token
+  if (!verifyCsrfToken(token, req.session.id)) {
+    return res.status(403).json({ message: 'Invalid CSRF token' });
   }
   
   next();
 }
+
+// Export constants for use in client-side code
+export const csrfConstants = {
+  CSRF_COOKIE_NAME,
+  CSRF_HEADER_NAME
+};

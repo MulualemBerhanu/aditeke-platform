@@ -208,3 +208,68 @@ export function extractJwtFromRequest(req: any): string | undefined {
   
   return undefined;
 }
+
+/**
+ * Middleware to automatically refresh tokens if they are about to expire
+ */
+export function refreshTokenMiddleware(req: any, res: any, next: any) {
+  try {
+    // Get the current access token
+    const accessToken = extractJwtFromRequest(req);
+    
+    // If no token, just continue
+    if (!accessToken) {
+      return next();
+    }
+    
+    // Check if the token is about to expire
+    if (isTokenAboutToExpire(accessToken)) {
+      // Get refresh token from cookies
+      const refreshToken = req.cookies?.refresh_token;
+      
+      // If no refresh token, just continue with the current token
+      if (!refreshToken) {
+        return next();
+      }
+      
+      try {
+        // Verify the refresh token
+        const decoded = verifyToken(refreshToken);
+        
+        // Make sure it's actually a refresh token
+        if (decoded.type !== 'refresh') {
+          return next();
+        }
+        
+        // Get user ID from the refresh token
+        const userId = parseInt(decoded.sub, 10);
+        
+        // This is a simplified version. In a real app, you would:
+        // 1. Fetch the user from the database using userId
+        // 2. Verify the refresh token hasn't been revoked
+        // 3. Generate new tokens
+        
+        // For now, we'll just create a minimal user object
+        const user = { id: userId };
+        
+        // Generate new tokens
+        const newTokens = generateTokens(user);
+        
+        // Set the new tokens in cookies
+        setTokenCookies(res, newTokens);
+        
+        // Log the refresh
+        console.log(`Automatically refreshed tokens for user ${userId}`);
+      } catch (error) {
+        // If refresh token is invalid, just continue with the current token
+        console.error('Failed to refresh token:', error);
+      }
+    }
+    
+    next();
+  } catch (error) {
+    // If any error occurs, log it and continue
+    console.error('Error in refresh token middleware:', error);
+    next();
+  }
+}

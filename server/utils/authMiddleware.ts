@@ -40,7 +40,15 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
       id: parseInt(decoded.sub, 10),
       username: decoded.username,
       email: decoded.email,
-      roleId: decoded.roleId
+      roleId: decoded.roleId,
+      // Add these required properties with sensible defaults
+      name: decoded.name || decoded.username,
+      password: '', // We never expose the actual password
+      createdAt: new Date(),
+      updatedAt: null,
+      profilePicture: null,
+      lastLogin: null,
+      isActive: true
     };
     
     // Check if token is about to expire and issue a new one if so
@@ -150,10 +158,26 @@ export async function handleTokenRefresh(req: Request, res: Response) {
       return res.status(404).json({ message: 'User not found' });
     }
     
+    // Create a user object that meets the requirements for token generation
+    const userForToken = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      roleId: user.roleId,
+      name: user.name,
+      // Add required fields with sensible defaults
+      password: '', // We don't include the actual password
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      profilePicture: user.profilePicture,
+      lastLogin: user.lastLogin,
+      isActive: user.isActive
+    };
+    
     // Generate new tokens
-    const accessToken = generateAccessToken(user);
+    const accessToken = generateAccessToken(userForToken);
     // For security, we generate a new refresh token each time
-    const newRefreshToken = generateRefreshToken(user);
+    const newRefreshToken = generateRefreshToken(userForToken);
     
     // Set tokens in cookies for added security
     res.cookie('access_token', accessToken, {
