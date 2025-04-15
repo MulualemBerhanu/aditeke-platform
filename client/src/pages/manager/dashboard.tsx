@@ -233,6 +233,36 @@ export default function ManagerDashboard() {
     return filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
   }, [filteredProjects, currentPage, itemsPerPage]);
   
+  // Helper component for filter inputs
+  const FilterInput = ({ 
+    placeholder, 
+    value, 
+    onChange,
+  }: { 
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+  }) => (
+    <div className="relative">
+      <Input
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
+      />
+      {value && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onChange('')}
+          className="h-5 w-5 p-0 absolute right-2 top-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full flex items-center justify-center"
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  );
+  
   // Calculate project statistics
   const projectStats = React.useMemo(() => {
     if (!projects) return { total: 0, inProgress: 0, completed: 0 };
@@ -390,30 +420,14 @@ export default function ManagerDashboard() {
                         </tr>
                         <tr>
                           <th className="py-2 px-4">
-                            <div className="relative">
-                              <Input
-                                placeholder="Search project name..."
-                                value={filters.title}
-                                onChange={(e) => {
-                                  setFilters(prev => ({ ...prev, title: e.target.value }));
-                                  setCurrentPage(1); // Reset to first page on search
-                                }}
-                                className="h-8 text-sm bg-background/50 focus:bg-background transition-colors"
-                              />
-                              {filters.title && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFilters(prev => ({ ...prev, title: '' }));
-                                    setCurrentPage(1);
-                                  }}
-                                  className="h-4 w-4 p-0 absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
+                            <FilterInput 
+                              placeholder="Search project name..."
+                              value={filters.title}
+                              onChange={(value) => {
+                                setFilters(prev => ({ ...prev, title: value }));
+                                setCurrentPage(1); // Reset to first page on search
+                              }}
+                            />
                           </th>
                           <th className="py-2 px-4">
                             <div className="relative">
@@ -649,7 +663,7 @@ export default function ManagerDashboard() {
                                 // Ellipsis if there's a gap
                                 if (startPage > 2) {
                                   pageButtons.push(
-                                    <span key="ellipsis1" className="px-2">...</span>
+                                    <span key="ellipsis1" className="px-1 text-muted-foreground">•••</span>
                                   );
                                 }
                               }
@@ -674,7 +688,7 @@ export default function ManagerDashboard() {
                                 // Ellipsis if there's a gap
                                 if (endPage < totalPages - 1) {
                                   pageButtons.push(
-                                    <span key="ellipsis2" className="px-2">...</span>
+                                    <span key="ellipsis2" className="px-1 text-muted-foreground">•••</span>
                                   );
                                 }
                                 
@@ -683,7 +697,7 @@ export default function ManagerDashboard() {
                                     key="last"
                                     variant={currentPage === totalPages ? "default" : "outline"} 
                                     size="sm"
-                                    className="w-8 h-8 p-0"
+                                    className="w-8 h-8 p-0 font-medium text-sm hover:bg-background"
                                     onClick={() => setCurrentPage(totalPages)}
                                   >
                                     {totalPages}
