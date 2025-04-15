@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { refreshTokens, isTokenExpiredError } from './tokenRefresh';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -72,17 +73,38 @@ export async function apiRequest(
       const errorText = await res.text();
       lastError = new Error(`HTTP error ${res.status}: ${errorText || res.statusText}`);
       
-      // Don't retry on certain status codes
-      if (res.status === 401 || res.status === 403) {
-        // If this is an auth error in the deployed environment, we might still be able to use token auth
-        if (isDeployedEnv && !accessToken && localStorage.getItem('currentUser')) {
-          console.warn('Authentication error - trying to recover by getting new access token');
-          
-          // We'll get a fresh token on the next attempt
-          throw lastError;
+      // Check for auth errors and attempt token refresh if needed
+      if (res.status === 401) {
+        // Try to refresh the token if we have a refresh token
+        if (localStorage.getItem('refreshToken')) {
+          try {
+            console.warn('Access token expired, attempting refresh...');
+            
+            // Only attempt refresh once per request attempt
+            if (attempt === 0) {
+              // Refresh the token and get new tokens
+              await refreshTokens();
+              
+              // Continue to retry with the new token
+              throw new Error('Token refreshed, retrying request');
+            }
+          } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
+            // If token refresh fails, continue to the normal error path
+          }
+        }
+        
+        // If in deployed environment, try localStorage fallback
+        if (isDeployedEnv && localStorage.getItem('currentUser')) {
+          console.warn('Authentication error - using localStorage fallback');
         }
         
         // Otherwise it's a real auth error
+        throw lastError;
+      }
+      
+      // For non-auth errors like 403 (forbidden), just throw
+      if (res.status === 403) {
         throw lastError;
       }
     } catch (err) {
@@ -175,9 +197,28 @@ export const getQueryFn: <T>(options: {
         const errorText = await res.text();
         lastError = new Error(`HTTP error ${res.status}: ${errorText || res.statusText}`);
         
-        // Don't retry on certain status codes, but handle auth errors specially
-        if (res.status === 401 || res.status === 403) {
-          // If this is an auth error in the deployed environment, we might still be able to use localStorage
+        // Check for auth errors and attempt token refresh if needed
+        if (res.status === 401) {
+          // Try to refresh the token if we have a refresh token (and we're not already falling back)
+          if (localStorage.getItem('refreshToken') && unauthorizedBehavior !== "returnNull") {
+            try {
+              console.warn('Access token expired in query, attempting refresh...');
+              
+              // Only attempt refresh once per query attempt
+              if (attempt === 0) {
+                // Refresh the token and get new tokens
+                await refreshTokens();
+                
+                // Continue to retry with the new token
+                throw new Error('Token refreshed, retrying query');
+              }
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              // If token refresh fails, continue to the normal error path
+            }
+          }
+          
+          // If in deployed environment and we're configured to return null, fall back to localStorage
           if (isDeployedEnv && unauthorizedBehavior === "returnNull") {
             console.warn('Authentication error - trying to recover with localStorage');
             const storedUser = localStorage.getItem('currentUser');
@@ -185,6 +226,13 @@ export const getQueryFn: <T>(options: {
               return JSON.parse(storedUser);
             }
           }
+          
+          // If fallback doesn't apply or failed, throw
+          throw lastError;
+        }
+        
+        // For non-auth errors like 403 (forbidden), just throw
+        if (res.status === 403) {
           throw lastError;
         }
       } catch (err) {

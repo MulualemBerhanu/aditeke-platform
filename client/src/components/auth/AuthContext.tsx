@@ -236,6 +236,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.removeItem('currentUser');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('selectedRole');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       
       toast({
         title: 'Logout Partially Successful',
