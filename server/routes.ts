@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
 import { initializeDatabase } from "./db-init";
+import { updateFirebaseIds } from "./update-id-schema";
 import {
   insertUserSchema,
   insertContactMessageSchema,
@@ -742,6 +743,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching contact messages:", error);
       return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Special endpoint to update Firebase IDs to sequential pattern
+  app.post("/api/admin/update-firebase-ids", requirePermission("admin", "manage"), async (req, res) => {
+    try {
+      console.log("Starting Firebase ID update process...");
+      const result = await updateFirebaseIds();
+      
+      if (result) {
+        return res.json({ 
+          success: true, 
+          message: "Firebase IDs updated successfully to sequential format",
+          idRanges: {
+            projects: "Starting at 500",
+            clients: "Starting at 2000",
+            roles: "Starting at 1000",
+            services: "Starting at 3000",
+            testimonials: "Starting at 4000",
+            blogPosts: "Starting at 5000"
+          }
+        });
+      } else {
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to update Firebase IDs" 
+        });
+      }
+    } catch (error) {
+      console.error("Error updating Firebase IDs:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Error updating Firebase IDs", 
+        error: String(error) 
+      });
     }
   });
   
