@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage, PostgresStorage } from "./storage";
+import { injectCSRFToken, csrfProtection } from "./utils/csrf";
 import 'dotenv/config';
 
 const app = express();
@@ -14,7 +15,7 @@ app.use((req, res, next) => {
   // Set necessary CORS headers for all responses
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   // Handle preflight requests
@@ -27,6 +28,10 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add CSRF protection
+app.use(injectCSRFToken); // Inject CSRF token into HTML responses
+app.use(csrfProtection); // Protect against CSRF attacks
 
 app.use((req, res, next) => {
   const start = Date.now();

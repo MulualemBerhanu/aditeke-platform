@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { refreshTokens, isTokenExpiredError } from './tokenRefresh';
+import { addCSRFTokenToHeaders } from './csrfToken';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -34,11 +35,11 @@ export async function apiRequest(
         "Expires": "0"
       };
       
-      // Add CSRF token for protection against CSRF attacks
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-      if (csrfToken) {
-        headers['X-CSRF-Token'] = csrfToken;
-      }
+      // Add CSRF token for protection against CSRF attacks using our utility
+      const csrfHeaders = addCSRFTokenToHeaders(headers);
+      Object.entries(csrfHeaders).forEach(([key, value]) => {
+        headers[key] = value;
+      });
       
       // Import the secure token utility
       const { getAccessToken } = await import('./secureTokenStorage');

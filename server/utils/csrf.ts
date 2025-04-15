@@ -7,16 +7,18 @@ const tokenCache = new Map<string, number>();
 // Clean expired tokens periodically
 setInterval(() => {
   const now = Date.now();
+  const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
   
   // Remove tokens that are older than 24 hours
-  for (const [token, timestamp] of tokenCache.entries()) {
+  // Using Array.from to avoid iterator issues in older TS targets
+  Array.from(tokenCache.keys()).forEach(token => {
+    const timestamp = tokenCache.get(token)!;
     const ageInMilliseconds = now - timestamp;
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
     
     if (ageInMilliseconds > maxAge) {
       tokenCache.delete(token);
     }
-  }
+  });
 }, 60 * 60 * 1000); // Run cleanup hourly
 
 /**
