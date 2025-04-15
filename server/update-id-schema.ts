@@ -5,6 +5,8 @@ import { log } from './vite';
  * Update database IDs to sequential pattern:
  * - Projects: Starting at 500
  * - Clients: Starting at 2000
+ * - Managers: Starting at 50000
+ * - Admins: Starting at 60000
  * - Roles: Starting at 1000
  * - Services: Starting at 3000
  * - Testimonials: Starting at 4000
@@ -20,6 +22,12 @@ export async function updateFirebaseIds() {
     
     // Update users with client role (start at 2000)
     await updateClientIds(db, 2000);
+    
+    // Update users with manager role (start at 50000)
+    await updateManagerIds(db, 50000);
+    
+    // Update users with admin role (start at 60000)
+    await updateAdminIds(db, 60000);
     
     // Update roles (start at 1000)
     await updateCollectionIds(db, 'roles', 1000);
@@ -125,6 +133,102 @@ async function updateClientIds(db: any, startId: number) {
   
   // Now update project references to client IDs
   await updateClientReferences(db, updates);
+  
+  return updates;
+}
+
+/**
+ * Specialized function to update manager user IDs
+ */
+async function updateManagerIds(db: any, startId: number) {
+  // First get the manager role ID
+  const roleSnapshot = await db.collection('roles').where('name', '==', 'manager').get();
+  if (roleSnapshot.empty) {
+    log('Manager role not found');
+    return;
+  }
+  
+  const managerRoleId = roleSnapshot.docs[0].data().id;
+  log(`Found manager role with ID: ${managerRoleId}`);
+  
+  // Get all users with manager role
+  const snapshot = await db.collection('users').where('roleId', '==', managerRoleId).get();
+  if (snapshot.empty) {
+    log('No manager users found');
+    return;
+  }
+  
+  log(`Updating ${snapshot.size} manager users...`);
+  
+  let currentId = startId;
+  const batch = db.batch();
+  const updates: { [key: string]: number } = {};
+  
+  snapshot.forEach((doc: any) => {
+    const data = doc.data();
+    const oldId = data.id;
+    const newId = currentId++;
+    
+    // Store mapping of old to new IDs
+    updates[oldId] = newId;
+    
+    // Create new document with updated ID
+    const updatedData = { ...data, id: newId };
+    batch.set(doc.ref, updatedData);
+    
+    log(`Updated manager user ID: ${oldId} -> ${newId}`);
+  });
+  
+  await batch.commit();
+  log(`Successfully updated ${snapshot.size} manager users`);
+  
+  return updates;
+}
+
+/**
+ * Specialized function to update admin user IDs
+ */
+async function updateAdminIds(db: any, startId: number) {
+  // First get the admin role ID
+  const roleSnapshot = await db.collection('roles').where('name', '==', 'admin').get();
+  if (roleSnapshot.empty) {
+    log('Admin role not found');
+    return;
+  }
+  
+  const adminRoleId = roleSnapshot.docs[0].data().id;
+  log(`Found admin role with ID: ${adminRoleId}`);
+  
+  // Get all users with admin role
+  const snapshot = await db.collection('users').where('roleId', '==', adminRoleId).get();
+  if (snapshot.empty) {
+    log('No admin users found');
+    return;
+  }
+  
+  log(`Updating ${snapshot.size} admin users...`);
+  
+  let currentId = startId;
+  const batch = db.batch();
+  const updates: { [key: string]: number } = {};
+  
+  snapshot.forEach((doc: any) => {
+    const data = doc.data();
+    const oldId = data.id;
+    const newId = currentId++;
+    
+    // Store mapping of old to new IDs
+    updates[oldId] = newId;
+    
+    // Create new document with updated ID
+    const updatedData = { ...data, id: newId };
+    batch.set(doc.ref, updatedData);
+    
+    log(`Updated admin user ID: ${oldId} -> ${newId}`);
+  });
+  
+  await batch.commit();
+  log(`Successfully updated ${snapshot.size} admin users`);
   
   return updates;
 }

@@ -9,6 +9,8 @@ const fs = require('fs');
 const ID_RANGES = {
   projects: 500,
   clients: 2000,
+  managers: 50000,
+  admins: 60000,
   roles: 1000,
   services: 3000,
   testimonials: 4000,
@@ -164,6 +166,120 @@ async function updateClientIds(startId) {
   }
 }
 
+// Function to update manager user IDs
+async function updateManagerIds(startId) {
+  log(`Starting update of manager user IDs starting at ${startId}`);
+  
+  try {
+    // First get the manager role
+    const roleSnapshot = await db.collection('roles').where('name', '==', 'manager').get();
+    
+    if (roleSnapshot.empty) {
+      log('Manager role not found');
+      return {};
+    }
+    
+    const managerRole = roleSnapshot.docs[0].data();
+    log(`Found manager role with ID: ${managerRole.id}`);
+    
+    // Get all users with manager role
+    const snapshot = await db.collection('users').where('roleId', '==', managerRole.id).get();
+    
+    if (snapshot.empty) {
+      log('No manager users found');
+      return {};
+    }
+    
+    log(`Found ${snapshot.size} manager users`);
+    
+    // Map of old IDs to new IDs
+    const idMap = {};
+    let currentId = startId;
+    const batch = db.batch();
+    
+    // Update each manager user
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const oldId = data.id;
+      const newId = currentId++;
+      
+      // Store mapping
+      idMap[oldId] = newId;
+      
+      // Update document
+      batch.update(doc.ref, { id: newId });
+      
+      log(`Mapped manager ID: ${oldId} -> ${newId}`);
+    });
+    
+    // Commit the batch
+    await batch.commit();
+    log(`Successfully updated ${snapshot.size} manager users`);
+    
+    return idMap;
+  } catch (error) {
+    log(`Error updating manager user IDs: ${error.message}`);
+    throw error;
+  }
+}
+
+// Function to update admin user IDs
+async function updateAdminIds(startId) {
+  log(`Starting update of admin user IDs starting at ${startId}`);
+  
+  try {
+    // First get the admin role
+    const roleSnapshot = await db.collection('roles').where('name', '==', 'admin').get();
+    
+    if (roleSnapshot.empty) {
+      log('Admin role not found');
+      return {};
+    }
+    
+    const adminRole = roleSnapshot.docs[0].data();
+    log(`Found admin role with ID: ${adminRole.id}`);
+    
+    // Get all users with admin role
+    const snapshot = await db.collection('users').where('roleId', '==', adminRole.id).get();
+    
+    if (snapshot.empty) {
+      log('No admin users found');
+      return {};
+    }
+    
+    log(`Found ${snapshot.size} admin users`);
+    
+    // Map of old IDs to new IDs
+    const idMap = {};
+    let currentId = startId;
+    const batch = db.batch();
+    
+    // Update each admin user
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const oldId = data.id;
+      const newId = currentId++;
+      
+      // Store mapping
+      idMap[oldId] = newId;
+      
+      // Update document
+      batch.update(doc.ref, { id: newId });
+      
+      log(`Mapped admin ID: ${oldId} -> ${newId}`);
+    });
+    
+    // Commit the batch
+    await batch.commit();
+    log(`Successfully updated ${snapshot.size} admin users`);
+    
+    return idMap;
+  } catch (error) {
+    log(`Error updating admin user IDs: ${error.message}`);
+    throw error;
+  }
+}
+
 // Function to update project references to client IDs
 async function updateClientReferences(clientIdMap) {
   log('Updating client references in projects...');
@@ -222,6 +338,12 @@ async function updateAllIds() {
     
     // Update client user IDs
     const clientIdMap = await updateClientIds(ID_RANGES.clients);
+    
+    // Update manager user IDs
+    const managerIdMap = await updateManagerIds(ID_RANGES.managers);
+    
+    // Update admin user IDs
+    const adminIdMap = await updateAdminIds(ID_RANGES.admins);
     
     // Update client references in projects
     await updateClientReferences(clientIdMap);
