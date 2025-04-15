@@ -100,7 +100,101 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
       setLocation('/login');
     } else if (!user && (isLocalStorageAuthenticated || localStorageUser)) {
       console.log("⚠️ Using localStorage authentication as fallback");
-      // We have localStorage auth but no API auth - this is okay, let the user proceed
+      
+      // Process localStorage authentication and apply role-based security
+      try {
+        if (localStorageUser) {
+          // Get the user data from localStorage
+          const storedUserData = JSON.parse(localStorageUser);
+          
+          // Get path for security check
+          const path = window.location.pathname;
+          const isAdminPath = path.startsWith('/admin');
+          const isManagerPath = path.startsWith('/manager');
+          const isClientPath = path.startsWith('/client');
+          
+          // Extract role information from stored user
+          const roleId = storedUserData.roleId || 
+                     (storedUserData.role && typeof storedUserData.role === 'object' ? 
+                        storedUserData.role.id : null);
+          const userRole = typeof storedUserData.role === 'object' && storedUserData.role ? 
+                       storedUserData.role.name : 
+                       typeof storedUserData.roleName === 'string' ? 
+                       storedUserData.roleName : null;
+          
+          console.log("🔐 Role-based security check:", { 
+            path, 
+            userRole, 
+            roleId, 
+            username: storedUserData.username
+          });
+          
+          // Map role names to IDs for consistency
+          const roleIdMap: Record<string, number> = {
+            'admin': 1002,
+            'manager': 1000,
+            'client': 1001
+          };
+          
+          // Security logic checks both role name and ID
+          const hasAdminAccess = 
+            userRole?.toLowerCase() === 'admin' || 
+            roleId === roleIdMap.admin;
+          
+          const hasManagerAccess = 
+            userRole?.toLowerCase() === 'manager' || 
+            roleId === roleIdMap.manager;
+          
+          const hasClientAccess = 
+            userRole?.toLowerCase() === 'client' || 
+            roleId === roleIdMap.client;
+          
+          // Apply security policy based on path and role
+          if (isAdminPath && !hasAdminAccess) {
+            console.warn("⛔ ACCESS DENIED: Non-admin tried to access admin page");
+            
+            // Redirect based on role
+            if (hasManagerAccess) {
+              setLocation('/manager/dashboard');
+              return; // Important: stop execution
+            } else if (hasClientAccess) {
+              setLocation('/client/dashboard');
+              return; // Important: stop execution
+            } else {
+              setLocation('/login');
+              return; // Important: stop execution
+            }
+          } else if (isManagerPath && !hasManagerAccess && !hasAdminAccess) {
+            console.warn("⛔ ACCESS DENIED: User without manager role tried to access manager page");
+            
+            if (hasAdminAccess) {
+              setLocation('/admin/dashboard');
+              return; // Important: stop execution
+            } else if (hasClientAccess) {
+              setLocation('/client/dashboard');
+              return; // Important: stop execution
+            } else {
+              setLocation('/login');
+              return; // Important: stop execution
+            }
+          } else if (isClientPath && !hasClientAccess && !hasManagerAccess && !hasAdminAccess) {
+            console.warn("⛔ ACCESS DENIED: User without client role tried to access client page");
+            
+            if (hasAdminAccess) {
+              setLocation('/admin/dashboard');
+              return; // Important: stop execution
+            } else if (hasManagerAccess) {
+              setLocation('/manager/dashboard');
+              return; // Important: stop execution
+            } else {
+              setLocation('/login');
+              return; // Important: stop execution
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error processing role-based security:", error);
+      }
     }
   }, [isLoading, user, setLocation]);
 
