@@ -94,9 +94,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           localStorage.setItem('isAuthenticated', 'true');
           
           // For cross-domain deployments, we need an additional fallback mechanism
-          // Store auth token in localStorage if it's included in the response
-          if (userData.token) {
-            localStorage.setItem('authToken', userData.token);
+          // Store JWT tokens in localStorage if they're included in the response
+          if (userData.accessToken) {
+            localStorage.setItem('accessToken', userData.accessToken);
+          }
+          
+          if (userData.refreshToken) {
+            localStorage.setItem('refreshToken', userData.refreshToken);
           }
         }
         
@@ -202,6 +206,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.removeItem('currentUser');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('selectedRole');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       
       // Try API logout, but don't stop if it fails
       try {

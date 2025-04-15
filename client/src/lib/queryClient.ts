@@ -33,10 +33,10 @@ export async function apiRequest(
         "Expires": "0"
       };
       
-      // Add auth token header for cross-domain authentication if available
-      const authToken = localStorage.getItem('authToken');
-      if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+      // Add JWT token for authentication if available
+      const accessToken = localStorage.getItem('accessToken');
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
       
       // Detect if we're on a different domain in production
@@ -75,8 +75,8 @@ export async function apiRequest(
       // Don't retry on certain status codes
       if (res.status === 401 || res.status === 403) {
         // If this is an auth error in the deployed environment, we might still be able to use token auth
-        if (isDeployedEnv && !authToken && localStorage.getItem('currentUser')) {
-          console.warn('Authentication error - trying to recover by getting new auth token');
+        if (isDeployedEnv && !accessToken && localStorage.getItem('currentUser')) {
+          console.warn('Authentication error - trying to recover by getting new access token');
           
           // We'll get a fresh token on the next attempt
           throw lastError;
@@ -125,10 +125,10 @@ export const getQueryFn: <T>(options: {
           "Expires": "0"
         };
         
-        // Add auth token header for cross-domain authentication if available
-        const authToken = localStorage.getItem('authToken');
-        if (authToken) {
-          headers['Authorization'] = `Bearer ${authToken}`;
+        // Add JWT token for authentication if available
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
         }
         
         // Detect if we're on a different domain in production
