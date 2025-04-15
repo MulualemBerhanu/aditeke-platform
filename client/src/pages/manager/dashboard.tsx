@@ -5,10 +5,18 @@ import ManagerLayout from '@/components/manager/ManagerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { 
   Users, Layout, Mail, Calendar, ClipboardList,
   Clock, CheckCircle2, AlertCircle, Plus, Loader2,
-  FileText, PencilLine, UserPlus, Trash2, Edit, X
+  FileText, PencilLine, UserPlus, Trash2, Edit, X,
+  Eye, MoreHorizontal, Building, Star, Briefcase, Zap,
+  Download, Search, DollarSign, MessageSquare, PlusCircle,
+  CheckCircle, FolderPlus, Upload, Folder, FileIcon as FileIconLucide, Table,
+  Info, Send, Download as FileDownIcon
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -840,16 +848,1189 @@ export default function ManagerDashboard() {
 
         <TabsContent value="clients">
           <Card>
-            <CardHeader>
-              <CardTitle>Client Management</CardTitle>
-              <CardDescription>
-                View and manage client relationships
-              </CardDescription>
+            <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <CardTitle>Client Management</CardTitle>
+                <CardDescription>
+                  View and manage client relationships
+                </CardDescription>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+                <Button size="sm" className="gap-1">
+                  <UserPlus className="h-4 w-4" />
+                  Add Client
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <p>Client management interface will be implemented here</p>
+              {/* Tabs for client categories */}
+              <div className="border-b mb-6">
+                <nav className="-mb-px flex space-x-6">
+                  {['All', 'Active', 'VIP', 'Prospects', 'Archived'].map((tab) => (
+                    <button
+                      key={tab}
+                      className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                        tab === 'All'
+                          ? 'border-primary text-primary'
+                          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+              
+              {/* Search and filter controls */}
+              <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                <div className="relative w-full md:w-72">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search clients..." className="pl-8" />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Select defaultValue="status">
+                    <SelectTrigger className="w-[140px] h-9">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="status">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="vip">VIP</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select defaultValue="projects">
+                    <SelectTrigger className="w-[140px] h-9">
+                      <SelectValue placeholder="Projects" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="projects">All Projects</SelectItem>
+                      <SelectItem value="active">Active Projects</SelectItem>
+                      <SelectItem value="none">No Projects</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select defaultValue="date">
+                    <SelectTrigger className="w-[160px] h-9">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date">Latest Contact</SelectItem>
+                      <SelectItem value="name">Name (A-Z)</SelectItem>
+                      <SelectItem value="projects">Most Projects</SelectItem>
+                      <SelectItem value="billed">Highest Billed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Clients Table */}
+              <div className="overflow-x-auto rounded-md border shadow-sm">
+                <table className="w-full divide-y divide-border">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Client Name</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Email / Contact</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Assigned Manager</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Status</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Projects</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Total Billed</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Last Invoice</th>
+                      <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-background divide-y divide-gray-200">
+                    {/* First Client Row */}
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                            <Building className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="font-medium">TechCorp Solutions</div>
+                            <div className="text-xs text-muted-foreground">Business Software</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">john.doe@techcorp.com</div>
+                        <div className="text-xs text-muted-foreground">+1 (555) 123-4567</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">Sarah Williams</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                          Active
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        3
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium">
+                        $24,500
+                      </td>
+                      <td className="py-4 px-4 text-sm text-muted-foreground">
+                        Apr 10, 2025
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Edit className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    {/* Second Client Row */}
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-800 mr-3">
+                            <Star className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Global Marketing Ltd</div>
+                            <div className="text-xs text-muted-foreground">Marketing Agency</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">jane.smith@globalmarketing.com</div>
+                        <div className="text-xs text-muted-foreground">+1 (555) 987-6543</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">Mike Chen</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                          VIP
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        5
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium">
+                        $42,300
+                      </td>
+                      <td className="py-4 px-4 text-sm text-muted-foreground">
+                        Apr 03, 2025
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Edit className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    {/* Third Client Row */}
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 mr-3">
+                            <Briefcase className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Pinnacle Enterprises</div>
+                            <div className="text-xs text-muted-foreground">Finance & Consulting</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">robert.johnson@pinnacle.com</div>
+                        <div className="text-xs text-muted-foreground">+1 (555) 333-7777</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">Alex Johnson</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800">
+                          Inactive
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        1
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium">
+                        $8,750
+                      </td>
+                      <td className="py-4 px-4 text-sm text-muted-foreground">
+                        Feb 20, 2025
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Edit className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    {/* Fourth Client Row */}
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 mr-3">
+                            <Zap className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Fusion Technologies</div>
+                            <div className="text-xs text-muted-foreground">Tech Startup</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">emily.wilson@fusion.tech</div>
+                        <div className="text-xs text-muted-foreground">+1 (555) 222-8888</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm">Sarah Williams</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
+                          Prospect
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm">
+                        0
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium">
+                        $0
+                      </td>
+                      <td className="py-4 px-4 text-sm text-muted-foreground">
+                        -
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Edit className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-6">
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-medium">1</span> to <span className="font-medium">4</span> of <span className="font-medium">12</span> clients
+                </p>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" disabled>
+                    Previous
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Next
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
+          
+          {/* Client View/Edit Dialog */}
+          <Dialog>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Client Profile</DialogTitle>
+                <DialogDescription>
+                  View and manage client information, projects, billing, and files.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Tabs defaultValue="overview">
+                <TabsList className="grid grid-cols-5 w-full">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="projects">Projects</TabsTrigger>
+                  <TabsTrigger value="billing">Pricing & Billing</TabsTrigger>
+                  <TabsTrigger value="files">Files & Docs</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="overview" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Client Info Card */}
+                    <Card className="col-span-1">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Client Information</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex justify-center mb-4">
+                          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <Building className="h-8 w-8" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-center">
+                            <h3 className="font-bold text-lg">TechCorp Solutions</h3>
+                            <p className="text-sm text-muted-foreground">Business Software</p>
+                          </div>
+                          <Separator />
+                          <div className="grid grid-cols-[100px_1fr] gap-1 text-sm">
+                            <div className="text-muted-foreground">Contact:</div>
+                            <div className="font-medium">John Doe</div>
+                            <div className="text-muted-foreground">Email:</div>
+                            <div className="font-medium">john.doe@techcorp.com</div>
+                            <div className="text-muted-foreground">Phone:</div>
+                            <div className="font-medium">+1 (555) 123-4567</div>
+                            <div className="text-muted-foreground">Address:</div>
+                            <div className="font-medium">123 Tech Blvd, San Francisco, CA</div>
+                          </div>
+                          <div className="pt-2">
+                            <Label className="text-xs text-muted-foreground mb-1 block">Tags</Label>
+                            <div className="flex flex-wrap gap-1">
+                              <Badge variant="outline" className="bg-green-50">Active</Badge>
+                              <Badge variant="outline" className="bg-blue-50">Enterprise</Badge>
+                              <Badge variant="outline" className="bg-purple-50">Tech</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Projects Summary */}
+                    <Card className="col-span-1 md:col-span-2">
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg">Project Summary</CardTitle>
+                        <Button variant="ghost" size="sm" className="h-8 gap-1">
+                          <Plus className="h-3.5 w-3.5" />
+                          New Project
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Project Card 1 */}
+                          <div className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium">CRM Implementation</h4>
+                              <Badge>In Progress</Badge>
+                            </div>
+                            <div className="mb-3 text-sm text-muted-foreground line-clamp-2">
+                              Complete implementation of custom CRM solution with sales pipeline and analytics dashboard.
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <div className="flex gap-3">
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  <span>Due May 30, 2025</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                  <span>$12,500</span>
+                                </div>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                58% Complete
+                              </div>
+                            </div>
+                            <div className="mt-2 w-full bg-muted rounded-full h-1.5">
+                              <div className="bg-primary h-1.5 rounded-full" style={{ width: '58%' }}></div>
+                            </div>
+                          </div>
+                          
+                          {/* Project Card 2 */}
+                          <div className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium">Website Redesign</h4>
+                              <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">Completed</Badge>
+                            </div>
+                            <div className="mb-3 text-sm text-muted-foreground line-clamp-2">
+                              Complete redesign of corporate website with modern UI/UX and responsive design.
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                              <div className="flex gap-3">
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  <span>Completed Apr 10, 2025</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                  <span>$8,000</span>
+                                </div>
+                              </div>
+                              <div className="text-xs text-green-600">
+                                100% Complete
+                              </div>
+                            </div>
+                            <div className="mt-2 w-full bg-muted rounded-full h-1.5">
+                              <div className="bg-green-500 h-1.5 rounded-full w-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Activity & Notes */}
+                    <Card className="col-span-1 md:col-span-3">
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between">
+                          <CardTitle className="text-lg">Activity & Notes</CardTitle>
+                          <Button variant="ghost" size="sm" className="h-8 gap-1">
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            Add Note
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex gap-3">
+                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                              <MessageSquare className="h-4 w-4" />
+                            </div>
+                            <div className="flex-grow">
+                              <div className="flex justify-between items-start">
+                                <h4 className="font-medium">Client Meeting Note</h4>
+                                <span className="text-xs text-muted-foreground">Apr 12, 2025</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Discussion about expanding the current CRM project to include additional sales analytics features. Client is interested in Q3 implementation.
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-3">
+                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 shrink-0">
+                              <FileText className="h-4 w-4" />
+                            </div>
+                            <div className="flex-grow">
+                              <div className="flex justify-between items-start">
+                                <h4 className="font-medium">Invoice #1043 Sent</h4>
+                                <span className="text-xs text-muted-foreground">Apr 10, 2025</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Final payment invoice for the Website Redesign project sent to john.doe@techcorp.com
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-3">
+                            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-800 shrink-0">
+                              <CheckCircle className="h-4 w-4" />
+                            </div>
+                            <div className="flex-grow">
+                              <div className="flex justify-between items-start">
+                                <h4 className="font-medium">Project Completed</h4>
+                                <span className="text-xs text-muted-foreground">Apr 10, 2025</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Website Redesign project marked as completed. All deliverables have been approved by the client.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="projects" className="pt-4">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Client Projects</h3>
+                      <Button className="gap-1">
+                        <Plus className="h-4 w-4" />
+                        Create New Project
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Project Card 1 */}
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between">
+                            <CardTitle>CRM Implementation</CardTitle>
+                            <Badge>In Progress</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Complete implementation of custom CRM solution with sales pipeline and analytics dashboard.
+                          </p>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Timeline:</span>
+                              <span>Mar 15 - May 30, 2025</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Budget:</span>
+                              <span className="font-medium">$12,500</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Team:</span>
+                              <span>3 members</span>
+                            </div>
+                            <div className="pt-2">
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-muted-foreground">Progress:</span>
+                                <span>58%</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div className="bg-primary h-2 rounded-full" style={{ width: '58%' }}></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex justify-end gap-2">
+                            <Button variant="outline" size="sm">Details</Button>
+                            <Button variant="outline" size="sm">Edit</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Project Card 2 */}
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between">
+                            <CardTitle>Website Redesign</CardTitle>
+                            <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">Completed</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Complete redesign of corporate website with modern UI/UX and responsive design.
+                          </p>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Timeline:</span>
+                              <span>Feb 1 - Apr 10, 2025</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Budget:</span>
+                              <span className="font-medium">$8,000</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Team:</span>
+                              <span>2 members</span>
+                            </div>
+                            <div className="pt-2">
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-muted-foreground">Progress:</span>
+                                <span className="text-green-600">100%</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex justify-end gap-2">
+                            <Button variant="outline" size="sm">Details</Button>
+                            <Button variant="outline" size="sm">Edit</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Project Card 3 - Next Project */}
+                      <Card className="border-dashed border-2">
+                        <CardContent className="flex flex-col items-center justify-center h-full py-8">
+                          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-4">
+                            <Plus className="h-6 w-6" />
+                          </div>
+                          <h3 className="font-medium text-lg mb-1">New Project</h3>
+                          <p className="text-sm text-muted-foreground text-center mb-4">
+                            Create a new project for this client
+                          </p>
+                          <Button className="gap-1">
+                            <Plus className="h-4 w-4" />
+                            Create Project
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="billing" className="pt-4">
+                  <div className="space-y-8">
+                    {/* Payment Structure Section */}
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Payment Structure</h3>
+                      <div className="bg-muted/50 rounded-lg p-4 mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                          <h4 className="font-medium">Default Payment Terms</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          The default payment structure for this client is <strong>40% Upfront + Remaining on Completion</strong>.
+                          You can override this setting for individual projects if needed.
+                        </p>
+                        <div className="flex gap-4">
+                          <Button variant="outline" size="sm">Edit Terms</Button>
+                          <Select defaultValue="split">
+                            <SelectTrigger className="w-[220px] h-9">
+                              <SelectValue placeholder="Payment structure" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="full">Full Payment Upfront</SelectItem>
+                              <SelectItem value="split">40% Upfront + 60% on Completion</SelectItem>
+                              <SelectItem value="milestones">Custom Milestones</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Billing Timeline */}
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium">Billing Timeline</h3>
+                        <Button variant="outline" size="sm" className="gap-1">
+                          <PlusCircle className="h-4 w-4" />
+                          Add Payment Phase
+                        </Button>
+                      </div>
+                      
+                      <div className="overflow-x-auto rounded-md border shadow-sm">
+                        <table className="w-full divide-y divide-border">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Payment Phase</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Amount</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Status</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Due Date</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-background divide-y divide-gray-200">
+                            <tr className="hover:bg-muted/30 transition-colors">
+                              <td className="py-4 px-4">
+                                <div className="font-medium">Initial Payment (40%)</div>
+                                <div className="text-xs text-muted-foreground">CRM Implementation</div>
+                              </td>
+                              <td className="py-4 px-4 font-medium">$5,000</td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                  Paid
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 text-muted-foreground">Mar 15, 2025</td>
+                              <td className="py-4 px-4">
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    Receipt
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-muted/30 transition-colors">
+                              <td className="py-4 px-4">
+                                <div className="font-medium">Final Payment (60%)</div>
+                                <div className="text-xs text-muted-foreground">CRM Implementation</div>
+                              </td>
+                              <td className="py-4 px-4 font-medium">$7,500</td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                                  Pending
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 text-muted-foreground">May 30, 2025</td>
+                              <td className="py-4 px-4">
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <Send className="h-4 w-4 mr-1" />
+                                    Send Link
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-muted/30 transition-colors">
+                              <td className="py-4 px-4">
+                                <div className="font-medium">Full Payment</div>
+                                <div className="text-xs text-muted-foreground">Website Redesign</div>
+                              </td>
+                              <td className="py-4 px-4 font-medium">$8,000</td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                  Paid
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 text-muted-foreground">Apr 10, 2025</td>
+                              <td className="py-4 px-4">
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    Receipt
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    
+                    {/* Invoice Generator */}
+                    <div>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium">Invoice Generator</h3>
+                        <Button className="gap-1">
+                          <FileDown className="h-4 w-4" />
+                          Generate Invoice
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium">Invoice Items</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between border-b pb-3">
+                                  <div className="flex-1">
+                                    <Label htmlFor="item1" className="mb-1 block">Item Description</Label>
+                                    <Input id="item1" defaultValue="CRM Implementation - Final Payment" />
+                                  </div>
+                                  <div className="w-24 ml-4">
+                                    <Label htmlFor="amount1" className="mb-1 block">Amount</Label>
+                                    <Input id="amount1" defaultValue="7500" className="text-right" />
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-between border-b pb-3">
+                                  <div className="flex-1">
+                                    <Label htmlFor="item2" className="mb-1 block">Item Description</Label>
+                                    <Input id="item2" defaultValue="Additional Customization" />
+                                  </div>
+                                  <div className="w-24 ml-4">
+                                    <Label htmlFor="amount2" className="mb-1 block">Amount</Label>
+                                    <Input id="amount2" defaultValue="1200" className="text-right" />
+                                  </div>
+                                </div>
+                                
+                                <Button variant="outline" className="w-full gap-1">
+                                  <Plus className="h-4 w-4" />
+                                  Add Item
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        
+                        <div>
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm font-medium">Invoice Settings</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="invoiceNumber" className="mb-1 block">Invoice #</Label>
+                                    <Input id="invoiceNumber" defaultValue="INV-1044" />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="dueDate" className="mb-1 block">Due Date</Label>
+                                    <Input id="dueDate" type="date" defaultValue="2025-05-30" />
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <Label htmlFor="taxRate" className="mb-1 block">Tax Rate (%)</Label>
+                                  <Input id="taxRate" type="number" defaultValue="7.5" />
+                                </div>
+                                
+                                <div className="border rounded-md p-3 bg-muted/50">
+                                  <div className="flex justify-between mb-2">
+                                    <span className="text-muted-foreground">Subtotal:</span>
+                                    <span className="font-medium">$8,700.00</span>
+                                  </div>
+                                  <div className="flex justify-between mb-2">
+                                    <span className="text-muted-foreground">Tax (7.5%):</span>
+                                    <span className="font-medium">$652.50</span>
+                                  </div>
+                                  <div className="flex justify-between pt-2 border-t">
+                                    <span className="font-medium">Total:</span>
+                                    <span className="font-bold">$9,352.50</span>
+                                  </div>
+                                </div>
+                                
+                                <Select defaultValue="usd">
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Currency" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="usd">USD - US Dollar</SelectItem>
+                                    <SelectItem value="eur">EUR - Euro</SelectItem>
+                                    <SelectItem value="gbp">GBP - British Pound</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Billing History */}
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Billing History</h3>
+                      
+                      <div className="overflow-x-auto rounded-md border shadow-sm">
+                        <table className="w-full divide-y divide-border">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Invoice #</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Date</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Amount</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Status</th>
+                              <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-background divide-y divide-gray-200">
+                            <tr className="hover:bg-muted/30 transition-colors">
+                              <td className="py-4 px-4">
+                                <div className="font-medium">INV-1043</div>
+                              </td>
+                              <td className="py-4 px-4">Apr 10, 2025</td>
+                              <td className="py-4 px-4 font-medium">$8,000.00</td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                  Paid
+                                </span>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <Download className="h-4 w-4 mr-1" />
+                                    Download
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-muted/30 transition-colors">
+                              <td className="py-4 px-4">
+                                <div className="font-medium">INV-1042</div>
+                              </td>
+                              <td className="py-4 px-4">Mar 15, 2025</td>
+                              <td className="py-4 px-4 font-medium">$5,000.00</td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                  Paid
+                                </span>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <Download className="h-4 w-4 mr-1" />
+                                    Download
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-muted/30 transition-colors">
+                              <td className="py-4 px-4">
+                                <div className="font-medium">INV-1040</div>
+                              </td>
+                              <td className="py-4 px-4">Feb 20, 2025</td>
+                              <td className="py-4 px-4 font-medium">$3,200.00</td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
+                                  Paid
+                                </span>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex space-x-2">
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    View
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-8 px-2">
+                                    <Download className="h-4 w-4 mr-1" />
+                                    Download
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="files" className="pt-4">
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Files & Documents</h3>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="gap-1">
+                          <FolderPlus className="h-4 w-4" />
+                          New Folder
+                        </Button>
+                        <Button size="sm" className="gap-1">
+                          <Upload className="h-4 w-4" />
+                          Upload
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* File categories */}
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="secondary" size="sm" className="rounded-full">All Files</Button>
+                      <Button variant="outline" size="sm" className="rounded-full">Contracts</Button>
+                      <Button variant="outline" size="sm" className="rounded-full">Invoices</Button>
+                      <Button variant="outline" size="sm" className="rounded-full">Reports</Button>
+                      <Button variant="outline" size="sm" className="rounded-full">Designs</Button>
+                      <Button variant="outline" size="sm" className="rounded-full">Feedback</Button>
+                    </div>
+                    
+                    {/* File grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {/* Contract folder */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex gap-2 items-center">
+                              <Folder className="h-6 w-6 text-blue-500" />
+                              <h4 className="font-medium">Contracts</h4>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">3 files, updated Apr 10</p>
+                        </div>
+                      </div>
+                      
+                      {/* PDF file */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="h-32 bg-red-50 flex items-center justify-center">
+                          <FileText className="h-12 w-12 text-red-500" />
+                        </div>
+                        <div className="p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-sm truncate">Website_Proposal_v2.pdf</h4>
+                              <p className="text-xs text-muted-foreground">Feb 15, 2025 · 1.2 MB</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Word document */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="h-32 bg-blue-50 flex items-center justify-center">
+                          <FileIconLucide className="h-12 w-12 text-blue-600" />
+                        </div>
+                        <div className="p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-sm truncate">CRM_Requirements.docx</h4>
+                              <p className="text-xs text-muted-foreground">Mar 22, 2025 · 650 KB</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Image file */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="h-32 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=300&auto=format')" }}>
+                        </div>
+                        <div className="p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-sm truncate">Logo_Final_Design.png</h4>
+                              <p className="text-xs text-muted-foreground">Apr 5, 2025 · 2.4 MB</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Excel file */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="h-32 bg-green-50 flex items-center justify-center">
+                          <Table className="h-12 w-12 text-green-600" />
+                        </div>
+                        <div className="p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-sm truncate">Project_Timeline.xlsx</h4>
+                              <p className="text-xs text-muted-foreground">Mar 30, 2025 · 850 KB</p>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Upload Box */}
+                      <div className="border border-dashed rounded-lg p-8 flex flex-col items-center justify-center text-center gap-2">
+                        <Upload className="h-8 w-8 text-muted-foreground" />
+                        <h4 className="font-medium text-sm">Drop files here or click to upload</h4>
+                        <p className="text-xs text-muted-foreground">
+                          PDF, DOCX, XLSX, PNG, JPG up to 10MB
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="settings" className="pt-4">
+                  <div className="space-y-6">
+                    <div className="border-b pb-4">
+                      <h3 className="text-lg font-medium mb-4">Client Settings</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Manage client account settings, preferences, and access.
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium mb-3">General Information</h4>
+                        <div className="space-y-3">
+                          <div>
+                            <Label htmlFor="clientName">Client Name</Label>
+                            <Input id="clientName" defaultValue="TechCorp Solutions" />
+                          </div>
+                          <div>
+                            <Label htmlFor="industry">Industry</Label>
+                            <Input id="industry" defaultValue="Business Software" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label htmlFor="phone">Phone</Label>
+                              <Input id="phone" defaultValue="+1 (555) 123-4567" />
+                            </div>
+                            <div>
+                              <Label htmlFor="email">Email</Label>
+                              <Input id="email" defaultValue="john.doe@techcorp.com" />
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="address">Address</Label>
+                            <Textarea id="address" className="resize-none" defaultValue="123 Tech Blvd, San Francisco, CA" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium mb-3">Client Portal Access</h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between py-2">
+                            <div>
+                              <div className="font-medium">Portal Access</div>
+                              <div className="text-sm text-muted-foreground">Allow client to access portal</div>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <div>
+                              <div className="font-medium">Project Updates</div>
+                              <div className="text-sm text-muted-foreground">Send automatic project updates</div>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between py-2">
+                            <div>
+                              <div className="font-medium">Invoice Emails</div>
+                              <div className="text-sm text-muted-foreground">Send invoice notifications</div>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between py-2 border-t mt-2">
+                            <div>
+                              <div className="font-medium">Reset Password</div>
+                              <div className="text-sm text-muted-foreground">Send password reset email</div>
+                            </div>
+                            <Button variant="outline" size="sm">Send Reset Link</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-6">
+                      <h4 className="font-medium mb-3">Client Tags & Categories</h4>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge variant="outline" className="bg-green-50 flex items-center gap-1">
+                          Active
+                          <X className="h-3 w-3 ml-1 cursor-pointer" />
+                        </Badge>
+                        <Badge variant="outline" className="bg-blue-50 flex items-center gap-1">
+                          Enterprise
+                          <X className="h-3 w-3 ml-1 cursor-pointer" />
+                        </Badge>
+                        <Badge variant="outline" className="bg-purple-50 flex items-center gap-1">
+                          Tech
+                          <X className="h-3 w-3 ml-1 cursor-pointer" />
+                        </Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input placeholder="Add new tag..." className="w-auto" />
+                        <Button variant="outline">Add</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-6">
+                      <h4 className="font-medium mb-3 text-red-600">Danger Zone</h4>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div>
+                            <h5 className="font-medium text-red-800">Archive Client</h5>
+                            <p className="text-sm text-red-600">
+                              Archiving will hide this client from active views but keep all data intact.
+                            </p>
+                          </div>
+                          <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-100 hover:text-red-800">
+                            Archive Client
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="team">
