@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -80,18 +80,17 @@ export default function ProjectForm({
     },
   });
 
-  // Use the simple clients list endpoint for both roles
-  const clientsEndpoint = '/api/clients/list';
+  // Use the manager dashboard's client options endpoint that's known to work well
+  const clientsEndpoint = '/api/manager/client-options';
 
-  // Fetch clients for dropdown
-  const { data: clients = [], isLoading: isLoadingClients } = useQuery({
+  // Fetch clients for dropdown using the manager endpoint
+  const { data: rawClients = [], isLoading: isLoadingClients } = useQuery({
     queryKey: [clientsEndpoint],
     queryFn: async () => {
       try {
-        console.log("Fetching clients from API...");
+        console.log("Fetching clients from manager API endpoint...");
         const response = await apiRequest('GET', clientsEndpoint);
         const clientsData = await response.json();
-        console.log("Client data retrieved:", clientsData);
         return clientsData;
       } catch (error) {
         console.error('Failed to fetch clients', error);
@@ -99,6 +98,30 @@ export default function ProjectForm({
       }
     },
   });
+  
+  // Process and deduplicate clients
+  const clients = useMemo(() => {
+    // First, format all clients to have consistent properties
+    const formattedClients = rawClients.map((client: any, index: number) => ({
+      id: client.id || (2000 + index), // Use existing ID or generate sequential ID
+      name: client.name || client.username || 'Unknown Client',
+      username: client.username,
+      email: client.email,
+      roleId: client.roleId,
+      isActive: client.isActive || true
+    }));
+    
+    // Then deduplicate by ID and username+email
+    const uniqueClients = formattedClients.filter((client: any, index: number, self: any[]) => 
+      index === self.findIndex((c: any) => 
+        (c.id === client.id) || 
+        (c.username === client.username && c.email === client.email)
+      )
+    );
+    
+    console.log("Unique clients:", uniqueClients.length);
+    return uniqueClients;
+  }, [rawClients]);
   
   // Log clients data for debugging
   useEffect(() => {
@@ -323,35 +346,47 @@ export default function ProjectForm({
                             </div>
                             <Separator className="my-1" />
                             
-                            {clients.map((client: any, index: number) => {
-                              // More verbose debugging to understand client object structure
-                              console.log("Rendering client:", client);
-                              
-                              // For clients from Firebase that might have document ID instead of numeric ID
-                              // or clients that use username as identifier
-                              let clientId: string;
-                              
-                              if (client.id !== undefined && client.id !== null) {
-                                // Use explicit ID if it exists
-                                clientId = client.id.toString();
-                              } else if (client.username) {
-                                // Use 2000 + index as ID for clients identified by username
-                                // This follows the sequential ID pattern for clients (2000+)
-                                clientId = (2000 + index).toString();
-                                console.log(`Assigned sequential ID ${clientId} to client ${client.username}`);
-                              } else {
-                                console.warn("Cannot identify client:", client);
-                                return null;
-                              }
-                              
-                              // Use name if available, fallback to username
-                              const clientName = client.name || client.username || 'Unknown Client';
-                              
-                              return (
-                                <SelectItem key={clientId} value={clientId}>
-                                  {clientName} (ID: {clientId})
-                                </SelectItem>
-                              );
+                            {clients
+                              // Remove duplicate clients by creating a map with ID as key
+                              .filter((client: any, index: number, self: any[]) => 
+                                // Keep only the first occurrence of each client ID
+                                index === self.findIndex((c: any) => 
+                                  (c.id?.toString() === client.id?.toString() || 
+                                  (c.username === client.username && c.email === client.email))
+                                )
+                              )
+                              .map((client: any, index: number) => {
+                                // More verbose debugging to understand client object structure
+                                console.log("Rendering client:", client);
+                                
+                                // For clients from Firebase that might have document ID instead of numeric ID
+                                // or clients that use username as identifier
+                                let clientId: string;
+                                
+                                if (client.id !== undefined && client.id !== null) {
+                                  // Use explicit ID if it exists
+                                  clientId = client.id.toString();
+                                } else if (client.username) {
+                                  // Use 2000 + index as ID for clients identified by username
+                                  // This follows the sequential ID pattern for clients (2000+)
+                                  clientId = (2000 + index).toString();
+                                  console.log(`Assigned sequential ID ${clientId} to client ${client.username}`);
+                                } else {
+                                  console.warn("Cannot identify client:", client);
+                                  return null;
+                                }
+                                
+                                // Use name if available, fallback to username
+                                const clientName = client.name || client.username || 'Unknown Client';
+                                
+                                // Create a unique key combining ID and index to avoid duplicates
+                                const uniqueKey = `client-${clientId}-${index}`;
+                                
+                                return (
+                                  <SelectItem key={uniqueKey} value={clientId}>
+                                    {clientName} (ID: {clientId})
+                                  </SelectItem>
+                                );
                             })}
                           </>
                         )}
