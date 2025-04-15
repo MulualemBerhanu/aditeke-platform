@@ -7,6 +7,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import firebaseAdmin from "./firebase-admin";
+import { verifyToken, generateTokens, extractJwtFromRequest } from "./utils/jwt";
 
 declare global {
   namespace Express {
@@ -234,9 +235,9 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Enhanced login endpoint with cross-domain token support
+  // Enhanced login endpoint with cross-domain JWT token support
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: any, user: SelectUser, info: any) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({ message: info?.message || "Authentication failed" });
@@ -248,23 +249,32 @@ export function setupAuth(app: Express) {
         // Return user without sensitive information
         const { password, ...userWithoutPassword } = user;
         
-        // For cross-domain deployments, add a JWT-like token
-        // This is a simple implementation - in production, use a proper JWT library
-        const timestamp = Date.now();
-        const simpleToken = Buffer.from(
-          `${user.id}:${user.username}:${user.roleId}:${timestamp}`
-        ).toString('base64');
+        // Generate JWT tokens for the user
+        const tokens = generateTokens({
+          id: user.id,
+          username: user.username,
+          roleId: user.roleId
+        });
         
-        // Return user data with token for cross-domain authentication
+        // Set the access token as an HTTP-only cookie for added security
+        res.cookie('accessToken', tokens.accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 1000, // 1 hour
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        });
+        
+        // Return user data with tokens for cross-domain authentication
         res.status(200).json({
           ...userWithoutPassword,
-          token: simpleToken
+          accessToken: tokens.accessToken,  // Also send in body for client-side storage
+          refreshToken: tokens.refreshToken
         });
       });
     })(req, res, next);
   });
 
-  // Firebase login endpoint - converts a Firebase ID token to a session
+  // Firebase login endpoint - converts a Firebase ID token to a session with JWT tokens
   app.post("/api/firebase/login", async (req, res, next) => {
     try {
       const { idToken } = req.body;
@@ -290,7 +300,28 @@ export function setupAuth(app: Express) {
         
         // Return user without sensitive information
         const { password, ...userWithoutPassword } = user;
-        res.status(200).json(userWithoutPassword);
+        
+        // Generate JWT tokens for the user
+        const tokens = generateTokens({
+          id: user.id,
+          username: user.username,
+          roleId: user.roleId
+        });
+        
+        // Set the access token as an HTTP-only cookie for added security
+        res.cookie('accessToken', tokens.accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 1000, // 1 hour
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        });
+        
+        // Return user data with tokens for cross-domain authentication
+        res.status(200).json({
+          ...userWithoutPassword,
+          accessToken: tokens.accessToken,  // Also send in body for client-side storage
+          refreshToken: tokens.refreshToken
+        });
       });
     } catch (error) {
       console.error("Firebase login error:", error);
@@ -298,10 +329,18 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Logout endpoint
+  // Logout endpoint - clears both session and JWT cookies
   app.post("/api/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
+      
+      // Clear the JWT cookie if it exists
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+      
       res.sendStatus(200);
     });
   });
@@ -324,34 +363,27 @@ export function setupAuth(app: Express) {
       return next();
     }
     
-    // Check for Bearer token in Authorization header
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-      
+    // Extract JWT token from request (header, cookie, or query param)
+    const token = extractJwtFromRequest(req);
+    
+    if (token) {
       try {
-        // Simple token verification - in production use a proper JWT library
-        const tokenData = Buffer.from(token, 'base64').toString().split(':');
-        if (tokenData.length === 4) {
-          const [userId, username, roleId, timestamp] = tokenData;
+        // Verify the JWT token
+        const userData = verifyToken(token);
+        
+        if (userData) {
+          // Find the complete user object
+          const user = await storage.getUser(userData.id);
           
-          // Check if token is not too old (e.g., not older than 7 days)
-          const tokenAge = Date.now() - parseInt(timestamp);
-          const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-          
-          if (tokenAge < maxAge) {
-            // Find the user
-            const user = await storage.getUser(parseInt(userId));
-            if (user && user.username === username) {
-              // Manually set the user on the request
-              (req as any).user = user;
-              console.log(`Token authentication successful for user ${username}`);
-              return next();
-            }
+          if (user && user.username === userData.username) {
+            // Manually set the user on the request
+            (req as any).user = user;
+            console.log(`JWT authentication successful for user ${user.username}`);
+            return next();
           }
         }
       } catch (error) {
-        console.error('Token authentication error:', error);
+        console.error('JWT authentication error:', error);
       }
     }
     
@@ -420,6 +452,55 @@ export function setupAuth(app: Express) {
     } catch (error) {
       console.error("Error fetching roles:", error);
       return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Token refresh endpoint
+  app.post("/api/refresh-token", async (req, res) => {
+    const { refreshToken } = req.body;
+    
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+    
+    try {
+      // Verify the refresh token
+      const userData = verifyToken(refreshToken);
+      
+      if (!userData || !userData.id) {
+        return res.status(401).json({ message: "Invalid refresh token" });
+      }
+      
+      // Get the user from the database
+      const user = await storage.getUser(userData.id);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Generate new tokens
+      const tokens = generateTokens({
+        id: user.id,
+        username: user.username,
+        roleId: user.roleId
+      });
+      
+      // Set the new access token cookie
+      res.cookie('accessToken', tokens.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 1000, // 1 hour
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      });
+      
+      // Return the new tokens
+      res.json({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken
+      });
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      res.status(401).json({ message: "Invalid refresh token" });
     }
   });
 }
