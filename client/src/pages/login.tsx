@@ -274,11 +274,11 @@ export default function LoginPage() {
         localStorage.setItem('userRole', selectedRole.name.toLowerCase());
         localStorage.setItem('userRoleId', selectedRole.id.toString());
         
-        // Provide a more helpful message
+        // Provide a more helpful message - use a neutral tone
         toast({
-          title: "Limited Access Mode",
-          description: "Some features may be unavailable due to connection issues",
-          variant: "destructive", // Using destructive as warning isn't a valid variant
+          title: "Cross-Domain Login Active",
+          description: "You're now logged into the application",
+          variant: "default",
         });
         
         // Redirect based on the selected role
