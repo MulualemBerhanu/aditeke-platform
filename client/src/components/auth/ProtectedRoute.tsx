@@ -136,18 +136,31 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
             'client': 1001
           };
           
+          // Convert roleId to number if it's a string
+          let numericRoleId = null;
+          if (typeof roleId === 'string') {
+            numericRoleId = parseInt(roleId);
+          } else if (typeof roleId === 'number') {
+            numericRoleId = roleId;
+          }
+          
+          console.log("Numeric Role ID:", numericRoleId);
+          
           // Security logic checks both role name and ID
           const hasAdminAccess = 
             userRole?.toLowerCase() === 'admin' || 
-            roleId === roleIdMap.admin;
+            numericRoleId === roleIdMap.admin ||
+            roleId === 'xG7hEVtYoYVT486Iw30z'; // Include the Firebase doc ID
           
           const hasManagerAccess = 
             userRole?.toLowerCase() === 'manager' || 
-            roleId === roleIdMap.manager;
+            numericRoleId === roleIdMap.manager ||
+            roleId === 'YcKKrgriG70R2O9Qg4io'; // Include the Firebase doc ID
           
           const hasClientAccess = 
             userRole?.toLowerCase() === 'client' || 
-            roleId === roleIdMap.client;
+            numericRoleId === roleIdMap.client ||
+            roleId === 'tkIVVYpWobVjoawaozmp'; // Include the Firebase doc ID
           
           // Apply security policy based on path and role
           if (isAdminPath && !hasAdminAccess) {
@@ -247,6 +260,16 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
       'manager': 1000,
       'client': 1001
     };
+
+    // Convert roleId to number if it's a string
+    let numericRoleId = null;
+    if (typeof roleId === 'string') {
+      numericRoleId = parseInt(roleId);
+    } else if (typeof roleId === 'number') {
+      numericRoleId = roleId;
+    }
+    
+    console.log("Numeric Role ID (in required role check):", numericRoleId);
     
     // Check path for security - this adds defense in depth
     const path = window.location.pathname;
@@ -255,9 +278,20 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     const isClientPath = path.startsWith('/client');
     
     // Security logic checks both role name and ID when possible
-    const hasAdminAccess = userRole.toLowerCase() === 'admin' || roleId === roleIdMap.admin;
-    const hasManagerAccess = userRole.toLowerCase() === 'manager' || roleId === roleIdMap.manager;
-    const hasClientAccess = userRole.toLowerCase() === 'client' || roleId === roleIdMap.client;
+    const hasAdminAccess = 
+      userRole?.toLowerCase() === 'admin' || 
+      numericRoleId === roleIdMap.admin ||
+      roleId === 'xG7hEVtYoYVT486Iw30z'; // Include the Firebase doc ID
+    
+    const hasManagerAccess = 
+      userRole?.toLowerCase() === 'manager' || 
+      numericRoleId === roleIdMap.manager ||
+      roleId === 'YcKKrgriG70R2O9Qg4io'; // Include the Firebase doc ID
+    
+    const hasClientAccess = 
+      userRole?.toLowerCase() === 'client' || 
+      numericRoleId === roleIdMap.client ||
+      roleId === 'tkIVVYpWobVjoawaozmp'; // Include the Firebase doc ID
     
     // Apply security policy based on path and role
     let accessDenied = false;

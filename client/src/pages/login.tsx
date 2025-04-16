@@ -180,12 +180,22 @@ export default function LoginPage() {
       if (isDeployedEnv) {
         const storedRoleName = localStorage.getItem('userRole');
         if (storedRoleName) {
+          // Add additional logging for role detection
+          console.log("🔍 ROLE DETECTION - Stored role in localStorage:", {
+            roleName: storedRoleName,
+            roleIdFromLocalStorage: localStorage.getItem('userRoleId'),
+            userDataRoleId: userData.roleId
+          });
+          
           if (storedRoleName === 'admin') {
             redirectUrl = '/admin/dashboard';
             console.log("Redirecting to admin dashboard based on stored role");
           } else if (storedRoleName === 'manager') {
             redirectUrl = '/manager/dashboard';
             console.log("Redirecting to manager dashboard based on stored role");
+            
+            // Force a refresh to help get around any state issues
+            localStorage.setItem('forceRefresh', 'true');
           } else if (storedRoleName === 'client') {
             redirectUrl = '/client/dashboard';
             console.log("Redirecting to client dashboard based on stored role");
