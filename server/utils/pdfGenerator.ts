@@ -1,5 +1,5 @@
-import PDFDocument from 'pdfkit';
-import { ClientInvoice, User } from '@shared/schema';
+const PDFDocument = require('pdfkit');
+import { ClientInvoice, User } from '../../shared/schema';
 import { PassThrough } from 'stream';
 
 /**

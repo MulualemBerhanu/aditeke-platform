@@ -1,5 +1,5 @@
-import sgMail from '@sendgrid/mail';
-import { ClientInvoice, User } from '@shared/schema';
+const sgMail = require('@sendgrid/mail');
+import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
 // Initialize SendGrid with API key
