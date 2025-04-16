@@ -556,10 +556,10 @@ export default function ManagerDashboard() {
                               const clientName = client ? (client.name || client.username || 'Unknown') : 'Unassigned';
                               
                               return (
-                                <tr key={project.id} className="border-b hover:bg-muted/30 transition-colors">
-                                  <td className="py-4 px-4 font-medium">{project.title}</td>
-                                  <td className="py-4 px-4">{clientName}</td>
-                                  <td className="py-4 px-4">
+                                <TableRow key={project.id}>
+                                  <TableCell className="font-medium">{project.title}</TableCell>
+                                  <TableCell>{clientName}</TableCell>
+                                  <TableCell>
                                     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
                                       project.status === 'Completed' ? 'bg-green-100 text-green-800' :
                                       project.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
@@ -568,11 +568,11 @@ export default function ManagerDashboard() {
                                     }`}>
                                       {project.status}
                                     </span>
-                                  </td>
-                                  <td className="py-4 px-4 text-muted-foreground">
+                                  </TableCell>
+                                  <TableCell className="text-muted-foreground">
                                     {project.endDate ? formatDate(project.endDate) : 'No deadline'}
-                                  </td>
-                                  <td className="py-4 px-4">
+                                  </TableCell>
+                                  <TableCell>
                                     <div className="flex space-x-2">
                                       <Button variant="outline" size="sm" className="h-8 px-3">
                                         View
@@ -586,13 +586,13 @@ export default function ManagerDashboard() {
                                         Edit
                                       </Button>
                                     </div>
-                                  </td>
-                                </tr>
+                                  </TableCell>
+                                </TableRow>
                               );
                             })
                           ) : (
-                            <tr key="no-projects-found">
-                              <td colSpan={5} className="py-8 text-center">
+                            <TableRow key="no-projects-found">
+                              <TableCell colSpan={5} className="py-8 text-center">
                                 <div className="flex flex-col items-center">
                                   <FileText className="h-10 w-10 text-muted-foreground/50 mb-2" />
                                   <h3 className="text-lg font-medium">No projects found</h3>
@@ -606,8 +606,8 @@ export default function ManagerDashboard() {
                                     Create Project
                                   </Button>
                                 </div>
-                              </td>
-                            </tr>
+                              </TableCell>
+                            </TableRow>
                           )}
                         </tbody>
                       </table>
