@@ -292,56 +292,25 @@ export default function LoginPage() {
 
   // Handle Google login with wouter navigation
   const handleLoginWithGoogle = async () => {
-    // Auto select admin role if no role is selected
-    if (!selectedRole) {
-      const adminRole = USER_ROLES.find(role => role.name === 'Admin');
-      if (adminRole) {
-        setSelectedRole(adminRole);
-        localStorage.setItem('selectedRole', JSON.stringify(adminRole));
-      } else {
-        // Fallback if we somehow can't find the admin role (unlikely)
-        toast({
-          title: "Role selection required",
-          description: "Please select a user role and try again",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     setIsLoading(true);
     try {
+      // Use the real authentication system through Firebase
+      // This will redirect to Google for authentication
       await googleLogin();
       
-      // Only the real API response can determine user authentication - no more fallbacks
+      // The user's authentication status will be determined by the server
+      // upon their return from the Google OAuth flow
+      console.log("Initiated Google authentication flow");
       
-      // This will get a response from googleLogin() which should be processed
-      // by the server authentication system - not creating dummy data
+      // We don't need to do anything else here
+      // The Firebase auth handler will manage the process
+      toast({
+        title: "Google Authentication",
+        description: "Redirecting to Google for authentication...",
+      });
       
-      // Wait for proper authentication before proceeding
-      // We should NEVER manually set authentication state here
-      console.log("Waiting for Google authentication response...");
-      
-      // Determine the redirection based on the selected role
-      let redirectUrl = '/dashboard';
-      let roleName = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
-      
-      if (roleName === 'admin') {
-        redirectUrl = '/admin/dashboard';
-      } else if (roleName === 'manager') {
-        redirectUrl = '/manager/dashboard';
-      } else if (roleName === 'client') {
-        redirectUrl = '/client/dashboard';
-      }
-      
-      console.log("⚠️ GOOGLE AUTH REDIRECTING TO:", redirectUrl);
-      
-      // Force a small delay to give time for localStorage to update
-      setTimeout(() => {
-        // Skip React routing entirely and use direct browser navigation
-        // This ensures we completely reload the page and avoid any React state issues
-        window.location.href = redirectUrl;
-      }, 500);
+      // Don't use setTimeout or manual redirects
+      // The googleLogin() function should handle all redirections
     } catch (error) {
       console.error('Google login error:', error);
       toast({

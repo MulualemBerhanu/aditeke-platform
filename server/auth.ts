@@ -67,20 +67,21 @@ async function comparePasswords(supplied: string, stored: string | undefined) {
 async function verifyFirebaseToken(token: string) {
   try {
     if (!firebaseAdmin) {
-      console.warn("Firebase Admin SDK not initialized, using mock verification");
-      // Return mock decoded token for development environment
-      return { 
-        uid: "mock-firebase-uid",
-        email: "mock-firebase@example.com",
-        name: "Mock Firebase User",
-        picture: null
-      };
+      // Do not use mock verification - proper Firebase authentication required
+      console.error("Firebase Admin SDK not initialized, cannot verify token");
+      throw new Error("Firebase authentication unavailable");
     }
     
-    const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
-    return decodedToken;
+    // Verify Firebase token with proper error handling
+    try {
+      const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
+      return decodedToken;
+    } catch (verifyError) {
+      console.error("Firebase token verification failed:", verifyError);
+      throw new Error("Invalid or expired authentication token");
+    }
   } catch (error) {
-    console.error("Error verifying Firebase token:", error);
+    console.error("Error in Firebase token verification process:", error);
     throw error;
   }
 }
