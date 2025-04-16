@@ -1719,10 +1719,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Invoice not found" });
       }
       
-      res.json(invoice);
+      // Get client details to include in the invoice
+      const client = await storage.getUser(invoice.clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      // Generate PDF invoice
+      const PDFDocument = require('pdfkit');
+      
+      // Create a document
+      const doc = new PDFDocument({
+        size: 'A4',
+        margin: 50
+      });
+      
+      // Set response headers for PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename=invoice-${invoice.invoiceNumber}.pdf`);
+      
+      // Pipe PDF to response
+      doc.pipe(res);
+      
+      // Add company logo/branding
+      doc.fontSize(20).font('Helvetica-Bold').fillColor('#0040A1');
+      doc.text('AdiTeke Software Solutions', {
+        align: 'left'
+      });
+      
+      // Add paid watermark if invoice is paid
+      if (invoice.status === 'paid') {
+        doc.save();
+        doc.rotate(-45, {origin: [300, 300]});
+        doc.fontSize(60).fillColor('rgba(0, 150, 0, 0.3)');
+        doc.text('PAID', 100, 300);
+        doc.restore();
+      }
+      
+      // Reset color and font for rest of document
+      doc.fillColor('#333333').font('Helvetica');
+      
+      // Add company address
+      doc.fontSize(10);
+      doc.text('Portland, OR, USA', {
+        align: 'left'
+      });
+      doc.text('contact@aditeke.com', {
+        align: 'left'
+      });
+      doc.text('www.aditeke.com', {
+        align: 'left'
+      });
+      doc.moveDown(2);
+      
+      // Add invoice title and details
+      doc.fontSize(24).font('Helvetica-Bold');
+      doc.text(invoice.status === 'paid' ? 'RECEIPT' : 'INVOICE', {
+        align: 'right'
+      });
+      
+      doc.fontSize(12).font('Helvetica');
+      doc.text(`#${invoice.invoiceNumber}`, {
+        align: 'right'
+      });
+      doc.text(`Date: ${new Date(invoice.issueDate).toLocaleDateString()}`, {
+        align: 'right'
+      });
+      doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, {
+        align: 'right'
+      });
+      doc.moveDown(2);
+      
+      // Add client info
+      doc.fontSize(14).font('Helvetica-Bold');
+      doc.text('Bill To:');
+      doc.fontSize(12).font('Helvetica');
+      doc.text(client.name || client.username);
+      doc.text(client.email || '');
+      doc.text(client.company || '');
+      doc.moveDown(2);
+      
+      // Add invoice items table headers
+      doc.fontSize(12).font('Helvetica-Bold');
+      const tableTop = doc.y;
+      const itemsTableTop = tableTop + 20;
+      
+      doc.font('Helvetica-Bold')
+         .text('Description', 50, tableTop)
+         .text('Quantity', 300, tableTop, { width: 90, align: 'right' })
+         .text('Unit Price', 400, tableTop, { width: 90, align: 'right' })
+         .text('Amount', 500, tableTop, { width: 90, align: 'right' });
+      
+      // Draw a line for the header
+      doc.moveTo(50, itemsTableTop - 10)
+         .lineTo(550, itemsTableTop - 10)
+         .stroke();
+      
+      // Process invoice items
+      doc.font('Helvetica');
+      let y = itemsTableTop;
+      let totalAmount = 0;
+      
+      if (invoice.items && invoice.items.length > 0) {
+        invoice.items.forEach((item, index) => {
+          const position = y + (index * 30);
+          
+          doc.text(item.description, 50, position)
+             .text(item.quantity.toString(), 300, position, { width: 90, align: 'right' })
+             .text(`$${item.amount.toFixed(2)}`, 400, position, { width: 90, align: 'right' })
+             .text(`$${(item.amount * item.quantity).toFixed(2)}`, 500, position, { width: 90, align: 'right' });
+          
+          totalAmount += (item.amount * item.quantity);
+        });
+      } else {
+        // If no items, just show the total amount
+        doc.text(invoice.description || 'Professional Services', 50, y)
+           .text('1', 300, y, { width: 90, align: 'right' })
+           .text(`$${Number(invoice.amount).toFixed(2)}`, 400, y, { width: 90, align: 'right' })
+           .text(`$${Number(invoice.amount).toFixed(2)}`, 500, y, { width: 90, align: 'right' });
+        
+        totalAmount = Number(invoice.amount);
+      }
+      
+      // Draw line for total
+      const summaryTop = y + (invoice.items && invoice.items.length > 0 ? invoice.items.length * 30 : 30) + 10;
+      doc.moveTo(50, summaryTop)
+         .lineTo(550, summaryTop)
+         .stroke();
+      
+      // Add total amount
+      doc.font('Helvetica-Bold')
+         .text('Total:', 400, summaryTop + 10)
+         .text(`$${totalAmount.toFixed(2)}`, 500, summaryTop + 10, { width: 90, align: 'right' });
+      
+      // If invoice is paid, show payment information
+      if (invoice.status === 'paid') {
+        const paymentTop = summaryTop + 50;
+        doc.font('Helvetica-Bold').fontSize(14)
+           .text('Payment Information', 50, paymentTop);
+        
+        doc.font('Helvetica').fontSize(12)
+           .text(`Payment Date: ${new Date(invoice.paidDate).toLocaleDateString()}`, 50, paymentTop + 20)
+           .text(`Payment Method: ${invoice.paymentMethod ? invoice.paymentMethod.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'N/A'}`, 50, paymentTop + 40)
+           .text(`Amount Paid: $${Number(invoice.paidAmount || invoice.amount).toFixed(2)}`, 50, paymentTop + 60);
+        
+        if (invoice.receiptNumber) {
+          doc.text(`Receipt Number: ${invoice.receiptNumber}`, 50, paymentTop + 80);
+        }
+      }
+      
+      // Add notes
+      if (invoice.notes) {
+        const notesTop = invoice.status === 'paid' ? summaryTop + 150 : summaryTop + 50;
+        doc.font('Helvetica-Bold').fontSize(14)
+           .text('Notes', 50, notesTop);
+        
+        doc.font('Helvetica').fontSize(12)
+           .text(invoice.notes, 50, notesTop + 20);
+      }
+      
+      // Add footer
+      const pageHeight = doc.page.height;
+      doc.font('Helvetica').fontSize(10).text(
+        'Thank you for your business!',
+        50, pageHeight - 100,
+        { align: 'center' }
+      );
+      
+      // Finalize the PDF
+      doc.end();
     } catch (error) {
-      console.error("Error fetching invoice:", error);
-      res.status(500).json({ error: "Failed to fetch invoice" });
+      console.error("Error generating invoice PDF:", error);
+      res.status(500).json({ error: "Failed to generate invoice PDF" });
     }
   });
   
@@ -1931,19 +2099,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Cannot generate receipt for unpaid invoice" });
       }
       
-      // Return receipt data (in a real app, we might generate a PDF here)
-      res.json({
-        receiptNumber: invoice.receiptNumber || `RCP-${Date.now()}`,
-        invoiceNumber: invoice.invoiceNumber,
-        clientId: invoice.clientId,
-        paidDate: invoice.paidDate || new Date().toISOString(),
-        amount: invoice.amount,
-        paymentMethod: invoice.paymentMethod || 'manual',
-        items: invoice.items
+      // Get client details
+      const client = await storage.getUser(invoice.clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      // Generate PDF receipt
+      const PDFDocument = require('pdfkit');
+      
+      // Create a document
+      const doc = new PDFDocument({
+        size: 'A4',
+        margin: 50
       });
+      
+      // Set response headers for PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename=receipt-${invoice.receiptNumber || 'RCP-' + Date.now()}.pdf`);
+      
+      // Pipe PDF to response
+      doc.pipe(res);
+      
+      // Add company logo/branding
+      doc.fontSize(20).font('Helvetica-Bold').fillColor('#0040A1');
+      doc.text('AdiTeke Software Solutions', {
+        align: 'left'
+      });
+      
+      // Reset color and font for rest of document
+      doc.fillColor('#333333').font('Helvetica');
+      
+      // Add company address
+      doc.fontSize(10);
+      doc.text('Portland, OR, USA', {
+        align: 'left'
+      });
+      doc.text('contact@aditeke.com', {
+        align: 'left'
+      });
+      doc.text('www.aditeke.com', {
+        align: 'left'
+      });
+      doc.moveDown(2);
+      
+      // Add receipt title and details
+      doc.fontSize(24).font('Helvetica-Bold');
+      doc.text('RECEIPT', {
+        align: 'right'
+      });
+      
+      doc.fontSize(12).font('Helvetica');
+      doc.text(`Receipt #${invoice.receiptNumber || `RCP-${Date.now()}`}`, {
+        align: 'right'
+      });
+      doc.text(`Invoice #${invoice.invoiceNumber}`, {
+        align: 'right'
+      });
+      doc.text(`Date: ${new Date(invoice.paidDate || new Date()).toLocaleDateString()}`, {
+        align: 'right'
+      });
+      doc.moveDown(2);
+      
+      // Add client info
+      doc.fontSize(14).font('Helvetica-Bold');
+      doc.text('Bill To:');
+      doc.fontSize(12).font('Helvetica');
+      doc.text(client.name || client.username);
+      doc.text(client.email || '');
+      doc.text(client.company || '');
+      doc.moveDown(2);
+      
+      // Add payment information
+      doc.fontSize(14).font('Helvetica-Bold');
+      doc.text('Payment Information');
+      doc.fontSize(12).font('Helvetica');
+      doc.text(`Payment Method: ${invoice.paymentMethod ? invoice.paymentMethod.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Manual'}`);
+      doc.text(`Amount Paid: $${Number(invoice.paidAmount || invoice.amount).toFixed(2)}`);
+      doc.text(`Original Invoice Amount: $${Number(invoice.amount).toFixed(2)}`);
+      doc.moveDown(2);
+      
+      // Add payment details
+      doc.fontSize(14).font('Helvetica-Bold');
+      doc.text('Payment Details');
+      
+      // Add table headers
+      const tableTop = doc.y + 20;
+      doc.font('Helvetica-Bold')
+         .text('Description', 50, tableTop)
+         .text('Amount', 500, tableTop, { width: 90, align: 'right' });
+      
+      // Draw a line for the header
+      doc.moveTo(50, tableTop + 15)
+         .lineTo(550, tableTop + 15)
+         .stroke();
+      
+      // Add item details
+      doc.font('Helvetica');
+      let y = tableTop + 30;
+      
+      if (invoice.items && invoice.items.length > 0) {
+        invoice.items.forEach((item, index) => {
+          const position = y + (index * 25);
+          doc.text(item.description, 50, position)
+             .text(`$${(item.amount * (item.quantity || 1)).toFixed(2)}`, 500, position, { width: 90, align: 'right' });
+        });
+      } else {
+        // If no items, just show the total paid amount
+        doc.text(invoice.description || 'Payment for services', 50, y)
+           .text(`$${Number(invoice.paidAmount || invoice.amount).toFixed(2)}`, 500, y, { width: 90, align: 'right' });
+      }
+      
+      // Draw a line for the total
+      const summaryTop = y + (invoice.items && invoice.items.length > 0 ? invoice.items.length * 25 : 25) + 10;
+      doc.moveTo(50, summaryTop)
+         .lineTo(550, summaryTop)
+         .stroke();
+      
+      // Add total paid amount
+      doc.font('Helvetica-Bold')
+         .text('Total Paid:', 400, summaryTop + 10)
+         .text(`$${Number(invoice.paidAmount || invoice.amount).toFixed(2)}`, 500, summaryTop + 10, { width: 90, align: 'right' });
+      
+      // Add notes if any
+      if (invoice.notes) {
+        doc.moveDown(2);
+        doc.font('Helvetica-Bold').fontSize(14)
+           .text('Notes');
+        doc.font('Helvetica').fontSize(12)
+           .text(invoice.notes);
+      }
+      
+      // Add a thank you message
+      doc.moveDown(2);
+      doc.font('Helvetica').fontSize(12)
+         .text('Thank you for your business!', { align: 'center' });
+      
+      // Add a footer
+      const pageHeight = doc.page.height;
+      doc.fontSize(10).text(
+        'This receipt was generated electronically and is valid without a signature.',
+        50, pageHeight - 70,
+        { align: 'center' }
+      );
+      
+      // Finalize the PDF
+      doc.end();
     } catch (error) {
-      console.error("Error generating receipt:", error);
-      res.status(500).json({ error: "Failed to generate receipt" });
+      console.error("Error generating receipt PDF:", error);
+      res.status(500).json({ error: "Failed to generate receipt PDF" });
     }
   });
 

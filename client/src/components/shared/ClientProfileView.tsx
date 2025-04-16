@@ -536,6 +536,16 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
       <div className="p-6 border-b">
         <div className="flex items-start justify-between">
           <div className="flex items-center">
+            {window.location.pathname.includes('/manager/clients/') && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="mr-2" 
+                onClick={() => window.location.href = '/manager/clients'}
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" /> Back to Clients
+              </Button>
+            )}
             <Avatar className="h-16 w-16 mr-4">
               <AvatarImage src={client.profilePicture || ''} alt={client.name || client.username} />
               <AvatarFallback className="text-lg font-semibold">
