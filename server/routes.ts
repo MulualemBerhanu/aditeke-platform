@@ -2386,6 +2386,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // New endpoint for customized emails
+  app.post('/api/public/send-customized-email', async (req, res) => {
+    console.log('Processing customized email request');
+    try {
+      const { invoiceId, emailType, subject, message } = req.body;
+      
+      if (!invoiceId || !emailType || !subject || !message) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      const id = parseInt(invoiceId);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid invoice ID" });
+      }
+      
+      // Get the invoice
+      const invoice = await storage.getInvoice(id);
+      if (!invoice) {
+        return res.status(404).json({ error: "Invoice not found" });
+      }
+      
+      // Get client details
+      const client = await storage.getUser(invoice.clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      // Check if trying to send receipt for unpaid invoice
+      if (emailType === 'receipt' && invoice.status !== 'paid') {
+        return res.status(400).json({ error: "Cannot send receipt for unpaid invoice" });
+      }
+      
+      // Import email service
+      const { sendEmail } = await import('./utils/emailService');
+      
+      let pdfBuffer: Buffer;
+      let filename: string;
+      
+      if (emailType === 'invoice') {
+        const { generateInvoicePdf } = await import('./utils/pdfGenerator');
+        pdfBuffer = await generateInvoicePdf(invoice, client);
+        filename = `Invoice_${invoice.invoiceNumber}.pdf`;
+      } else if (emailType === 'receipt') {
+        const { generateReceiptPdf } = await import('./utils/pdfGenerator');
+        pdfBuffer = await generateReceiptPdf(invoice, client);
+        filename = `Receipt_${invoice.invoiceNumber}.pdf`;
+      } else {
+        return res.status(400).json({ error: "Invalid email type" });
+      }
+      
+      // Send the email with the PDF attachment
+      const result = await sendEmail({
+        to: client.email,
+        from: 'billing@aditeke.com',
+        subject: subject,
+        text: message,
+        attachments: [
+          {
+            content: pdfBuffer.toString('base64'),
+            filename: filename,
+            type: 'application/pdf',
+            disposition: 'attachment'
+          }
+        ]
+      });
+      
+      res.status(200).json({
+        success: true,
+        message: `${emailType === 'invoice' ? 'Invoice' : 'Receipt'} email sent to ${client.email}`,
+        result
+      });
+    } catch (error) {
+      console.error(`Error sending customized email:`, error);
+      res.status(500).json({ 
+        error: `Failed to send email`, 
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
   app.post('/api/public/send-receipt-email/:invoiceId', async (req, res) => {
     console.log('Development mode: Auth skipped for email sending:', req.url);
     try {

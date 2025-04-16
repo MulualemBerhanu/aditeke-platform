@@ -1798,13 +1798,13 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                     return;
                   }
                   
-                  const endpoint = emailType === 'invoice' 
-                    ? `/api/public/send-invoice-email/${emailInvoiceId}`
-                    : `/api/public/send-receipt-email/${emailInvoiceId}`;
+                  const endpoint = '/api/public/send-customized-email';
                     
                   const payload = {
-                    subject: emailSubject || undefined,
-                    message: emailMessage || undefined
+                    invoiceId: emailInvoiceId,
+                    emailType: emailType,
+                    subject: emailSubject,
+                    message: emailMessage
                   };
                   
                   const response = await fetch(endpoint, {
