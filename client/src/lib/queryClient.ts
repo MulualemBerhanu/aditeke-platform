@@ -28,7 +28,9 @@ export async function apiRequest(
       
       // Build headers with authentication token if available
       const headers: Record<string, string> = {
-        ...(data ? { "Content-Type": "application/json" } : {}),
+        // Always set Content-Type for POST/PUT/PATCH requests, even if body is empty
+        // This is critical for authentication endpoints
+        "Content-Type": "application/json",
         // Add cache control headers to prevent caching of API requests
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",

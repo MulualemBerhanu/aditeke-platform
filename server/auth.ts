@@ -298,6 +298,21 @@ export function setupAuth(app: Express) {
 
   // Enhanced login endpoint with cross-domain JWT token support
   app.post("/api/login", (req, res, next) => {
+    // Log request body for debugging
+    console.log("Login request received:", {
+      bodyExists: !!req.body,
+      contentType: req.header('Content-Type'),
+      hasUsername: req.body && !!req.body.username,
+      hasPassword: req.body && !!req.body.password,
+      username: req.body && req.body.username ? req.body.username.substring(0, 3) + '...' : null
+    });
+    
+    // Check if username and password are provided
+    if (!req.body || !req.body.username || !req.body.password) {
+      console.error("Missing credentials in request body");
+      return res.status(401).json({ message: "Missing credentials" });
+    }
+    
     passport.authenticate("local", (err: any, user: SelectUser, info: any) => {
       if (err) return next(err);
       if (!user) {

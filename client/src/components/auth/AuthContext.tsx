@@ -101,20 +101,43 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error('Password is required');
       }
       
-      // Strong password requirements
-      if (password.length < 8) {
-        throw new Error('Password must be at least 8 characters long');
+      // Strong password requirements in development, but don't block login in production
+      // to avoid breaking existing accounts
+      if (password.length < 8 && process.env.NODE_ENV === 'development') {
+        console.warn('Password should be at least 8 characters (not enforced for existing accounts)');
       }
       
       try {
-        // Authenticate with the API
-        const response = await apiRequest('POST', '/api/login', { username, password });
+        // Log before making the request to help debug
+        console.log(`Sending login request for: ${username.substring(0, 3)}...`);
+        
+        // Ensure we're sending the correct content type
+        const loginData = { username, password };
+        
+        // Direct fetch with explicit content type to debug the issue
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData),
+          credentials: 'include',
+        });
         
         // Check for successful response
         if (!response.ok) {
           // Handle specific error cases from the server
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Authentication failed');
+          const errorText = await response.text();
+          let errorMessage = 'Authentication failed';
+          
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            errorMessage = errorText || errorMessage;
+          }
+          
+          throw new Error(errorMessage);
         }
         
         const userData = await response.json();

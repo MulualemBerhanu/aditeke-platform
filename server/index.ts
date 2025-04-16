@@ -27,7 +27,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Enhanced JSON parser with debugging for authentication issues
 app.use(express.json());
+
+// Add request body logging middleware to help debug login issues
+app.use((req, res, next) => {
+  // Only log for authentication endpoints
+  if (req.path === '/api/login' || req.path === '/api/register') {
+    console.log(`${req.method} ${req.path} - Request Body:`, {
+      bodyExists: !!req.body,
+      contentType: req.header('Content-Type'),
+      bodyKeys: req.body ? Object.keys(req.body) : [],
+    });
+  }
+  next();
+});
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Parse cookies for CSRF validation
 
