@@ -786,7 +786,7 @@ export default function ManagerDashboard() {
                         </TableHeader>
                         <TableBody>
                           {filteredClients.length === 0 ? (
-                            <TableRow>
+                            <TableRow key="no-clients-found">
                               <TableCell colSpan={5} className="text-center py-8">
                                 <div className="flex flex-col items-center justify-center text-muted-foreground">
                                   <Users className="h-12 w-12 mb-2 opacity-20" />
