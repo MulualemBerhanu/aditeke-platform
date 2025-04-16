@@ -1,0 +1,82 @@
+[vite] connecting...
+[vite] connected.
+Initializing roles...
+Roles collection already initialized with 3 roles
+Checking for admin users...
+Found admin role with ID: xG7hEVtYoYVT486Iw30z
+Admin user already exists
+Checking for manager users...
+Found manager role with ID: YcKKrgriG70R2O9Qg4io
+Manager user already exists
+Checking for client users...
+Found client role with ID: tkIVVYpWobVjoawaozmp
+Client users exist: 1
+Firebase database initialized successfully with initial data
+Firebase database initialization complete!
+Firebase initialized successfully
+[CLIENT-OPTIONS] Starting PUBLIC API request
+⚠️ Using localStorage authentication
+⚠️ Using localStorage authentication as fallback
+🔐 Role-based security check: 
+Object {path: "/manager/dashboard", userRole: null, roleId: 1000, username: "manager2"}
+[CLIENT-OPTIONS] Response status: 200
+[CLIENT-OPTIONS] Received clients: 8
+Warning: Each child in a list should have a unique &quot;key&quot; prop.
+
+Check the render method of `ManagerDashboard`. See https://reactjs.org/link/warning-keys for more information.
+    at _c9 (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/ui/table.tsx:102:12)
+    at ManagerDashboard (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/pages/manager/dashboard.tsx:74:28)
+    at ProtectedRoute (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/auth/ProtectedRoute.tsx:23:34)
+    at Route (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9ebce409:338:16)
+    at Switch (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9ebce409:394:17)
+    at Router
+    at div
+    at AuthProvider (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/auth/AuthContext.tsx:24:32)
+    at FirebaseInit (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/firebase/FirebaseInit.tsx:23:32)
+    at QueryClientProvider (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9ebce409:2805:3)
+    at App
+
+Check the render method of &#x60;ManagerDashboard&#x60;. See https://reactjs.org/link/warning-keys for more information.
+at _c9 (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/ui/table.tsx:102:12)
+at ManagerDashboard (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/pages/manager/dashboard.tsx:74:28)
+at ProtectedRoute (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/auth/ProtectedRoute.tsx:23:34)
+at Route (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9ebce409:338:16)
+at Switch (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9ebce409:394:17)
+at Router
+at div
+at AuthProvider (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/auth/AuthContext.tsx:24:32)
+at FirebaseInit (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/src/components/firebase/FirebaseInit.tsx:23:32)
+at QueryClientProvider (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9ebce409:2805:3)
+at App
+at t.value (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Creating invoice with payload: 
+Object {clientId: 2001, projectId: 1744693519657, invoiceNumber: "INV-2778420", amount: "500", currency: "USD", …}
+Debug - All cookies: csrf_token=a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Debug - Cookie: csrf_token a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Debug - Found CSRF token in cookies: a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+🌐 API request to /api/client-invoices (deployed environment)
+Authentication error - using localStorage fallback
+API request error (attempt 0): 
+Error {}
+
+Retry attempt 1 for POST /api/client-invoices
+Debug - All cookies: csrf_token=a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Debug - Cookie: csrf_token a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Debug - Found CSRF token in cookies: a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Authentication error - using localStorage fallback
+API request error (attempt 1): 
+Error {}
+
+Retry attempt 2 for POST /api/client-invoices
+Debug - All cookies: csrf_token=a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Debug - Cookie: csrf_token a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Debug - Found CSRF token in cookies: a1fc419802eb93fb88bd427c3b4d57c3d8057e71102ec4bb73b94c0037b6329e
+Authentication error - using localStorage fallback
+API request error (attempt 2): 
+Error {}
+
+Error creating invoice with apiRequest: 
+Error {}

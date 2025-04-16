@@ -591,7 +591,7 @@ export default function ManagerDashboard() {
                               );
                             })
                           ) : (
-                            <tr>
+                            <tr key="no-projects-found">
                               <td colSpan={5} className="py-8 text-center">
                                 <div className="flex flex-col items-center">
                                   <FileText className="h-10 w-10 text-muted-foreground/50 mb-2" />
