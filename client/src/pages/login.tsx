@@ -13,10 +13,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
-// Form validation schema
+// Form validation schema with stronger requirements
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
+  password: z.string()
+    .min(3, 'Password must be at least 3 characters')
+    .refine(val => val.length > 0, "Password is required"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -263,69 +265,28 @@ export default function LoginPage() {
         window.location.host.includes('.replit.app') || 
         window.location.host.includes('.replit.dev');
         
-      if (isDeployedEnv && selectedRole) {
-        // Special handling for deployed environments with authentication issues
-        console.warn("⚠️ Login failed in deployed environment - using fallback authentication");
-        
-        // Security check: If username contains "manager" but role is admin, force manager role
-        let secureRoleId = selectedRole.id;
-        let secureRoleName = selectedRole.name.toLowerCase();
-        
-        if (data.username.toLowerCase().includes('manager') && selectedRole.id === 1002) {
-          console.warn("⚠️ Security check: Manager username with Admin role in fallback auth!");
-          secureRoleId = 1000; // force to manager role ID
-          secureRoleName = 'manager';
-          console.log("🔒 Security override: Using Manager role (1000) instead of Admin");
-        }
-        
-        // Attempt to create a minimal user with the selected role for offline/testing mode
-        const fallbackUser = {
-          id: secureRoleId === 1002 ? 60001 : (secureRoleId === 1000 ? 50001 : 2001),
-          username: data.username,
-          email: `${data.username}@aditeke.com`,
-          name: data.username.charAt(0).toUpperCase() + data.username.slice(1),
-          roleId: secureRoleId, // Use security-checked role ID
-          profilePicture: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          lastLogin: new Date().toISOString(),
-          isActive: true
-        };
-        
-        // Store additional debugging information
-        localStorage.setItem('loginStatus', 'fallback');
-        localStorage.setItem('loginError', String(error));
-        localStorage.setItem('loginTimestamp', Date.now().toString());
-        
-        // Store the essential user data with security-enforced role
-        localStorage.setItem('currentUser', JSON.stringify(fallbackUser));
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', secureRoleName);
-        localStorage.setItem('userRoleId', secureRoleId.toString());
-        
-        // Provide a more helpful message - use a neutral tone
-        toast({
-          title: "Cross-Domain Login Active",
-          description: "You're now logged into the application",
-          variant: "default",
+      // We've removed insecure fallback authentication - proper authentication is required
+      // Remove any auth-related localStorage items to prevent confusion
+      localStorage.removeItem('loginStatus');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('currentUser');
+      
+      // For debug logging in deployed environment
+      if (isDeployedEnv) {
+        console.error("Login attempt failed:", {
+          timestamp: new Date().toISOString(),
+          username: data.username ? "Provided" : "Missing",
+          password: data.password ? "Provided (length: " + data.password.length + ")" : "Missing"
         });
-        
-        // Redirect based on security-enforced role
-        const redirectUrl = `/${secureRoleName}/dashboard`;
-        localStorage.setItem('targetRedirect', redirectUrl);
-        
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 800);
-      } else {
-        // Standard error handling for local environments
-        toast({
-          title: "Login failed",
-          description: "Invalid username or password. Please try again.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
       }
+      
+      // Standard error handling for all environments
+      toast({
+        title: "Authentication Failed",
+        description: "Your login credentials are incorrect. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
     }
   };
 
@@ -352,26 +313,14 @@ export default function LoginPage() {
     try {
       await googleLogin();
       
-      // If user selected a specific role through URL or UI, we should respect it
-      const selectedRoleId = selectedRole ? selectedRole.id : 1; // Default to admin (1) if no selection
+      // Only the real API response can determine user authentication - no more fallbacks
       
-      // Create a Google user with the selected role
-      const googleUser = {
-        id: 999,
-        username: 'google_user',
-        email: 'google@example.com',
-        name: 'Google User',
-        roleId: selectedRoleId, // Use selected role ID
-        profilePicture: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: null,
-        lastLogin: null,
-        isActive: true
-      };
+      // This will get a response from googleLogin() which should be processed
+      // by the server authentication system - not creating dummy data
       
-      // Explicitly save user data to localStorage with exact keys AuthContext expects
-      localStorage.setItem('currentUser', JSON.stringify(googleUser));
-      localStorage.setItem('isAuthenticated', 'true');
+      // Wait for proper authentication before proceeding
+      // We should NEVER manually set authentication state here
+      console.log("Waiting for Google authentication response...");
       
       // Determine the redirection based on the selected role
       let redirectUrl = '/dashboard';
