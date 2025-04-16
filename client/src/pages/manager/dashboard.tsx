@@ -473,17 +473,17 @@ export default function ManagerDashboard() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto rounded-md border shadow-sm">
-                      <table className="w-full divide-y divide-gray-200">
-                        <thead className="bg-muted/50">
-                          <tr className="border-b">
-                            <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Project Name</th>
-                            <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Client</th>
-                            <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Status</th>
-                            <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Deadline</th>
-                            <th className="text-left py-3 px-4 font-medium text-sm uppercase tracking-wider">Actions</th>
-                          </tr>
-                          <tr>
-                            <th className="py-2 px-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Project Name</TableHead>
+                            <TableHead>Client</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Deadline</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                          <TableRow>
+                            <TableHead>
                               <FilterInput 
                                 placeholder="Search project name..."
                                 value={filters.title}
@@ -492,8 +492,8 @@ export default function ManagerDashboard() {
                                   setCurrentPage(1); // Reset to first page on search
                                 }}
                               />
-                            </th>
-                            <th className="py-2 px-4">
+                            </TableHead>
+                            <TableHead>
                               <FilterInput 
                                 placeholder="Search client..."
                                 value={filters.client}
@@ -502,8 +502,8 @@ export default function ManagerDashboard() {
                                   setCurrentPage(1);
                                 }}
                               />
-                            </th>
-                            <th className="py-2 px-4">
+                            </TableHead>
+                            <TableHead>
                               <FilterInput 
                                 placeholder="Search status..."
                                 value={filters.status}
@@ -512,8 +512,8 @@ export default function ManagerDashboard() {
                                   setCurrentPage(1);
                                 }}
                               />
-                            </th>
-                            <th className="py-2 px-4">
+                            </TableHead>
+                            <TableHead>
                               <FilterInput 
                                 placeholder="Search deadline..."
                                 value={filters.deadline}
@@ -522,8 +522,8 @@ export default function ManagerDashboard() {
                                   setCurrentPage(1);
                                 }}
                               />
-                            </th>
-                            <th className="py-2 px-4">
+                            </TableHead>
+                            <TableHead>
                               {/* Global clear filters button */}
                               {Object.values(filters).some(filter => filter.trim() !== '') && (
                                 <Button
@@ -539,10 +539,10 @@ export default function ManagerDashboard() {
                                   Clear all filters
                                 </Button>
                               )}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
                           {filteredProjects.length > 0 ? (
                             paginatedProjects.map((project) => {
                               // Find client name for the project if it has a clientId
@@ -609,8 +609,8 @@ export default function ManagerDashboard() {
                               </TableCell>
                             </TableRow>
                           )}
-                        </tbody>
-                      </table>
+                        </TableBody>
+                      </Table>
                     </div>
                   )}
                   
