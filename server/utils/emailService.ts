@@ -27,14 +27,33 @@ export async function sendEmail(params: {
     // Use from address provided or default to contact@aditeke.com
     const from = params.from || 'contact@aditeke.com';
     
-    const msg = {
+    // We must provide at least one of: text, html, templateId, or content
+    // Check if we have either text or html
+    if (!params.text && !params.html) {
+      // Default to empty text if neither is provided
+      params.text = ' '; // Space character to ensure it's not empty
+    }
+    
+    // Prepare email data for SendGrid
+    const msg: any = {
       to: params.to,
       from,
       subject: params.subject,
-      text: params.text,
-      html: params.html,
-      attachments: params.attachments || [],
     };
+    
+    // Add content based on what's provided
+    if (params.html) {
+      msg.html = params.html;
+    }
+    
+    if (params.text) {
+      msg.text = params.text;
+    }
+    
+    // Add attachments if provided
+    if (params.attachments && params.attachments.length > 0) {
+      msg.attachments = params.attachments;
+    }
 
     const response = await sgMail.send(msg);
     console.log('Email sent successfully:', response[0].statusCode);

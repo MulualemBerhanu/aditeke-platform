@@ -2354,6 +2354,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid invoice ID" });
       }
       
+      // Get custom subject and message if provided
+      const { subject, message } = req.body;
+      
       // Get the invoice
       const invoice = await storage.getInvoice(invoiceId);
       if (!invoice) {
@@ -2369,8 +2372,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import email service
       const { sendInvoicePdfEmail } = await import('./utils/emailService');
       
-      // Send the invoice email
-      const result = await sendInvoicePdfEmail(invoice, client);
+      // Send the invoice email (with optional custom subject and message)
+      const result = await sendInvoicePdfEmail(invoice, client, subject, message);
       
       res.status(200).json({
         success: true,
@@ -2455,6 +2458,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid invoice ID" });
       }
       
+      // Get custom subject and message if provided
+      const { subject, message } = req.body;
+      
       // Get the invoice
       const invoice = await storage.getInvoice(invoiceId);
       if (!invoice) {
@@ -2475,8 +2481,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import email service
       const { sendReceiptPdfEmail } = await import('./utils/emailService');
       
-      // Send the receipt email
-      const result = await sendReceiptPdfEmail(invoice, client);
+      // Send the receipt email (with optional custom subject and message)
+      const result = await sendReceiptPdfEmail(invoice, client, subject, message);
       
       res.status(200).json({
         success: true,
