@@ -6,6 +6,7 @@ import { z } from "zod";
 import { initializeDatabase } from "./db-init";
 import { updateFirebaseIds } from "./update-id-schema";
 import { authenticateJWT } from "./utils/authMiddleware";
+import PDFDocument from "pdfkit";
 import {
   insertUserSchema,
   insertContactMessageSchema,
@@ -1725,8 +1726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Client not found" });
       }
       
-      // Generate PDF invoice
-      const PDFDocument = require('pdfkit');
+      // Generate PDF invoice using imported PDFDocument
       
       // Create a document
       const doc = new PDFDocument({
@@ -2105,8 +2105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Client not found" });
       }
       
-      // Generate PDF receipt
-      const PDFDocument = require('pdfkit');
+      // Generate PDF receipt using imported PDFDocument
       
       // Create a document
       const doc = new PDFDocument({
