@@ -2419,38 +2419,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Import email service
-      const { sendEmail } = await import('./utils/emailService');
+      const { sendInvoicePdfEmail, sendReceiptPdfEmail } = await import('./utils/emailService');
       
-      let pdfBuffer: Buffer;
-      let filename: string;
+      let result;
       
       if (emailType === 'invoice') {
-        const { generateInvoicePdf } = await import('./utils/pdfGenerator');
-        pdfBuffer = await generateInvoicePdf(invoice, client);
-        filename = `Invoice_${invoice.invoiceNumber}.pdf`;
+        // Send the invoice email with custom subject and message
+        result = await sendInvoicePdfEmail(invoice, client, subject, message);
       } else if (emailType === 'receipt') {
-        const { generateReceiptPdf } = await import('./utils/pdfGenerator');
-        pdfBuffer = await generateReceiptPdf(invoice, client);
-        filename = `Receipt_${invoice.invoiceNumber}.pdf`;
+        // Send the receipt email with custom subject and message
+        result = await sendReceiptPdfEmail(invoice, client, subject, message);
       } else {
         return res.status(400).json({ error: "Invalid email type" });
       }
-      
-      // Send the email with the PDF attachment
-      const result = await sendEmail({
-        to: client.email,
-        from: 'billing@aditeke.com',
-        subject: subject,
-        text: message,
-        attachments: [
-          {
-            content: pdfBuffer.toString('base64'),
-            filename: filename,
-            type: 'application/pdf',
-            disposition: 'attachment'
-          }
-        ]
-      });
       
       res.status(200).json({
         success: true,
