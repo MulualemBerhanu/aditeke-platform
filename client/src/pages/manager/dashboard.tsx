@@ -277,16 +277,41 @@ export default function ManagerDashboard() {
   
   // Filter projects based on column filters
   const filteredProjects = React.useMemo(() => {
-    if (!projects) return [];
+    // Debug logging
+    console.log("🔎 Projects data:", projects);
+    console.log("🔎 Clients data:", clients);
     
-    return projects.filter(project => {
+    if (!projects || !Array.isArray(projects) || projects.length === 0) {
+      console.log("⚠️ No projects data available");
+      return [];
+    }
+    
+    // Force projects to be serializable
+    const normalizedProjects = projects.map(project => {
+      // Ensure all projects have required fields
+      return {
+        ...project,
+        id: project.id || Math.random().toString(),
+        title: project.title || 'Untitled Project',
+        clientId: project.clientId,
+        status: project.status || 'Pending',
+        endDate: project.endDate || null
+      };
+    });
+    
+    console.log("🔎 Normalized projects:", normalizedProjects.length);
+    
+    return normalizedProjects.filter(project => {
       // Find client name for searching
       const client = clients?.find(c => {
         if (!project.clientId) return false;
-        const cId = typeof c.id === 'string' ? parseInt(c.id) : c.id;
-        const pClientId = typeof project.clientId === 'string' ? parseInt(project.clientId) : project.clientId;
+        
+        // Convert IDs to string for safer comparison
+        const cId = String(c.id);
+        const pClientId = String(project.clientId);
         return cId === pClientId;
       });
+      
       const clientName = client ? (client.name || client.username || '') : '';
       const formattedDeadline = project.endDate ? formatDate(project.endDate) : 'No deadline';
       
@@ -316,9 +341,32 @@ export default function ManagerDashboard() {
   
   // Filter clients based on filters
   const filteredClients = React.useMemo(() => {
-    if (!clients) return [];
+    // Debug logging for client data
+    console.log("🔎 Clients data for filtering:", clients);
     
-    return clients.filter(client => {
+    if (!clients || !Array.isArray(clients) || clients.length === 0) {
+      console.log("⚠️ No clients data available");
+      return [];
+    }
+    
+    // Force clients to be serializable
+    const normalizedClients = clients.map(client => {
+      // Ensure all clients have required fields
+      return {
+        ...client,
+        id: client.id || Math.random().toString(),
+        username: client.username || 'unknown',
+        name: client.name || client.username || 'Unknown Client',
+        email: client.email || '',
+        company: client.company || '',
+        isActive: client.isActive === undefined ? true : client.isActive,
+        isVip: client.isVip || false,
+      };
+    });
+    
+    console.log("🔎 Normalized clients:", normalizedClients.length);
+    
+    return normalizedClients.filter(client => {
       // Apply all filters (return true only if all active filters match)
       const nameMatch = !clientFilters.name || 
         ((client.name || client.username || '').toLowerCase().includes(clientFilters.name.toLowerCase()));
@@ -595,13 +643,23 @@ export default function ManagerDashboard() {
                             paginatedProjects.map((project) => {
                               // Find client name for the project if it has a clientId
                               // Handle both numeric and string IDs when comparing
-                              const client = clients?.find(c => {
-                                if (!project.clientId) return false;
-                                const cId = typeof c.id === 'string' ? parseInt(c.id) : c.id;
-                                const pClientId = typeof project.clientId === 'string' ? parseInt(project.clientId) : project.clientId;
-                                return cId === pClientId;
-                              });
-                              const clientName = client ? (client.name || client.username || 'Unknown') : 'Unassigned';
+                              let clientName = 'Unassigned';
+                              
+                              if (project.clientId && clients && clients.length > 0) {
+                                // First try exact match
+                                const exactMatch = clients.find(c => c.id === project.clientId);
+                                if (exactMatch) {
+                                  clientName = exactMatch.name || exactMatch.username || 'Unknown';
+                                } else {
+                                  // Try numeric comparison by converting both to strings
+                                  const strMatch = clients.find(c => String(c.id) === String(project.clientId));
+                                  if (strMatch) {
+                                    clientName = strMatch.name || strMatch.username || 'Unknown';
+                                  } else {
+                                    console.log(`No client found for project ${project.id} with clientId ${project.clientId}`);
+                                  }
+                                }
+                              }
                               
                               return (
                                 <TableRow key={project.id}>
