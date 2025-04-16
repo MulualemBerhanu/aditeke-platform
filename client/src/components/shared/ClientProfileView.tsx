@@ -190,8 +190,11 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
       });
       // Reset form
       setPaymentFormData(null);
-      // Generate invoices for payment phases if needed
-      // This could be handled automatically on the server or trigger another process
+      // Refresh invoices data since payment structure may trigger invoice creation
+      queryClient.invalidateQueries({ queryKey: ['/api/client-invoices', clientId] });
+      // Reset payment form data
+      setSelectedPaymentPlan('standard');
+      setCustomAmount('0');
     },
     onError: (error: Error) => {
       toast({
