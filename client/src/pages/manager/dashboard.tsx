@@ -131,12 +131,38 @@ export default function ManagerDashboard() {
   } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
     queryFn: async () => {
-      const res = await fetch('/api/projects');
-      if (!res.ok) {
-        throw new Error('Failed to load projects');
+      try {
+        console.log("🔍 Fetching projects from API");
+        // Add authorization headers
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Add localStorage authentication token if available
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+          console.log("⚠️ Using localStorage authentication for projects");
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        const res = await fetch('/api/projects', { headers });
+        console.log("🔍 Projects API response status:", res.status);
+        
+        if (!res.ok) {
+          console.error("❌ Failed to load projects:", res.status);
+          throw new Error('Failed to load projects');
+        }
+        
+        const data = await res.json();
+        console.log("🔍 Successfully loaded", data.length, "projects");
+        return data;
+      } catch (error) {
+        console.error("❌ Error fetching projects:", error);
+        throw error;
       }
-      return res.json();
-    }
+    },
+    retry: 3,
+    retryDelay: 1000
   });
   
   // Fetch all clients (users with roleId = 1001) - using dedicated endpoint
