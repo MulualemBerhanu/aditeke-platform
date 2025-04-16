@@ -49,6 +49,11 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
   // Track invoice dialog open state
   const [invoiceDialogOpen, setInvoiceDialogOpen] = React.useState(false);
   
+  // Payment processing state
+  const [paymentMethod, setPaymentMethod] = React.useState('');
+  const [paymentNotes, setPaymentNotes] = React.useState('');
+  const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
+  
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: any) => {
@@ -129,6 +134,71 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     onError: (error: Error) => {
       toast({
         title: 'Error Creating Invoice',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Process payment mutation
+  const processPayment = useMutation({
+    mutationFn: async (data: any) => {
+      console.log('Processing payment with payload:', data);
+      
+      // Prepare request payload
+      const payload = {
+        paymentMethod: data.paymentMethod,
+        paidAmount: data.paidAmount,
+        paymentDate: data.paymentDate,
+        notes: data.notes || ''
+      };
+      
+      const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      };
+      
+      // Add CSRF token if available
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_token='))
+        ?.split('=')[1];
+        
+      if (csrfToken) {
+        requestHeaders['X-CSRF-Token'] = csrfToken;
+      }
+      
+      const response = await fetch(`/api/client-invoices/${data.invoiceId}/payment-receipt`, {
+        method: 'POST',
+        headers: requestHeaders,
+        body: JSON.stringify(payload),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(errorData.message || 'Failed to process payment');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Payment Processed',
+        description: 'The payment has been processed successfully.',
+      });
+      // Reset payment form data
+      setPaymentMethod('');
+      setPaymentNotes('');
+      // Close dialog if open
+      setPaymentDialogOpen(false);
+      // Refresh invoices data
+      queryClient.invalidateQueries({ queryKey: ['/api/client-invoices', clientId] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error Processing Payment',
         description: error.message,
         variant: 'destructive',
       });
@@ -1300,9 +1370,17 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                     <Button size="sm" variant="outline">
                                       <Send className="h-3 w-3 mr-1" /> Send
                                     </Button>
-                                    <Dialog>
+                                    <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
                                       <DialogTrigger asChild>
-                                        <Button size="sm" variant="default">
+                                        <Button 
+                                          size="sm" 
+                                          variant="default" 
+                                          onClick={() => {
+                                            setPaymentDialogOpen(true);
+                                            setPaymentMethod('');
+                                            setPaymentNotes('');
+                                          }}
+                                        >
                                           <DollarSign className="h-3 w-3 mr-1" /> Process Payment
                                         </Button>
                                       </DialogTrigger>
