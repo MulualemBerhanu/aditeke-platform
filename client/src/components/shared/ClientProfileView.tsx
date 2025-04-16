@@ -1375,13 +1375,60 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                 </Dialog>
                                 
                                 {invoice.status === 'paid' && invoice.receiptNumber ? (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}
-                                  >
-                                    <Download className="h-3 w-3 mr-1" /> Receipt
-                                  </Button>
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}
+                                    >
+                                      <Download className="h-3 w-3 mr-1" /> Receipt
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      className="h-7 text-xs inline-flex items-center text-green-600 border-green-600 hover:bg-green-50"
+                                      onClick={async () => {
+                                        try {
+                                          toast({
+                                            title: "Sending email...",
+                                            description: "Please wait while we send the receipt",
+                                          });
+                                          
+                                          const response = await fetch(`/api/public/send-receipt-email/${invoice.id}`, {
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                            },
+                                          });
+                                          
+                                          const result = await response.json();
+                                          
+                                          if (result.success) {
+                                            toast({
+                                              title: "Receipt Sent",
+                                              description: `Receipt email sent successfully`,
+                                              variant: "default",
+                                            });
+                                          } else {
+                                            toast({
+                                              title: "Error",
+                                              description: result.message || "Failed to send receipt email",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        } catch (error) {
+                                          console.error("Error sending receipt email:", error);
+                                          toast({
+                                            title: "Error",
+                                            description: "Failed to send receipt email",
+                                            variant: "destructive",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <Send className="h-3 w-3 mr-1" /> Email Receipt
+                                    </Button>
+                                  </div>
                                 ) : (
                                   <Button 
                                     size="sm" 
@@ -1394,7 +1441,48 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                 
                                 {invoice.status !== 'paid' && (
                                   <>
-                                    <Button size="sm" variant="outline">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={async () => {
+                                        try {
+                                          toast({
+                                            title: "Sending email...",
+                                            description: "Please wait while we send the invoice",
+                                          });
+                                          
+                                          const response = await fetch(`/api/public/send-invoice-email/${invoice.id}`, {
+                                            method: 'POST',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                            },
+                                          });
+                                          
+                                          const result = await response.json();
+                                          
+                                          if (result.success) {
+                                            toast({
+                                              title: "Invoice Sent",
+                                              description: `Invoice email sent successfully`,
+                                              variant: "default",
+                                            });
+                                          } else {
+                                            toast({
+                                              title: "Error",
+                                              description: result.message || "Failed to send invoice email",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        } catch (error) {
+                                          console.error("Error sending invoice email:", error);
+                                          toast({
+                                            title: "Error",
+                                            description: "Failed to send invoice email",
+                                            variant: "destructive",
+                                          });
+                                        }
+                                      }}
+                                    >
                                       <Send className="h-3 w-3 mr-1" /> Send
                                     </Button>
                                     <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
