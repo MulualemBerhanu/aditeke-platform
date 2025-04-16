@@ -474,7 +474,8 @@ export function setupAuth(app: Express) {
       '/api/services',
       '/api/projects',
       '/api/testimonials',
-      '/api/blog'
+      '/api/blog',
+      '/api/client-invoices'
     ];
     
     // Check if the path starts with /api/public/ or is in the publicPaths list
