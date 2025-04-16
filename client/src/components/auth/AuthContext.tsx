@@ -108,42 +108,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch (error: any) {
         console.error('Login API error:', error);
         
-        // For demonstration/testing ONLY in development:
-        // If we're in development and this is a CORS error, try to find the user by username
-        // This allows testing the UI even if the backend auth is having issues
-        if (process.env.NODE_ENV === 'development' && 
-            (error.message.includes('Failed to fetch') || error.message.includes('CORS'))) {
-          console.warn('⚠️ Using localStorage authentication as fallback');
-          
-          // This is just for development convenience - in production, authenticate properly
-          // Look for matching user in localStorage (fallback for development only)
-          const storedUsers = [
-            { username: 'admin', roleId: 1002 },
-            { username: 'manager', roleId: 1000 },
-            { username: 'client', roleId: 1001 }
-          ];
-          
-          const matchedUser = storedUsers.find(user => user.username === username);
-          if (matchedUser && username === password) {
-            // Create minimal user data for development fallback
-            const fallbackUser = {
-              id: 123,
-              username,
-              email: `${username}@example.com`,
-              name: username.charAt(0).toUpperCase() + username.slice(1),
-              roleId: matchedUser.roleId,
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            
-            localStorage.setItem('currentUser', JSON.stringify(fallbackUser));
-            localStorage.setItem('isAuthenticated', 'true');
-            
-            return fallbackUser;
-          }
+        // We can't use insecure fallbacks for authentication
+        // Authentication must always verify credentials properly
+        console.error('⚠️ Login failed - Authentication error');
+        
+        // For development troubleshooting only, log more details about the error
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Development troubleshooting: ', { 
+            errorType: error.name,
+            errorMessage: error.message,
+            username: username ? 'Provided' : 'Missing',
+            password: password ? 'Provided' : 'Missing'
+          });
         }
         
         // If we get here, authentication truly failed
