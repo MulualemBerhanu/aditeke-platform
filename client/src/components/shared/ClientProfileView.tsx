@@ -204,49 +204,62 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     }
   });
 
-  // Dummy invoices data for the UI
-  const invoices = [
-    {
-      id: 'INV-001',
-      project: 'Website Redesign',
-      amount: 2000,
-      status: 'Paid',
-      date: '2025-03-15',
-      dueDate: '2025-03-30'
+  // Fetch invoices from database
+  const { 
+    data: invoices, 
+    isLoading: isLoadingInvoices 
+  } = useQuery<any[]>({
+    queryKey: ['/api/client-invoices', clientId],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/client-invoices/${clientId}`);
+        if (!res.ok) throw new Error('Failed to fetch invoices');
+        return res.json();
+      } catch (error) {
+        console.error('Error fetching invoices:', error);
+        return [];
+      }
     },
-    {
-      id: 'INV-002',
-      project: 'Mobile App Development',
-      amount: 5000,
-      status: 'Pending',
-      date: '2025-04-01',
-      dueDate: '2025-04-15'
-    },
-    {
-      id: 'INV-003',
-      project: 'SEO Optimization',
-      amount: 1200,
-      status: 'Overdue',
-      date: '2025-02-15',
-      dueDate: '2025-03-01'
-    }
-  ];
+    enabled: !!clientId
+  });
 
-  // Dummy payment phases for the UI
-  const paymentPhases = [
-    {
-      phase: 'Initial (40%)',
-      amount: 2000,
-      status: 'Paid',
-      dueDate: '2025-04-15'
-    },
-    {
-      phase: 'Remaining (60%)',
-      amount: 3000,
-      status: 'Pending',
-      dueDate: '2025-05-10'
-    }
-  ];
+  // Calculate payment phases from client projects
+  const paymentPhases = React.useMemo(() => {
+    if (!clientProjects || clientProjects.length === 0) return [];
+    
+    // Use the largest active project for payment phases
+    const activeProjects = clientProjects.filter(p => p.status === 'In Progress');
+    if (activeProjects.length === 0) return [];
+    
+    // Find project with highest budget or use first one
+    const project = activeProjects.reduce((highest, current) => {
+      return (current.budget || 0) > (highest.budget || 0) ? current : highest;
+    }, activeProjects[0]);
+    
+    const projectBudget = project.budget || 5000; // Default to 5000 if no budget
+    
+    // Calculate payment phases based on selected payment plan
+    const { initial, remaining } = calculatePayment(projectBudget);
+    
+    return [
+      {
+        phase: selectedPaymentPlan === 'fixed' ? 'Full Payment' : 
+              selectedPaymentPlan === '40-60' ? 'Initial (40%)' : 
+              `Initial Payment ($${initial.toFixed(2)})`,
+        amount: initial,
+        status: 'Pending',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+        projectId: project.id
+      },
+      ...(remaining > 0 ? [{
+        phase: selectedPaymentPlan === '40-60' ? 'Remaining (60%)' : `Remaining Balance ($${remaining.toFixed(2)})`,
+        amount: remaining,
+        status: 'Pending',
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        projectId: project.id
+      }] : [])
+    ];
+  }, [clientProjects, selectedPaymentPlan, customAmount]);
 
   // Dummy files for the UI
   const clientFiles = [
@@ -731,54 +744,139 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                   <CardDescription>Set up the client's payment structure</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="payment-plan">Payment Plan</Label>
-                      <Select value={selectedPaymentPlan} onValueChange={setSelectedPaymentPlan}>
-                        <SelectTrigger id="payment-plan">
-                          <SelectValue placeholder="Select payment plan" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed">Fixed Full Payment</SelectItem>
-                          <SelectItem value="40-60">40% Upfront + 60% on Completion</SelectItem>
-                          <SelectItem value="custom">Custom Payment</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  {isLoadingProjects ? (
+                    <div className="flex items-center justify-center h-40">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
-                    
-                    {selectedPaymentPlan === 'custom' && (
+                  ) : !clientProjects || clientProjects.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <p>No projects available</p>
+                      <p className="text-sm mt-1">Create a project to set up payment structure.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="custom-amount">Initial Payment Amount ($)</Label>
-                        <Input 
-                          id="custom-amount" 
-                          type="number" 
-                          placeholder="Enter amount" 
-                          value={customAmount}
-                          onChange={(e) => setCustomAmount(e.target.value)}
-                        />
+                        <Label htmlFor="project-select">Project</Label>
+                        <Select 
+                          value={paymentFormData?.projectId?.toString() || ''} 
+                          onValueChange={(value) => setPaymentFormData(prev => ({
+                            ...prev || {},
+                            projectId: Number(value)
+                          }))}
+                        >
+                          <SelectTrigger id="project-select">
+                            <SelectValue placeholder="Select project" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clientProjects.map(project => (
+                              <SelectItem key={project.id} value={project.id.toString()}>
+                                {project.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    )}
-                    
-                    <div className="rounded-lg border p-4 mt-4">
-                      <h4 className="font-medium mb-2">Billing Breakdown</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Total Project Amount:</span>
-                          <span className="font-medium">$5,000.00</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Initial Payment:</span>
-                          <span className="font-medium">${calculatePayment(5000).initial.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Remaining Balance:</span>
-                          <span className="font-medium">${calculatePayment(5000).remaining.toFixed(2)}</span>
-                        </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="payment-plan">Payment Plan</Label>
+                        <Select 
+                          value={selectedPaymentPlan} 
+                          onValueChange={(value) => {
+                            setSelectedPaymentPlan(value);
+                            setPaymentFormData(prev => ({
+                              ...prev || {},
+                              paymentPlan: value
+                            }));
+                          }}
+                        >
+                          <SelectTrigger id="payment-plan">
+                            <SelectValue placeholder="Select payment plan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="fixed">Fixed Full Payment</SelectItem>
+                            <SelectItem value="40-60">40% Upfront + 60% on Completion</SelectItem>
+                            <SelectItem value="custom">Custom Payment</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
+                      
+                      {selectedPaymentPlan === 'custom' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="custom-amount">Initial Payment Amount ($)</Label>
+                          <Input 
+                            id="custom-amount" 
+                            type="number" 
+                            placeholder="Enter amount" 
+                            value={customAmount}
+                            onChange={(e) => {
+                              setCustomAmount(e.target.value);
+                              setPaymentFormData(prev => ({
+                                ...prev || {},
+                                initialAmount: parseFloat(e.target.value)
+                              }));
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      {paymentFormData?.projectId && (
+                        <div className="rounded-lg border p-4 mt-4">
+                          <h4 className="font-medium mb-2">Billing Breakdown</h4>
+                          {(() => {
+                            const selectedProject = clientProjects.find(p => p.id === paymentFormData.projectId);
+                            const totalAmount = selectedProject?.budget || 5000;
+                            const { initial, remaining } = calculatePayment(totalAmount);
+                            
+                            return (
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span>Project:</span>
+                                  <span className="font-medium">{selectedProject?.title || 'Unknown'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Total Project Amount:</span>
+                                  <span className="font-medium">${totalAmount.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Initial Payment:</span>
+                                  <span className="font-medium">${initial.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Remaining Balance:</span>
+                                  <span className="font-medium">${remaining.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
+                      
+                      <Button 
+                        className="w-full"
+                        disabled={!paymentFormData?.projectId || savePaymentStructure.isPending}
+                        onClick={() => {
+                          if (paymentFormData?.projectId) {
+                            const selectedProject = clientProjects.find(p => p.id === paymentFormData.projectId);
+                            const totalAmount = selectedProject?.budget || 5000;
+                            const { initial, remaining } = calculatePayment(totalAmount);
+                            
+                            // Prepare data for all the payment phases based on the structure
+                            savePaymentStructure.mutate({
+                              clientId: Number(clientId),
+                              projectId: paymentFormData.projectId,
+                              paymentPlan: selectedPaymentPlan,
+                              initialAmount: initial,
+                              remainingAmount: remaining,
+                              totalAmount: totalAmount,
+                              customAmount: selectedPaymentPlan === 'custom' ? parseFloat(customAmount) : undefined
+                            });
+                          }
+                        }}
+                      >
+                        {savePaymentStructure.isPending ? 'Saving...' : 'Save Payment Structure'}
+                      </Button>
                     </div>
-                    
-                    <Button className="w-full">Save Payment Structure</Button>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
               
@@ -952,46 +1050,185 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {invoices.map((invoice, index) => (
-                      <div key={index} className="border rounded-lg p-4 hover:bg-muted/40 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium flex items-center">
-                              <FileText className="h-4 w-4 mr-2 text-primary" />
-                              {invoice.id} - {invoice.project}
-                            </h4>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              Issued: {formatDate(invoice.date)} • Due: {formatDate(invoice.dueDate)}
+                  {isLoadingInvoices ? (
+                    <div className="flex items-center justify-center h-48">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : !invoices || invoices.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="h-12 w-12 mx-auto mb-3 text-muted" />
+                      <p>No invoices found</p>
+                      <p className="text-sm mt-1">Create an invoice to get started.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {invoices.map((invoice: any) => {
+                        // Find related project title if projectId exists
+                        const projectTitle = invoice.projectId && clientProjects 
+                          ? clientProjects.find(p => p.id === invoice.projectId)?.title || 'Unknown Project'
+                          : 'General Services';
+
+                        return (
+                          <div key={invoice.id} className="border rounded-lg p-4 hover:bg-muted/40 transition-colors">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-primary" />
+                                  {invoice.invoiceNumber} - {projectTitle}
+                                </h4>
+                                <div className="text-sm text-muted-foreground mt-1">
+                                  Issued: {formatDate(invoice.issueDate)} • Due: {formatDate(invoice.dueDate)}
+                                </div>
+                              </div>
+                              <Badge className={
+                                invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                invoice.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                                'bg-red-100 text-red-800'
+                              }>
+                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center mt-4">
+                              <div className="text-lg font-semibold">${Number(invoice.amount).toLocaleString()}</div>
+                              <div className="flex items-center space-x-2">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">
+                                      <Eye className="h-3 w-3 mr-1" /> View
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-3xl">
+                                    <DialogHeader>
+                                      <DialogTitle>Invoice #{invoice.invoiceNumber}</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                      <div className="border-b pb-4">
+                                        <div className="flex justify-between mb-4">
+                                          <div>
+                                            <h3 className="text-lg font-semibold">Invoice #{invoice.invoiceNumber}</h3>
+                                            <p>Project: {projectTitle}</p>
+                                          </div>
+                                          <Badge className={
+                                            invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                            invoice.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-red-100 text-red-800'
+                                          }>
+                                            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                          </Badge>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <h4 className="text-sm font-medium text-muted-foreground">Billed To</h4>
+                                            <p>{client.name}</p>
+                                            <p>{client.company || ''}</p>
+                                            <p>{client.email}</p>
+                                          </div>
+                                          <div className="text-right">
+                                            <h4 className="text-sm font-medium text-muted-foreground">Invoice Details</h4>
+                                            <p>Issue Date: {formatDate(invoice.issueDate)}</p>
+                                            <p>Due Date: {formatDate(invoice.dueDate)}</p>
+                                            {invoice.paidDate && <p>Paid Date: {formatDate(invoice.paidDate)}</p>}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div>
+                                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Invoice Items</h4>
+                                        <table className="w-full">
+                                          <thead>
+                                            <tr className="border-b">
+                                              <th className="py-2 px-3 text-left font-medium">Description</th>
+                                              <th className="py-2 px-3 text-right font-medium">Quantity</th>
+                                              <th className="py-2 px-3 text-right font-medium">Unit Price</th>
+                                              <th className="py-2 px-3 text-right font-medium">Total</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {invoice.items && Array.isArray(invoice.items) ? invoice.items.map((item: any, idx: number) => (
+                                              <tr key={idx} className="border-b">
+                                                <td className="py-2 px-3">{item.description}</td>
+                                                <td className="py-2 px-3 text-right">{item.quantity || 1}</td>
+                                                <td className="py-2 px-3 text-right">${Number(item.amount).toLocaleString()}</td>
+                                                <td className="py-2 px-3 text-right">${Number(item.amount * (item.quantity || 1)).toLocaleString()}</td>
+                                              </tr>
+                                            )) : (
+                                              <tr className="border-b">
+                                                <td className="py-2 px-3">{invoice.description || 'Services'}</td>
+                                                <td className="py-2 px-3 text-right">1</td>
+                                                <td className="py-2 px-3 text-right">${Number(invoice.amount).toLocaleString()}</td>
+                                                <td className="py-2 px-3 text-right">${Number(invoice.amount).toLocaleString()}</td>
+                                              </tr>
+                                            )}
+                                          </tbody>
+                                          <tfoot>
+                                            <tr>
+                                              <td colSpan={3} className="py-2 px-3 text-right font-medium">Total Amount:</td>
+                                              <td className="py-2 px-3 text-right font-bold">${Number(invoice.amount).toLocaleString()}</td>
+                                            </tr>
+                                          </tfoot>
+                                        </table>
+                                      </div>
+                                      
+                                      {invoice.notes && (
+                                        <div>
+                                          <h4 className="text-sm font-medium text-muted-foreground mb-2">Notes</h4>
+                                          <p className="text-sm">{invoice.notes}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {invoice.status === 'paid' && invoice.receiptNumber && (
+                                        <div className="bg-green-50 p-3 rounded-lg">
+                                          <h4 className="text-sm font-medium text-green-800 mb-1">Payment Information</h4>
+                                          <p className="text-sm">Receipt: {invoice.receiptNumber}</p>
+                                          <p className="text-sm">Paid on: {formatDate(invoice.paidDate)}</p>
+                                          <p className="text-sm">Payment method: {invoice.paymentMethod || 'Manual payment'}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <DialogFooter>
+                                      {invoice.status === 'paid' ? (
+                                        <Button onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}>
+                                          <Download className="h-4 w-4 mr-1" /> Download Receipt
+                                        </Button>
+                                      ) : (
+                                        <Button onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')} variant="outline">
+                                          <Download className="h-4 w-4 mr-1" /> Download Invoice
+                                        </Button>
+                                      )}
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                                
+                                {invoice.status === 'paid' && invoice.receiptNumber ? (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}
+                                  >
+                                    <Download className="h-3 w-3 mr-1" /> Receipt
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')}
+                                  >
+                                    <Download className="h-3 w-3 mr-1" /> Download
+                                  </Button>
+                                )}
+                                
+                                {invoice.status !== 'paid' && (
+                                  <Button size="sm">
+                                    <Send className="h-3 w-3 mr-1" /> Send
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <Badge className={
-                            invoice.status === 'Paid' ? 'bg-green-100 text-green-800' :
-                            invoice.status === 'Pending' ? 'bg-blue-100 text-blue-800' :
-                            'bg-red-100 text-red-800'
-                          }>
-                            {invoice.status}
-                          </Badge>
-                        </div>
-                        <div className="flex justify-between items-center mt-4">
-                          <div className="text-lg font-semibold">${invoice.amount.toLocaleString()}</div>
-                          <div className="flex items-center space-x-2">
-                            <Button size="sm" variant="outline">
-                              <Eye className="h-3 w-3 mr-1" /> View
-                            </Button>
-                            <Button size="sm" variant="outline">
-                              <Download className="h-3 w-3 mr-1" /> Download
-                            </Button>
-                            {invoice.status !== 'Paid' && (
-                              <Button size="sm">
-                                <Send className="h-3 w-3 mr-1" /> Send
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               
@@ -1001,49 +1238,101 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-center">
-                            <DollarSign className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                            <div className="text-2xl font-bold">$3,200</div>
-                            <p className="text-sm text-muted-foreground">Paid Amount</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="pt-6">
-                          <div className="text-center">
-                            <CreditCard className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-                            <div className="text-2xl font-bold">$5,000</div>
-                            <p className="text-sm text-muted-foreground">Outstanding</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    
-                    <div className="rounded-lg border p-4">
-                      <h4 className="font-medium mb-3">Payment Statistics</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Payment on time:</span>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium">80%</span>
-                            <div className="w-24 h-2 bg-muted ml-2 rounded-full overflow-hidden">
-                              <div className="h-full bg-green-500 w-4/5"></div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Average payment time:</span>
-                          <span className="text-sm font-medium">5 days</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Total projects value:</span>
-                          <span className="text-sm font-medium">$12,500</span>
-                        </div>
+                    {isLoadingInvoices ? (
+                      <div className="flex items-center justify-center h-24">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Card>
+                            <CardContent className="pt-6">
+                              <div className="text-center">
+                                <DollarSign className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                                <div className="text-2xl font-bold">
+                                  ${invoices && invoices.length > 0 
+                                      ? invoices
+                                        .filter((inv: any) => inv.status === 'paid')
+                                        .reduce((sum: number, inv: any) => sum + Number(inv.paidAmount || inv.amount), 0)
+                                        .toLocaleString()
+                                      : '0'}
+                                </div>
+                                <p className="text-sm text-muted-foreground">Paid Amount</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          <Card>
+                            <CardContent className="pt-6">
+                              <div className="text-center">
+                                <CreditCard className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+                                <div className="text-2xl font-bold">
+                                  ${invoices && invoices.length > 0 
+                                     ? invoices
+                                        .filter((inv: any) => inv.status === 'pending' || inv.status === 'overdue')
+                                        .reduce((sum: number, inv: any) => sum + Number(inv.amount), 0)
+                                        .toLocaleString()
+                                      : '0'}
+                                </div>
+                                <p className="text-sm text-muted-foreground">Outstanding</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        
+                        <div className="rounded-lg border p-4">
+                          <h4 className="font-medium mb-3">Payment Statistics</h4>
+                          <div className="space-y-2">
+                            {invoices && invoices.length > 0 ? (
+                              <>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm">Payment rate:</span>
+                                  <div className="flex items-center">
+                                    {(() => {
+                                      // Calculate paid vs total ratio
+                                      const totalInvoices = invoices.length;
+                                      const paidInvoices = invoices.filter((inv: any) => inv.status === 'paid').length;
+                                      const paymentRate = totalInvoices > 0 
+                                        ? Math.round((paidInvoices / totalInvoices) * 100) 
+                                        : 0;
+                                      
+                                      return (
+                                        <>
+                                          <span className="text-sm font-medium">{paymentRate}%</span>
+                                          <div className="w-24 h-2 bg-muted ml-2 rounded-full overflow-hidden">
+                                            <div className="h-full bg-green-500" style={{ width: `${paymentRate}%` }}></div>
+                                          </div>
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm">Latest invoice:</span>
+                                  <span className="text-sm font-medium">
+                                    {invoices.length > 0 
+                                      ? formatDate(invoices.sort((a: any, b: any) => 
+                                          new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())[0].issueDate)
+                                      : 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm">Total billed amount:</span>
+                                  <span className="text-sm font-medium">
+                                    ${invoices
+                                      .reduce((sum: number, inv: any) => sum + Number(inv.amount), 0)
+                                      .toLocaleString()}
+                                  </span>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="text-center py-2 text-muted-foreground">
+                                <p className="text-sm">No invoice data available</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
