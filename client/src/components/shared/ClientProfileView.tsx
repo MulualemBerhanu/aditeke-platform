@@ -1644,8 +1644,8 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                   <div className="flex flex-col items-center justify-center py-4 mb-3 bg-muted/40 rounded-lg">
                     {file.type === 'pdf' && <File className="h-12 w-12 text-red-500" />}
                     {file.type === 'docx' && <File className="h-12 w-12 text-blue-500" />}
-                    {file.type === 'png' && <ImageIcon className="h-12 w-12 text-green-500" />}
-                    {file.type === 'jpg' && <ImageIcon className="h-12 w-12 text-amber-500" />}
+                    {file.type === 'png' && <Image className="h-12 w-12 text-green-500" />}
+                    {file.type === 'jpg' && <Image className="h-12 w-12 text-amber-500" />}
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-medium truncate" title={file.name}>{file.name}</h4>
