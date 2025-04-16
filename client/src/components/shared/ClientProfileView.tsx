@@ -1394,43 +1394,12 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                       size="sm" 
                                       variant="outline"
                                       className="h-7 text-xs inline-flex items-center text-green-600 border-green-600 hover:bg-green-50"
-                                      onClick={async () => {
-                                        try {
-                                          toast({
-                                            title: "Sending email...",
-                                            description: "Please wait while we send the receipt",
-                                          });
-                                          
-                                          const response = await fetch(`/api/public/send-receipt-email/${invoice.id}`, {
-                                            method: 'POST',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                            },
-                                          });
-                                          
-                                          const result = await response.json();
-                                          
-                                          if (result.success) {
-                                            toast({
-                                              title: "Receipt Sent",
-                                              description: `Receipt email sent successfully`,
-                                              variant: "default",
-                                            });
-                                          } else {
-                                            toast({
-                                              title: "Error",
-                                              description: result.message || "Failed to send receipt email",
-                                              variant: "destructive",
-                                            });
-                                          }
-                                        } catch (error) {
-                                          console.error("Error sending receipt email:", error);
-                                          toast({
-                                            title: "Error",
-                                            description: "Failed to send receipt email",
-                                            variant: "destructive",
-                                          });
-                                        }
+                                      onClick={() => {
+                                        setEmailType('receipt');
+                                        setEmailInvoiceId(invoice.id);
+                                        setEmailSubject(`Receipt for Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
+                                        setEmailMessage(`Dear ${client.name || client.username},\n\nThank you for your payment. Please find attached your receipt for Invoice #${invoice.invoiceNumber}.\n\nWe appreciate your business and look forward to continuing our services.\n\nBest regards,\nAdiTeke Software Solutions Team`);
+                                        setEmailDialogOpen(true);
                                       }}
                                     >
                                       <Send className="h-3 w-3 mr-1" /> Email Receipt
@@ -1451,43 +1420,12 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                     <Button 
                                       size="sm" 
                                       variant="outline"
-                                      onClick={async () => {
-                                        try {
-                                          toast({
-                                            title: "Sending email...",
-                                            description: "Please wait while we send the invoice",
-                                          });
-                                          
-                                          const response = await fetch(`/api/public/send-invoice-email/${invoice.id}`, {
-                                            method: 'POST',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                            },
-                                          });
-                                          
-                                          const result = await response.json();
-                                          
-                                          if (result.success) {
-                                            toast({
-                                              title: "Invoice Sent",
-                                              description: `Invoice email sent successfully`,
-                                              variant: "default",
-                                            });
-                                          } else {
-                                            toast({
-                                              title: "Error",
-                                              description: result.message || "Failed to send invoice email",
-                                              variant: "destructive",
-                                            });
-                                          }
-                                        } catch (error) {
-                                          console.error("Error sending invoice email:", error);
-                                          toast({
-                                            title: "Error",
-                                            description: "Failed to send invoice email",
-                                            variant: "destructive",
-                                          });
-                                        }
+                                      onClick={() => {
+                                        setEmailType('invoice');
+                                        setEmailInvoiceId(invoice.id);
+                                        setEmailSubject(`Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
+                                        setEmailMessage(`Dear ${client.name || client.username},\n\nPlease find attached your invoice #${invoice.invoiceNumber} for ${invoice.description || 'services rendered'}. Payment is due by ${formatDate(invoice.dueDate) || 'the due date indicated'}.\n\nThank you for your business.\n\nBest regards,\nAdiTeke Software Solutions Team`);
+                                        setEmailDialogOpen(true);
                                       }}
                                     >
                                       <Send className="h-3 w-3 mr-1" /> Send
