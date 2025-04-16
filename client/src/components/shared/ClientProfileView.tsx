@@ -35,6 +35,7 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
   const [clientNotes, setClientNotes] = React.useState('');
   const [selectedPaymentPlan, setSelectedPaymentPlan] = React.useState('fixed');
   const [customAmount, setCustomAmount] = React.useState('');
+  const [paymentFormData, setPaymentFormData] = React.useState<any>(null);
   
   // Invoice form state
   const [invoiceFormData, setInvoiceFormData] = React.useState({
@@ -123,6 +124,73 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     onError: (error: Error) => {
       toast({
         title: 'Error Creating Invoice',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Save payment structure mutation
+  const savePaymentStructure = useMutation({
+    mutationFn: async (data: any) => {
+      console.log('Saving payment structure with payload:', data);
+      
+      // Prepare request payload
+      const payload = {
+        clientId: data.clientId,
+        projectId: data.projectId,
+        paymentPlan: data.paymentPlan,
+        totalAmount: data.totalAmount,
+        initialAmount: data.initialAmount,
+        remainingAmount: data.remainingAmount,
+        customAmount: data.customAmount,
+        createdAt: new Date().toISOString(),
+        status: 'active'
+      };
+      
+      const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      };
+      
+      // Add CSRF token if available
+      const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_token='))
+        ?.split('=')[1];
+        
+      if (csrfToken) {
+        requestHeaders['X-CSRF-Token'] = csrfToken;
+      }
+      
+      const response = await fetch('/api/payment-structures', {
+        method: 'POST',
+        headers: requestHeaders,
+        body: JSON.stringify(payload),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(errorData.message || 'Failed to save payment structure');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Payment Structure Saved',
+        description: 'The payment structure has been saved successfully.',
+      });
+      // Reset form
+      setPaymentFormData(null);
+      // Generate invoices for payment phases if needed
+      // This could be handled automatically on the server or trigger another process
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error Saving Payment Structure',
         description: error.message,
         variant: 'destructive',
       });
