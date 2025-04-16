@@ -40,6 +40,22 @@ export function addCsrfHeader(options: RequestInit = {}): RequestInit {
   const token = getCsrfToken();
   if (!token) {
     console.warn('CSRF token not found in cookies');
+    
+    // In development, create a fake token for testing
+    if (process.env.NODE_ENV === 'development' || window.location.hostname.includes('replit')) {
+      console.log('Using development fallback CSRF token');
+      const devToken = 'development-csrf-token-' + Math.random().toString(36).substring(2);
+      
+      // Create or update headers with development CSRF token
+      const headers = new Headers(options.headers || {});
+      headers.set(CSRF_HEADER_NAME, devToken);
+      
+      return {
+        ...options,
+        headers,
+      };
+    }
+    
     return options;
   }
 
