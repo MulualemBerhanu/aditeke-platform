@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/components/auth/AuthContext';
 import ManagerLayout from '@/components/manager/ManagerLayout';
@@ -48,6 +48,43 @@ export default function ManagerDashboard() {
   const [selectedClientId, setSelectedClientId] = React.useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
   const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = React.useState(false);
+  
+  // Check for force refresh flag
+  useEffect(() => {
+    const forceRefresh = localStorage.getItem('forceRefresh');
+    if (forceRefresh === 'true') {
+      console.log("🔄 Force refreshing manager dashboard");
+      localStorage.removeItem('forceRefresh');
+      
+      // Ensure we're on the correct page and re-fetch data
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/manager/dashboard') {
+        window.location.href = '/manager/dashboard';
+      } else {
+        // Reload the page once to clear any stale state
+        window.location.reload();
+      }
+    }
+    
+    // Check if the role information matches this page
+    const userRoleStr = localStorage.getItem('userRole');
+    const userRole = userRoleStr ? userRoleStr.toLowerCase() : null;
+    
+    if (userRole && userRole !== 'manager' && userRole !== 'admin') {
+      console.warn("⚠️ User role mismatch - not manager but on manager dashboard:", userRole);
+      // Allow admin access too
+      if (userRole !== 'admin') {
+        const roleIdStr = localStorage.getItem('userRoleId');
+        console.log("📊 Debug - userRoleId:", roleIdStr);
+        // Redirect to appropriate dashboard
+        if (userRole === 'client') {
+          setLocation('/client/dashboard');
+        } else {
+          setLocation('/login');
+        }
+      }
+    }
+  }, [setLocation]);
   
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1);

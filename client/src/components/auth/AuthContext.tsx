@@ -160,6 +160,82 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           localStorage.setItem('refreshToken', userData.refreshToken);
         }
         
+        // Extract and store role information
+        let roleName = 'unknown';
+        let roleId: string | number | null = null;
+        
+        // Get role from userData
+        if (userData.roleName && typeof userData.roleName === 'string') {
+          roleName = userData.roleName.toLowerCase();
+        } else if (userData.role && typeof userData.role === 'object' && userData.role.name) {
+          roleName = userData.role.name.toLowerCase();
+        } 
+        
+        // Fallback to username pattern if role is not determined
+        if (roleName === 'unknown') {
+          if (username.toLowerCase().includes('admin')) {
+            roleName = 'admin';
+            console.log("Using username pattern to determine role: admin");
+          } else if (username.toLowerCase().includes('manager')) {
+            roleName = 'manager';
+            console.log("Using username pattern to determine role: manager");
+          } else if (username.toLowerCase().includes('client')) {
+            roleName = 'client';
+            console.log("Using username pattern to determine role: client");
+          }
+        }
+        
+        // Get role ID
+        if (userData.roleId) {
+          roleId = userData.roleId;
+        } else if (userData.role && typeof userData.role === 'object' && userData.role.id) {
+          roleId = userData.role.id;
+        }
+        
+        // Map role names to IDs as fallback
+        if (roleId === null) {
+          if (roleName === 'admin') {
+            roleId = 1002;
+            console.log("Using role name to determine roleId: 1002 (admin)");
+          } else if (roleName === 'manager') {
+            roleId = 1000;
+            console.log("Using role name to determine roleId: 1000 (manager)");
+          } else if (roleName === 'client') {
+            roleId = 1001;
+            console.log("Using role name to determine roleId: 1001 (client)");
+          }
+        }
+        
+        // Convert roleId to a number if it's a string
+        let numericRoleId = null;
+        if (typeof roleId === 'string') {
+          const parsedId = parseInt(roleId);
+          if (!isNaN(parsedId)) {
+            numericRoleId = parsedId;
+            console.log("Converted string roleId to number:", numericRoleId);
+          }
+        } else if (typeof roleId === 'number') {
+          numericRoleId = roleId;
+        }
+        
+        // Store role information in localStorage with enhanced debugging
+        console.log("🔐 Storing role information:", { 
+          roleName, 
+          roleId,
+          numericRoleId,
+          username
+        });
+        
+        localStorage.setItem('userRole', roleName);
+        
+        if (roleId !== null) {
+          localStorage.setItem('userRoleId', String(roleId));
+        }
+        
+        if (numericRoleId !== null) {
+          localStorage.setItem('userNumericRoleId', String(numericRoleId));
+        }
+        
         return userData;
       } catch (error: any) {
         console.error('Login API error:', error);
@@ -279,6 +355,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.removeItem('selectedRole');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userRoleId');
+      localStorage.removeItem('userNumericRoleId');
+      localStorage.removeItem('forceRefresh');
+      localStorage.removeItem('loginTimestamp');
+      localStorage.removeItem('loginStatus');
+      localStorage.removeItem('targetRedirect');
+      localStorage.removeItem('authToken');
       
       // Try API logout, but don't stop if it fails
       try {
@@ -309,6 +393,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.removeItem('selectedRole');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userRoleId');
+      localStorage.removeItem('userNumericRoleId');
+      localStorage.removeItem('forceRefresh');
+      localStorage.removeItem('loginTimestamp');
+      localStorage.removeItem('loginStatus');
+      localStorage.removeItem('targetRedirect');
+      localStorage.removeItem('authToken');
       
       toast({
         title: 'Logout Partially Successful',
