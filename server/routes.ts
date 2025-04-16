@@ -1685,33 +1685,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Debug - Hostname:', req.hostname);
     console.log('Debug - Headers:', JSON.stringify(req.headers));
     
-    // Always bypass authentication in the Replit environment for testing
-    // We're running on Replit, so we'll always apply a default test user
-    console.log('Replit environment: Using test user for invoice creation');
+    // Check if we're in a development environment or Replit
+    const isDev = process.env.NODE_ENV === 'development';
+    const isReplit = req.hostname?.includes('replit');
     
-    // Apply a default user for testing
-    req.user = {
-      id: 50000, // Default to a manager ID for development
-      username: 'manager',
-      email: 'manager@aditeke.com', 
-      roleId: 1000, // Manager role
-      name: 'Manager User',
-      password: '',
-      createdAt: new Date(),
-      updatedAt: null,
-      profilePicture: null,
-      lastLogin: null,
-      isActive: true,
-      company: 'AdiTeke Software Solutions',
-      phone: null,
-      website: null,
-      notes: null,
-      isVip: null,
-      isPriority: null
-    };
+    if (isDev || isReplit) {
+      console.log('Development or Replit environment detected: Bypassing authentication for invoice creation');
+      
+      // Apply a default user for testing if user is not already set
+      if (!req.user) {
+        req.user = {
+          id: 50000, // Default to a manager ID for development
+          username: 'manager',
+          email: 'manager@aditeke.com', 
+          roleId: 1000, // Manager role
+          name: 'Manager User',
+          password: '',
+          createdAt: new Date(),
+          updatedAt: null,
+          profilePicture: null,
+          lastLogin: null,
+          isActive: true,
+          company: 'AdiTeke Software Solutions',
+          phone: null,
+          website: null,
+          notes: null,
+          isVip: null,
+          isPriority: null,
+          industry: null,
+          referralSource: null
+        };
+      }
+    }
+    
     try {
       console.log('Creating invoice with data:', req.body);
       console.log('User from token:', req.user);
+
+      // Ensure user is authenticated unless in development/replit mode
+      if (!req.user && !(isDev || isReplit)) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
 
       // Ensure we have the required fields
       if (!req.body.clientId || !req.body.amount || !req.body.dueDate) {
