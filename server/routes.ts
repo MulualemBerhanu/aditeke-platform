@@ -1880,17 +1880,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
            .text(invoice.notes, 50, notesTop + 20);
       }
       
-      // Add a thank you message with better spacing
-      doc.moveDown(3);
+      // Add a thank you message with proper spacing and layout
+      doc.moveDown(4);
       doc.font('Helvetica-Bold').fontSize(14)
          .text('Thank you for your business!', { align: 'center' });
          
       // Add footer
       const pageHeight = doc.page.height;
-      doc.moveDown(1);
+      doc.moveDown(2);
       doc.font('Helvetica').fontSize(10).text(
         'This invoice was generated electronically by AdiTeke Software Solutions.',
-        50, pageHeight - 100,
+        50, pageHeight - 70,
         { align: 'center' }
       );
       
@@ -2238,17 +2238,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
            .text(invoice.notes);
       }
       
-      // Add a thank you message with better spacing
-      doc.moveDown(3);
+      // Add a thank you message with proper spacing and layout
+      doc.moveDown(4);
       doc.font('Helvetica-Bold').fontSize(14)
          .text('Thank you for your business!', { align: 'center' });
       
       // Add a footer with more space
       const pageHeight = doc.page.height;
-      doc.moveDown(1);
+      doc.moveDown(2);
       doc.font('Helvetica').fontSize(10).text(
         'This receipt was generated electronically and is valid without a signature.',
-        50, pageHeight - 100,
+        50, pageHeight - 70,
         { align: 'center' }
       );
       
