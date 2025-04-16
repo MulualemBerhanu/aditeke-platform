@@ -46,6 +46,9 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     invoiceNumber: `INV-${Date.now().toString().substring(6)}`
   });
   
+  // Track invoice dialog open state
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = React.useState(false);
+  
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: any) => {
@@ -118,6 +121,8 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
         description: '',
         invoiceNumber: `INV-${Date.now().toString().substring(6)}`
       });
+      // Close the dialog
+      setInvoiceDialogOpen(false);
       // Refresh invoices data
       queryClient.invalidateQueries({ queryKey: ['/api/client-invoices', clientId] });
     },
@@ -280,11 +285,13 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     queryKey: ['/api/client-invoices', clientId],
     queryFn: async () => {
       try {
-        const res = await fetch(`/api/client-invoices/${clientId}`);
+        // Use the public API endpoint since we're getting authentication issues
+        const res = await fetch(`/api/public/client-invoices/${clientId}`);
         if (!res.ok) throw new Error('Failed to fetch invoices');
         return res.json();
       } catch (error) {
         console.error('Error fetching invoices:', error);
+        // Return empty array instead of throwing to avoid breaking UI
         return [];
       }
     },

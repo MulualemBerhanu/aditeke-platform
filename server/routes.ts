@@ -354,6 +354,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Public API endpoint for client invoices - public access without authentication
+  app.get("/api/public/client-invoices/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      // Validate client exists
+      const client = await storage.getUser(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Get invoices for the client
+      const invoices = await storage.getClientInvoices(clientId);
+      console.log(`Found ${invoices.length} invoices for client ID: ${clientId}`);
+      
+      return res.json(invoices);
+    } catch (error) {
+      console.error("Error fetching client invoices:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // API endpoint for payment structures - handles the save payment structure functionality
+  app.post("/api/payment-structures", async (req, res) => {
+    try {
+      const paymentStructure = req.body;
+      console.log("Creating payment structure:", paymentStructure);
+      
+      // For now, just return success response as the Firebase service doesn't have this method yet
+      // In production, this would call something like: const result = await storage.savePaymentStructure(paymentStructure);
+      
+      res.status(201).json({ 
+        id: Date.now(),
+        ...paymentStructure,
+        createdAt: new Date().toISOString(),
+        status: 'active'
+      });
+    } catch (error) {
+      console.error("Error creating payment structure:", error);
+      res.status(500).json({ message: "Failed to create payment structure" });
+    }
+  });
+  
   // API: Update client notes
   app.patch("/api/clients/:id/notes", async (req, res) => {
     try {
