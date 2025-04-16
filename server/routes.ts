@@ -1682,12 +1682,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post('/api/client-invoices', authenticateJWT, async (req, res) => {
     try {
+      console.log('Creating invoice with data:', req.body);
+      console.log('User from token:', req.user);
+
+      // Ensure we have the required fields
+      if (!req.body.clientId || !req.body.amount || !req.body.dueDate) {
+        return res.status(400).json({ 
+          error: "Missing required fields", 
+          required: ["clientId", "amount", "dueDate", "invoiceNumber"],
+          received: req.body 
+        });
+      }
+
       const newInvoice = req.body;
+      
+      // Add additional metadata
+      if (!newInvoice.createdAt) {
+        newInvoice.createdAt = new Date();
+      }
+      
+      if (!newInvoice.updatedAt) {
+        newInvoice.updatedAt = null;
+      }
+      
+      if (!newInvoice.createdById && req.user) {
+        newInvoice.createdById = req.user.id;
+      }
+
+      console.log('Processed invoice data:', newInvoice);
       const invoice = await storage.createClientInvoice(newInvoice);
+      console.log('Created invoice:', invoice);
       res.status(201).json(invoice);
     } catch (error) {
       console.error("Error creating invoice:", error);
-      res.status(500).json({ error: "Failed to create invoice" });
+      res.status(500).json({ 
+        error: "Failed to create invoice", 
+        message: error instanceof Error ? error.message : String(error),
+      });
     }
   });
   

@@ -48,7 +48,24 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest('POST', '/api/client-invoices', {
+      // Get auth token from localStorage for direct authentication
+      const authToken = localStorage.getItem('accessToken');
+      const storedUser = localStorage.getItem('currentUser');
+      
+      // Create headers with authentication
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      };
+      
+      // Add authorization header if token exists
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      // Prepare request payload
+      const payload = {
         clientId: Number(clientId),
         projectId: data.projectId ? Number(data.projectId) : null,
         invoiceNumber: data.invoiceNumber,
@@ -66,14 +83,38 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
           }
         ],
         notes: ''
-      });
+      };
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create invoice');
+      console.log('Creating invoice with payload:', payload);
+      
+      try {
+        // First try with our utility function
+        const response = await apiRequest('POST', '/api/client-invoices', payload);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create invoice');
+        }
+        
+        return response.json();
+      } catch (error) {
+        console.error('Error creating invoice with apiRequest:', error);
+        
+        // Fallback to direct fetch if apiRequest fails
+        const response = await fetch('/api/client-invoices', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create invoice');
+        }
+        
+        return response.json();
       }
-      
-      return response.json();
     },
     onSuccess: () => {
       toast({
