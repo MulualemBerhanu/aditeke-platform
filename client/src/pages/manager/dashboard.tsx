@@ -177,22 +177,43 @@ export default function ManagerDashboard() {
       try {
         console.log("[CLIENT-OPTIONS] Starting PUBLIC API request");
         
-        // No auth needed for public API
-        const res = await fetch('/api/public/client-options');
+        // Add authorization headers as a fallback
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Add localStorage authentication token if available
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+          console.log("⚠️ Using localStorage authentication for clients");
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        // No auth needed for public API, but include headers as a fallback
+        const res = await fetch('/api/public/client-options', { headers });
         
         console.log("[CLIENT-OPTIONS] Response status:", res.status);
         
         if (!res.ok) {
           console.error("[CLIENT-OPTIONS] API error:", res.status, res.statusText);
           
-          // Return empty array instead of throwing to prevent UI errors
-          console.warn("[CLIENT-OPTIONS] Returning empty array due to API error");
-          return [];
+          // Retry with a different endpoint if public API fails
+          console.warn("[CLIENT-OPTIONS] Trying alternative endpoint for clients");
+          
+          const altRes = await fetch('/api/clients', { headers });
+          if (!altRes.ok) {
+            console.error("[CLIENT-OPTIONS] Alternative API also failed:", altRes.status);
+            return [];
+          }
+          
+          const altData = await altRes.json();
+          console.log("[CLIENT-OPTIONS] Retrieved", altData.length, "clients from alternative endpoint");
+          return altData;
         }
         
-        // Parse response
+        // Parse response from original endpoint
         const data = await res.json();
-        console.log("[CLIENT-OPTIONS] Received clients:", data.length);
+        console.log("[CLIENT-OPTIONS] Received", data.length, "clients from public endpoint");
         return data;
       } catch (error) {
         console.error("[CLIENT-OPTIONS] Fetch error:", error);
@@ -200,9 +221,10 @@ export default function ManagerDashboard() {
         return [];
       }
     },
-    retry: 2, // Retry failed requests up to 2 times
+    retry: 3, // Retry failed requests up to 3 times
     retryDelay: 1000, // Wait 1 second between retries
-    refetchOnWindowFocus: false // Don't refetch when window regains focus
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    staleTime: 60000 // Data remains fresh for 1 minute
   });
   
   // Mutation to assign a project to a client - using real API endpoint
@@ -501,14 +523,14 @@ export default function ManagerDashboard() {
                     <div className="overflow-x-auto rounded-md border shadow-sm">
                       <Table>
                         <TableHeader>
-                          <TableRow>
+                          <TableRow key="header-row">
                             <TableHead>Project Name</TableHead>
                             <TableHead>Client</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Deadline</TableHead>
                             <TableHead>Actions</TableHead>
                           </TableRow>
-                          <TableRow>
+                          <TableRow key="filter-row">
                             <TableHead>
                               <FilterInput 
                                 placeholder="Search project name..."
@@ -802,7 +824,7 @@ export default function ManagerDashboard() {
                     <div className="overflow-x-auto rounded-md border shadow-sm">
                       <Table>
                         <TableHeader>
-                          <TableRow>
+                          <TableRow key="client-header-row">
                             <TableHead>Client</TableHead>
                             <TableHead>Contact</TableHead>
                             <TableHead>Status</TableHead>
