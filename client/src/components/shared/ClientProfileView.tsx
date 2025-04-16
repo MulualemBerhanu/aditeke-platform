@@ -1011,9 +1011,9 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>Recent Invoices</CardTitle>
-                    <Dialog>
+                    <Dialog open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => setInvoiceDialogOpen(true)}>
                           <Plus className="h-4 w-4 mr-1" /> Create Invoice
                         </Button>
                       </DialogTrigger>
