@@ -1262,6 +1262,22 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                     </DialogHeader>
                                     <div className="grid gap-4 py-4">
                                       <div className="border-b pb-4">
+                                        {/* Company Header */}
+                                        <div className="mb-6 flex justify-between items-start">
+                                          <div>
+                                            <h2 className="text-xl font-bold text-blue-800">AdiTeke Software Solutions</h2>
+                                            <div className="text-sm text-gray-600 mt-1">
+                                              <p>Portland, OR, USA</p>
+                                              <p>contact@aditeke.com</p>
+                                              <p>www.aditeke.com</p>
+                                            </div>
+                                          </div>
+                                          <div className="text-right">
+                                            <h3 className="text-lg font-bold">{invoice.status === 'paid' ? 'RECEIPT' : 'INVOICE'}</h3>
+                                            <p className="text-sm">#{invoice.invoiceNumber}</p>
+                                          </div>
+                                        </div>
+                                        
                                         <div className="flex justify-between mb-4">
                                           <div>
                                             <h3 className="text-lg font-semibold">Invoice #{invoice.invoiceNumber}</h3>
@@ -1402,6 +1418,22 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                             Record a payment for this invoice.
                                           </DialogDescription>
                                         </DialogHeader>
+                                        
+                                        {/* Company Header */}
+                                        <div className="mb-6 flex justify-between items-start border-b pb-4">
+                                          <div>
+                                            <h2 className="text-xl font-bold text-blue-800">AdiTeke Software Solutions</h2>
+                                            <div className="text-sm text-gray-600 mt-1">
+                                              <p>Portland, OR, USA</p>
+                                              <p>contact@aditeke.com</p>
+                                            </div>
+                                          </div>
+                                          <div className="text-right">
+                                            <div className="text-lg font-bold">Payment Processing</div>
+                                            <p className="text-sm">Invoice #{invoice.invoiceNumber}</p>
+                                            <p className="text-sm">Amount: ${Number(invoice.amount).toLocaleString()}</p>
+                                          </div>
+                                        </div>
                                         <form onSubmit={(e) => {
                                           e.preventDefault();
                                           processPayment.mutate({
