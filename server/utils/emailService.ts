@@ -1,4 +1,4 @@
-const sgMail = require('@sendgrid/mail');
+import * as sgMail from '@sendgrid/mail';
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 

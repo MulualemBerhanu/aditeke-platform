@@ -1,4 +1,5 @@
-const PDFDocument = require('pdfkit');
+import PDFDocument from 'pdfkit';
+// @ts-ignore - Fix for PDFKit constructor types
 import { ClientInvoice, User } from '../../shared/schema';
 import { PassThrough } from 'stream';
 
