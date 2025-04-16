@@ -88,36 +88,80 @@ try {
   }
 } catch (error) {
   console.error("Error initializing Firebase Admin SDK:", error);
-  // Fallback to mock implementation
-  firebaseAdminInstance = new MockFirebaseAdmin();
-  console.warn("Falling back to mock Firebase Admin implementation");
+  
+  // Only use mock in development, not in production
+  if (process.env.NODE_ENV === 'development') {
+    firebaseAdminInstance = new MockFirebaseAdmin();
+    console.warn("WARNING: Using mock Firebase implementation for development only");
+  } else {
+    console.error("CRITICAL: Firebase initialization failed in production environment");
+    // In production, we don't want to use mock implementations
+    // This will cause Firebase operations to fail rather than use insecure mocks
+    firebaseAdminInstance = null;
+  }
 }
 
 // Export a function to get Firestore database instance
 export function getFirestoreDb() {
+  if (!firebaseAdminInstance) {
+    console.error("Firestore request failed - Firebase Admin not initialized");
+    throw new Error("Firebase Firestore not available");
+  }
+  
   if (firebaseAdminInstance instanceof MockFirebaseAdmin) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error("CRITICAL: Attempted to use mock Firestore in production");
+      throw new Error("Firebase Firestore not properly configured");
+    }
+    console.warn("Using mock Firestore implementation (development only)");
     return firebaseAdminInstance.firestore();
   }
+  
   try {
     return getFirestore();
   } catch (error) {
     console.error("Error getting Firestore:", error);
-    const mockFirebaseAdmin = new MockFirebaseAdmin();
-    return mockFirebaseAdmin.firestore();
+    
+    // Only use mock in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("Falling back to mock Firestore (development only)");
+      const mockFirebaseAdmin = new MockFirebaseAdmin();
+      return mockFirebaseAdmin.firestore();
+    } else {
+      throw new Error("Firebase Firestore service unavailable");
+    }
   }
 }
 
 // Export a function to get Auth instance
 export function getFirebaseAuth() {
+  if (!firebaseAdminInstance) {
+    console.error("Auth request failed - Firebase Admin not initialized");
+    throw new Error("Firebase Authentication not available");
+  }
+  
   if (firebaseAdminInstance instanceof MockFirebaseAdmin) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error("CRITICAL: Attempted to use mock Auth in production");
+      throw new Error("Firebase Authentication not properly configured");
+    }
+    console.warn("Using mock Authentication implementation (development only)");
     return firebaseAdminInstance.auth();
   }
+  
   try {
     return getAuth();
   } catch (error) {
     console.error("Error getting Auth:", error);
-    const mockFirebaseAdmin = new MockFirebaseAdmin();
-    return mockFirebaseAdmin.auth();
+    
+    // Only use mock in development mode
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("Falling back to mock Authentication (development only)");
+      const mockFirebaseAdmin = new MockFirebaseAdmin();
+      return mockFirebaseAdmin.auth();
+    } else {
+      throw new Error("Firebase Authentication service unavailable");
+    }
   }
 }
 

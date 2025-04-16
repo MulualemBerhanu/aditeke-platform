@@ -51,27 +51,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     queryKey: ['/api/user'],
     queryFn: async () => {
       try {
+        // Always try the API first for current authentication state
         const response = await apiRequest('GET', '/api/user');
+        
+        // If response is not 2xx, it will throw and go to catch block
         const userData = await response.json();
         
         if (userData) {
+          // Only store user data after successful API response
           localStorage.setItem('currentUser', JSON.stringify(userData));
           return userData;
         }
         
-        // Try to get user from localStorage if API returns nothing
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          return JSON.parse(storedUser) as User;
-        }
-        
+        // If API returns empty data but success status, user is not authenticated
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         return null;
       } catch (error: any) {
-        // Try localStorage as fallback
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          return JSON.parse(storedUser) as User;
+        if (error.status === 401) {
+          // Properly handle unauthorized - clear all auth data
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('isAuthenticated');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          return null;
         }
+        
+        // For other errors (like network issues), throw the error
+        // but don't fall back to potentially outdated localStorage data
         throw error;
       }
     },
@@ -83,47 +92,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Enhanced login mutation for cross-domain authentication
   const loginMutation = useMutation<User, Error, { username: string; password: string }>({
     mutationFn: async ({ username, password }) => {
+      // Validate credentials before sending to server
+      if (!username || username.trim() === '') {
+        throw new Error('Username is required');
+      }
+      
+      if (!password || password.trim() === '') {
+        throw new Error('Password is required');
+      }
+      
+      // Strong password requirements
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
+      }
+      
       try {
-        // Try to login with the API first
+        // Authenticate with the API
         const response = await apiRequest('POST', '/api/login', { username, password });
+        
+        // Check for successful response
+        if (!response.ok) {
+          // Handle specific error cases from the server
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Authentication failed');
+        }
+        
         const userData = await response.json();
         
-        // Store user data in localStorage as a fallback
-        if (userData) {
-          localStorage.setItem('currentUser', JSON.stringify(userData));
-          localStorage.setItem('isAuthenticated', 'true');
-          
-          // For cross-domain deployments, we need an additional fallback mechanism
-          // Store JWT tokens in localStorage if they're included in the response
-          if (userData.accessToken) {
-            localStorage.setItem('accessToken', userData.accessToken);
-          }
-          
-          if (userData.refreshToken) {
-            localStorage.setItem('refreshToken', userData.refreshToken);
-          }
+        // Validate user data returned from server
+        if (!userData || !userData.id) {
+          throw new Error('Invalid response from authentication server');
+        }
+        
+        // Store authenticated user data and tokens
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        localStorage.setItem('isAuthenticated', 'true');
+        
+        // Store JWT tokens for API authorization
+        if (userData.accessToken) {
+          localStorage.setItem('accessToken', userData.accessToken);
+        }
+        
+        if (userData.refreshToken) {
+          localStorage.setItem('refreshToken', userData.refreshToken);
         }
         
         return userData;
       } catch (error: any) {
         console.error('Login API error:', error);
         
-        // We can't use insecure fallbacks for authentication
-        // Authentication must always verify credentials properly
-        console.error('⚠️ Login failed - Authentication error');
-        
-        // For development troubleshooting only, log more details about the error
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Development troubleshooting: ', { 
-            errorType: error.name,
-            errorMessage: error.message,
-            username: username ? 'Provided' : 'Missing',
-            password: password ? 'Provided' : 'Missing'
-          });
-        }
-        
-        // If we get here, authentication truly failed
-        throw error;
+        // Clean error message for security (avoid exposing internal details)
+        const errorMessage = error.message && !error.message.includes('fetch')
+          ? error.message
+          : 'Authentication failed. Please check your credentials and try again.';
+          
+        throw new Error(errorMessage);
       }
     },
     onSuccess: (data) => {
@@ -146,8 +169,57 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Register mutation
   const registerMutation = useMutation<User, Error, any>({
     mutationFn: async (userData) => {
-      const response = await apiRequest('POST', '/api/register', userData);
-      return await response.json();
+      // Validate user data before submitting to server
+      if (!userData.username || userData.username.trim() === '') {
+        throw new Error('Username is required');
+      }
+      
+      if (!userData.password || userData.password.trim() === '') {
+        throw new Error('Password is required');
+      }
+      
+      if (!userData.email || userData.email.trim() === '') {
+        throw new Error('Email is required');
+      }
+      
+      // Strong password validation
+      if (userData.password.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
+      }
+      
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userData.email)) {
+        throw new Error('Please enter a valid email address');
+      }
+      
+      try {
+        const response = await apiRequest('POST', '/api/register', userData);
+        
+        // Check for successful response
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Registration failed');
+        }
+        
+        const data = await response.json();
+        
+        // Validate response data
+        if (!data || !data.id) {
+          throw new Error('Invalid response from server');
+        }
+        
+        return data;
+      } catch (error: any) {
+        console.error('Registration error:', error);
+        
+        // Provide user-friendly error message
+        const errorMessage = error.message && !error.message.includes('fetch')
+          ? error.message
+          : 'Registration failed. Please try again later.';
+          
+        throw new Error(errorMessage);
+      }
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['/api/user'], data);
