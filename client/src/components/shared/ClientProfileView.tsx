@@ -55,6 +55,13 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
   const [paymentNotes, setPaymentNotes] = React.useState('');
   const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   
+  // Email dialog state
+  const [emailDialogOpen, setEmailDialogOpen] = React.useState(false);
+  const [emailSubject, setEmailSubject] = React.useState('');
+  const [emailMessage, setEmailMessage] = React.useState('');
+  const [emailInvoiceId, setEmailInvoiceId] = React.useState<number | null>(null);
+  const [emailType, setEmailType] = React.useState<'invoice' | 'receipt'>('invoice');
+  
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: any) => {
@@ -1791,6 +1798,116 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* Email Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              {emailType === 'invoice' ? 'Send Invoice Email' : 'Send Receipt Email'}
+            </DialogTitle>
+            <DialogDescription>
+              Customize the email before sending it to the client.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email-subject" className="text-right">
+                Subject
+              </Label>
+              <Input
+                id="email-subject"
+                className="col-span-3"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder={emailType === 'invoice' ? 'Invoice from AdiTeke Software Solutions' : 'Receipt from AdiTeke Software Solutions'}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email-message" className="text-right">
+                Message
+              </Label>
+              <Textarea
+                id="email-message"
+                className="col-span-3"
+                value={emailMessage}
+                onChange={(e) => setEmailMessage(e.target.value)}
+                placeholder={emailType === 'invoice' 
+                  ? 'Please find attached your invoice. Payment is due within 30 days.' 
+                  : 'Thank you for your payment. Please find attached your receipt.'}
+                rows={4}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              type="submit"
+              onClick={async () => {
+                try {
+                  toast({
+                    title: "Sending email...",
+                    description: `Please wait while we send the ${emailType}`,
+                  });
+                  
+                  if (!emailInvoiceId) {
+                    toast({
+                      title: "Error",
+                      description: "Missing invoice information",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  const endpoint = emailType === 'invoice' 
+                    ? `/api/public/send-invoice-email/${emailInvoiceId}`
+                    : `/api/public/send-receipt-email/${emailInvoiceId}`;
+                    
+                  const payload = {
+                    subject: emailSubject || undefined,
+                    message: emailMessage || undefined
+                  };
+                  
+                  const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                    toast({
+                      title: `${emailType === 'invoice' ? 'Invoice' : 'Receipt'} Sent`,
+                      description: `Email sent successfully`,
+                      variant: "default",
+                    });
+                    setEmailDialogOpen(false);
+                  } else {
+                    toast({
+                      title: "Error",
+                      description: result.message || `Failed to send ${emailType} email`,
+                      variant: "destructive",
+                    });
+                  }
+                } catch (error) {
+                  console.error(`Error sending ${emailType} email:`, error);
+                  toast({
+                    title: "Error",
+                    description: `Failed to send ${emailType} email`,
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Send Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
