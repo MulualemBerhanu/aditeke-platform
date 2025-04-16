@@ -1296,9 +1296,77 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                 )}
                                 
                                 {invoice.status !== 'paid' && (
-                                  <Button size="sm">
-                                    <Send className="h-3 w-3 mr-1" /> Send
-                                  </Button>
+                                  <>
+                                    <Button size="sm" variant="outline">
+                                      <Send className="h-3 w-3 mr-1" /> Send
+                                    </Button>
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button size="sm" variant="default">
+                                          <DollarSign className="h-3 w-3 mr-1" /> Process Payment
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                          <DialogTitle>Process Payment for Invoice #{invoice.invoiceNumber}</DialogTitle>
+                                          <DialogDescription>
+                                            Record a payment for this invoice.
+                                          </DialogDescription>
+                                        </DialogHeader>
+                                        <form onSubmit={(e) => {
+                                          e.preventDefault();
+                                          processPayment.mutate({
+                                            invoiceId: invoice.id,
+                                            paymentMethod: paymentMethod,
+                                            paidAmount: invoice.amount,
+                                            paymentDate: new Date().toISOString().split('T')[0],
+                                            notes: paymentNotes
+                                          });
+                                        }}>
+                                          <div className="grid gap-4 py-4">
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label htmlFor="payment-method" className="text-right">
+                                                Payment Method
+                                              </Label>
+                                              <Select 
+                                                value={paymentMethod}
+                                                onValueChange={setPaymentMethod}
+                                              >
+                                                <SelectTrigger id="payment-method" className="col-span-3">
+                                                  <SelectValue placeholder="Select method" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="credit_card">Credit Card</SelectItem>
+                                                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                                  <SelectItem value="paypal">PayPal</SelectItem>
+                                                  <SelectItem value="cash">Cash</SelectItem>
+                                                  <SelectItem value="check">Check</SelectItem>
+                                                  <SelectItem value="other">Other</SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                              <Label htmlFor="payment-notes" className="text-right">
+                                                Notes
+                                              </Label>
+                                              <Textarea 
+                                                id="payment-notes"
+                                                className="col-span-3"
+                                                value={paymentNotes}
+                                                onChange={(e) => setPaymentNotes(e.target.value)}
+                                                placeholder="Any notes about this payment..."
+                                              />
+                                            </div>
+                                          </div>
+                                          <DialogFooter>
+                                            <Button type="submit" disabled={!paymentMethod || processPayment.isPending}>
+                                              {processPayment.isPending ? 'Processing...' : 'Record Payment'}
+                                            </Button>
+                                          </DialogFooter>
+                                        </form>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </>
                                 )}
                               </div>
                             </div>
