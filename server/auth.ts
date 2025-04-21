@@ -458,25 +458,75 @@ export function setupAuth(app: Express) {
         const userData = verifyToken(token);
         
         if (userData) {
-          // Find the complete user object
-          const user = await storage.getUser(userData.id);
+          console.log('JWT token verified, payload:', JSON.stringify(userData));
           
-          if (user && user.username === userData.username) {
-            // Get the role information
-            const role = await storage.getRole(user.roleId);
-            
-            // Add role information to the user object
-            const userWithRole = {
-              ...user,
-              role: role || null,
-              roleName: role ? role.name : 'unknown'
-            };
-            
-            // Manually set the user on the request
-            (req as any).user = userWithRole;
-            console.log(`JWT authentication successful for user ${user.username} with role ${role?.name || 'unknown'}`);
+          // Extract user ID from token with proper type handling
+          let userId;
+          if (userData.sub) {
+            // Handle sub from JWT standard
+            userId = typeof userData.sub === 'string' ? parseInt(userData.sub, 10) : userData.sub;
+            console.log(`Using sub from JWT: ${userId}`);
+          } else if (userData.id) {
+            // Handle id from our custom token
+            userId = typeof userData.id === 'string' ? parseInt(userData.id, 10) : userData.id;
+            console.log(`Using id from token: ${userId}`);
+          } else {
+            console.error('JWT token missing user ID (both sub and id are undefined)');
             return next();
           }
+          
+          // Find the complete user object with error handling
+          let user;
+          try {
+            console.log(`Looking up user with ID: ${userId}`);
+            user = await storage.getUser(userId);
+          } catch (userError) {
+            console.error(`Error retrieving user with ID ${userId}:`, userError);
+            return next();
+          }
+          
+          if (!user) {
+            console.log(`User not found with ID: ${userId}`);
+            return next();
+          }
+          
+          // Check username if available in token
+          if (userData.username && user.username !== userData.username) {
+            console.warn(`Username mismatch: token has ${userData.username}, user has ${user.username}`);
+            // We'll still continue since we found the user by ID
+          }
+          
+          // Get roleId - first try from user, then from token
+          const roleId = user.roleId || userData.roleId || 
+                        (userData.role && typeof userData.role === 'object' ? userData.role.id : null);
+          
+          console.log(`Role ID for user ${user.username}: ${roleId}`);
+          
+          // Get the role information with error handling
+          let role;
+          try {
+            if (roleId) {
+              console.log(`Looking up role with ID: ${roleId}`);
+              role = await storage.getRole(roleId);
+            } else {
+              console.warn(`No role ID found for user ${user.username}`);
+            }
+          } catch (roleError) {
+            console.error(`Error retrieving role with ID ${roleId}:`, roleError);
+            // Continue without role info
+          }
+          
+          // Add role information to the user object
+          const userWithRole = {
+            ...user,
+            role: role || null,
+            roleName: role ? role.name : 'unknown'
+          };
+          
+          // Manually set the user on the request
+          (req as any).user = userWithRole;
+          console.log(`JWT authentication successful for user ${user.username} with role ${role?.name || 'unknown'}`);
+          return next();
         }
       } catch (error) {
         console.error('JWT authentication error:', error);

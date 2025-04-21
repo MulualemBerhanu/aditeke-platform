@@ -67,11 +67,29 @@ const REFRESH_TOKEN_EXPIRY = '7d';  // 7 days
  * Generate a JWT access token for a user
  */
 export function generateAccessToken(user: Partial<User>): string {
+  // Make sure to always include an ID that can be used for lookups
+  if (!user.id) {
+    console.warn("Warning: Generating token for user without ID", user);
+  }
+  
+  // Create a complete payload with all necessary fields
   const payload = {
+    // Standard JWT claims
     sub: user.id?.toString(),
+    iat: Math.floor(Date.now() / 1000),
+    
+    // User identity claims - include both as id and user_id for compatibility
+    id: user.id,
+    user_id: user.id,
+    
+    // User profile data
     username: user.username,
     email: user.email,
+    
+    // Role and authorization data
     roleId: user.roleId,
+    
+    // Token type identifier
     type: 'access'
   };
   
@@ -85,10 +103,22 @@ export function generateAccessToken(user: Partial<User>): string {
  * Generate a JWT refresh token for a user
  */
 export function generateRefreshToken(user: Partial<User>): string {
+  // Make sure we have an ID to work with
+  if (!user.id) {
+    console.warn("Warning: Generating refresh token for user without ID", user);
+  }
+  
   const payload = {
+    // Standard JWT claims
     sub: user.id?.toString(),
+    iat: Math.floor(Date.now() / 1000),
+    
+    // User identity claims - include both formats for compatibility
+    id: user.id, 
+    user_id: user.id,
+    
+    // Token type and unique identifier
     type: 'refresh',
-    // Include a unique token identifier for revocation if needed
     jti: crypto.randomBytes(16).toString('hex')
   };
   
