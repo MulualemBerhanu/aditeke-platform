@@ -85,7 +85,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     },
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false, // Disable refetch on window focus to reduce API calls 
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+    refetchInterval: false, // Disable auto refetching
     initialData: null,
   });
 
