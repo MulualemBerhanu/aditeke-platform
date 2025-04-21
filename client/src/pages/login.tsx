@@ -163,12 +163,64 @@ export default function LoginPage() {
         }
       }
       
-      const userData = await login(data.username, data.password);
+      // Use direct fetch in deployed environments to ensure reliable authentication
+      let userData;
+      if (isDeployedEnv) {
+        try {
+          console.log("Using direct fetch for deployed environment authentication");
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: data.username,
+              password: data.password
+            }),
+            credentials: 'include'
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Login error response:', errorText);
+            throw new Error('Authentication failed. Please check your credentials.');
+          }
+          
+          userData = await response.json();
+          console.log("Direct fetch authentication successful:", userData);
+        } catch (error) {
+          console.error("Direct fetch authentication failed:", error);
+          throw error; // Rethrow to be handled by the outer catch block
+        }
+      } else {
+        // For local environment, use the context auth method
+        userData = await login(data.username, data.password);
+      }
       console.log("✅ Login successful, redirecting user:", userData);
       
       // Explicitly save user data to localStorage with exact keys AuthContext expects
       localStorage.setItem('currentUser', JSON.stringify(userData));
       localStorage.setItem('isAuthenticated', 'true');
+      
+      // Store JWT tokens if they're in the response
+      if (userData.accessToken) {
+        localStorage.setItem('accessToken', userData.accessToken);
+        console.log("Saved access token to localStorage");
+      }
+      
+      if (userData.refreshToken) {
+        localStorage.setItem('refreshToken', userData.refreshToken);
+        console.log("Saved refresh token to localStorage");
+      }
+      
+      // Also save numeric role ID explicitly for better cross-environment compatibility
+      if (userData.roleId) {
+        let roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
+        if (!isNaN(roleIdNum)) {
+          localStorage.setItem('userNumericRoleId', roleIdNum.toString());
+          console.log(`Saved numeric role ID to localStorage: ${roleIdNum}`);
+        }
+      }
       
       // Use a simpler, more consistent approach: just use the dashboard path
       // This will handle all redirection logic in one place
