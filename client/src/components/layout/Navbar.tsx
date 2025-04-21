@@ -89,6 +89,12 @@ const Navbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               <DropdownMenuItem asChild>
+                <Link href="/direct-login" className="flex items-center">
+                  <UserCog className="mr-2 h-4 w-4" />
+                  <span>Direct Login</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href="/auth" className="flex items-center">
                   <UserCog className="mr-2 h-4 w-4" />
                   <span>Simplified Login</span>
@@ -169,6 +175,12 @@ const Navbar = () => {
               <div className="pt-4 flex flex-col space-y-2">
                 <div className="space-y-2 mb-2">
                   <h3 className="text-sm font-medium text-muted-foreground ml-1">Login as:</h3>
+                  <Link href="/direct-login">
+                    <Button variant="default" className="w-full justify-start bg-red-600 hover:bg-red-700 text-white">
+                      <UserCog className="mr-2 h-4 w-4" />
+                      Direct Login
+                    </Button>
+                  </Link>
                   <Link href="/auth">
                     <Button variant="default" className="w-full justify-start bg-primary text-white">
                       <UserCog className="mr-2 h-4 w-4" />
