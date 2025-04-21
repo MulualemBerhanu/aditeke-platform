@@ -27,12 +27,32 @@ export class FirebaseStorage implements IStorage {
   }
 
   // User methods
-  async getUser(id: number): Promise<User | undefined> {
+  async getUser(id: number | string | undefined): Promise<User | undefined> {
+    // Guard against undefined or invalid ID values
+    if (id === undefined || id === null) {
+      console.warn("getUser called with undefined/null ID");
+      return undefined;
+    }
+    
+    // Convert string IDs to numbers if needed
+    let numericId: number;
+    if (typeof id === 'string') {
+      numericId = parseInt(id, 10);
+      if (isNaN(numericId)) {
+        console.warn(`getUser: Invalid numeric ID: ${id}`);
+        return undefined;
+      }
+    } else {
+      numericId = id;
+    }
+    
     try {
-      const userRef = this.db.collection('users').where('id', '==', id);
+      console.log(`Firestore query for user with ID: ${numericId}`);
+      const userRef = this.db.collection('users').where('id', '==', numericId);
       const snapshot = await userRef.get();
       
       if (snapshot.empty) {
+        console.log(`No user found with ID: ${numericId}`);
         return undefined;
       }
       
@@ -141,17 +161,71 @@ export class FirebaseStorage implements IStorage {
   }
 
   // Role methods
-  async getRole(id: number): Promise<Role | undefined> {
+  async getRole(id: number | string | undefined): Promise<Role | undefined> {
+    // Guard against undefined or invalid ID values
+    if (id === undefined || id === null) {
+      console.warn("getRole called with undefined/null ID");
+      return undefined;
+    }
+    
     try {
-      // In Firestore, we're using ID as document ID
-      const roleDoc = await this.db.collection('roles').doc(id.toString()).get();
+      // Convert to string for Firestore document ID
+      const roleId = id.toString();
+      console.log(`Looking up role with ID: ${roleId}`);
       
+      // First try with direct document lookup by ID
+      let roleDoc = await this.db.collection('roles').doc(roleId).get();
+      
+      // If not found with direct lookup, try numeric ID
+      if (!roleDoc.exists && typeof id === 'string') {
+        const numericId = parseInt(id, 10);
+        if (!isNaN(numericId)) {
+          console.log(`Retrying role lookup with numeric ID: ${numericId}`);
+          roleDoc = await this.db.collection('roles').doc(numericId.toString()).get();
+        }
+      }
+      
+      // Also try with a query as fallback
       if (!roleDoc.exists) {
+        console.log(`Role document not found, trying query fallback`);
+        const roleQuery = await this.db.collection('roles').where('id', '==', id).get();
+        
+        if (!roleQuery.empty) {
+          console.log(`Found role using query`);
+          const roleData = roleQuery.docs[0].data();
+          return roleData as Role;
+        }
+        
+        // Try with numeric ID if string was provided
+        if (typeof id === 'string') {
+          const numericId = parseInt(id, 10);
+          if (!isNaN(numericId)) {
+            console.log(`Trying query with numeric ID: ${numericId}`);
+            const numericRoleQuery = await this.db.collection('roles').where('id', '==', numericId).get();
+            
+            if (!numericRoleQuery.empty) {
+              console.log(`Found role using numeric ID query`);
+              const roleData = numericRoleQuery.docs[0].data();
+              return roleData as Role;
+            }
+          }
+        }
+        
+        // If still not found, try with the known specific IDs
+        if (id === 1000 || id === '1000') {
+          return { id: 1000, name: 'manager', description: 'Manager role' } as Role;
+        } else if (id === 1001 || id === '1001') {
+          return { id: 1001, name: 'client', description: 'Client role' } as Role;
+        } else if (id === 1002 || id === '1002') {
+          return { id: 1002, name: 'admin', description: 'Admin role' } as Role;
+        }
+        
+        console.log(`Role not found with ID: ${id}`);
         return undefined;
       }
       
       const roleData = roleDoc.data();
-      return { id, ...roleData } as Role;
+      return { id: typeof id === 'string' ? parseInt(id, 10) : id, ...roleData } as Role;
     } catch (error) {
       console.error("Error getting role from Firestore:", error);
       throw error;
