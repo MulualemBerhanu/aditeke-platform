@@ -9,9 +9,11 @@ interface JwtSecrets {
   nextRotation: number; // Timestamp when next rotation should occur
 }
 
-// In-memory secrets (will reset on server restart, which is fine for security)
+// Use a consistent JWT secret for both local and deployed environments
+// This ensures tokens remain valid even after server restarts
+const DEFAULT_JWT_SECRET = 'aditeke-software-solutions-jwt-secret-key-2025';
 let jwtSecrets: JwtSecrets = {
-  current: process.env.JWT_SECRET || generateSecureSecret(),
+  current: process.env.JWT_SECRET || DEFAULT_JWT_SECRET,
   nextRotation: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
 };
 
@@ -21,8 +23,16 @@ function generateSecureSecret(): string {
   return crypto.randomBytes(64).toString('hex');
 }
 
-// Rotate secrets periodically
+// In a deployed environment, we want to keep a consistent secret
+// instead of rotating it, to prevent authentication issues
+// We'll only keep this for development/testing purposes
 function rotateSecrets() {
+  // For deployed application, we won't rotate the secret
+  // This ensures users stay logged in even after server restarts
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+  
   const now = Date.now();
   
   // Check if it's time to rotate
@@ -30,21 +40,24 @@ function rotateSecrets() {
     // Keep the previous secret for a while to validate existing tokens
     jwtSecrets.previous = jwtSecrets.current;
     
-    // Generate a new secret
-    jwtSecrets.current = generateSecureSecret();
+    // In development, we can still generate a new secret for testing
+    // In production, this would be disabled
+    if (process.env.NODE_ENV !== 'production') {
+      jwtSecrets.current = generateSecureSecret();
+      console.log(`JWT secret rotated at ${new Date().toISOString()}`);
+    }
     
     // Set next rotation time (7 days)
     jwtSecrets.nextRotation = now + (7 * 24 * 60 * 60 * 1000);
-    
-    console.log(`JWT secret rotated at ${new Date().toISOString()}`);
   }
 }
 
-// Check for secret rotation every day
-setInterval(rotateSecrets, 24 * 60 * 60 * 1000);
-
-// Initial check for rotation
-rotateSecrets();
+// Only check for rotation in development, not in production
+if (process.env.NODE_ENV !== 'production') {
+  setInterval(rotateSecrets, 24 * 60 * 60 * 1000);
+  // Initial check for rotation
+  rotateSecrets();
+}
 
 // Token expiration times
 const ACCESS_TOKEN_EXPIRY = '15m';  // 15 minutes
@@ -142,20 +155,42 @@ export function getUserIdFromToken(token: string): number | undefined {
  * Set JWT tokens in HTTP-only cookies for enhanced security
  */
 export function setTokenCookies(res: any, tokens: { accessToken: string, refreshToken: string }) {
+  // Check if we're in a Replit environment (works for both replit.dev and replit.app)
+  const isReplitEnv = process.env.REPL_ID || 
+    (typeof window !== 'undefined' && (
+      window.location.host.includes('.replit.dev') || 
+      window.location.host.includes('.replit.app')
+    ));
+  
+  // In Replit environments, we need to ensure cookies work properly
+  const cookieOptions = {
+    httpOnly: true,  // Prevents JavaScript access
+    // Only use secure cookies in production non-Replit environments
+    // For Replit environments, we'll skip the secure flag to ensure cookies work
+    secure: process.env.NODE_ENV === 'production' && !isReplitEnv,
+    sameSite: isReplitEnv ? 'none' : 'lax', // For cross-site cookies in Replit
+    // Add path to ensure cookies are sent for all routes
+    path: '/'
+  };
+  
   // Set access token cookie (short-lived)
   res.cookie('access_token', tokens.accessToken, {
-    httpOnly: true,  // Prevents JavaScript access
-    secure: process.env.NODE_ENV === 'production',  // HTTPS only in production
-    sameSite: 'lax', // Helps prevent CSRF
+    ...cookieOptions,
     maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
   });
   
   // Set refresh token cookie (long-lived)
   res.cookie('refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    ...cookieOptions,
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+  });
+  
+  // Log cookie settings for debugging
+  console.log('Cookie settings:', {
+    inReplit: isReplitEnv,
+    environment: process.env.NODE_ENV,
+    secure: cookieOptions.secure,
+    sameSite: cookieOptions.sameSite
   });
 }
 
@@ -163,8 +198,25 @@ export function setTokenCookies(res: any, tokens: { accessToken: string, refresh
  * Clear JWT tokens from cookies
  */
 export function clearTokenCookies(res: any) {
-  res.clearCookie('access_token');
-  res.clearCookie('refresh_token');
+  // Check if we're in a Replit environment (works for both replit.dev and replit.app)
+  const isReplitEnv = process.env.REPL_ID || 
+    (typeof window !== 'undefined' && (
+      window.location.host.includes('.replit.dev') || 
+      window.location.host.includes('.replit.app')
+    ));
+  
+  // Make sure to match the same options we used when setting the cookies
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' && !isReplitEnv,
+    sameSite: isReplitEnv ? 'none' : 'lax',
+    path: '/'
+  };
+  
+  res.clearCookie('access_token', cookieOptions);
+  res.clearCookie('refresh_token', cookieOptions);
+  
+  console.log('Cleared auth cookies with options:', cookieOptions);
 }
 
 /**
