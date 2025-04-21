@@ -17,13 +17,13 @@ export default function Dashboard() {
       const roleIdNum = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
       
       // Check for role by numeric ID
-      if (roleIdNum === 1) {
+      if (roleIdNum === 1002) {
         console.log("Using role ID for redirection:", roleIdNum, "-> URL:", "/admin/dashboard");
         setLocation('/admin/dashboard');
-      } else if (roleIdNum === 2) {
+      } else if (roleIdNum === 1000) {
         console.log("Using role ID for redirection:", roleIdNum, "-> URL:", "/manager/dashboard");
         setLocation('/manager/dashboard');
-      } else if (roleIdNum === 3) {
+      } else if (roleIdNum === 1001) {
         console.log("Using role ID for redirection:", roleIdNum, "-> URL:", "/client/dashboard");
         setLocation('/client/dashboard');
       } else {

@@ -170,83 +170,64 @@ export default function LoginPage() {
       localStorage.setItem('currentUser', JSON.stringify(userData));
       localStorage.setItem('isAuthenticated', 'true');
       
-      // A simpler approach: determine dashboard by username
+      // Use a simpler, more consistent approach: just use the dashboard path
+      // This will handle all redirection logic in one place
       let redirectUrl = '/dashboard';
       
       console.log("🔍 DEBUG - User data:", userData);
       console.log("🔍 DEBUG - Username:", userData.username);
+      console.log("🔍 DEBUG - Role ID:", userData.roleId);
       
-      // First check if we have a stored role from the login form selection for deployed environments
-      if (isDeployedEnv) {
-        const storedRoleName = localStorage.getItem('userRole');
-        if (storedRoleName) {
-          // Add additional logging for role detection
-          console.log("🔍 ROLE DETECTION - Stored role in localStorage:", {
-            roleName: storedRoleName,
-            roleIdFromLocalStorage: localStorage.getItem('userRoleId'),
-            userDataRoleId: userData.roleId
-          });
-          
-          if (storedRoleName === 'admin') {
-            redirectUrl = '/admin/dashboard';
-            console.log("Redirecting to admin dashboard based on stored role");
-          } else if (storedRoleName === 'manager') {
-            redirectUrl = '/manager/dashboard';
-            console.log("Redirecting to manager dashboard based on stored role");
-            
-            // Force a refresh to help get around any state issues
-            localStorage.setItem('forceRefresh', 'true');
-          } else if (storedRoleName === 'client') {
-            redirectUrl = '/client/dashboard';
-            console.log("Redirecting to client dashboard based on stored role");
-          }
+      // Convert roleId to a numeric value for consistency
+      let numericRoleId = null;
+      if (typeof userData.roleId === 'string') {
+        const parsedId = parseInt(userData.roleId);
+        if (!isNaN(parsedId)) {
+          numericRoleId = parsedId;
+          console.log("Converted string roleId to number:", numericRoleId);
         }
+      } else if (typeof userData.roleId === 'number') {
+        numericRoleId = userData.roleId;
+      }
+      
+      // Direct dashboard redirect based on roleId
+      if (numericRoleId === 1002) {
+        redirectUrl = '/admin/dashboard';
+        console.log("Direct redirect to admin dashboard based on roleId 1002");
+      } else if (numericRoleId === 1000) {
+        redirectUrl = '/manager/dashboard';
+        console.log("Direct redirect to manager dashboard based on roleId 1000");
+        // Force a refresh to help get around any state issues
+        localStorage.setItem('forceRefresh', 'true');
+      } else if (numericRoleId === 1001) {
+        redirectUrl = '/client/dashboard';
+        console.log("Direct redirect to client dashboard based on roleId 1001");
       } else {
-        // For local env, use normal user data flow
-        // Determine role by username pattern first
+        // Fallback to username pattern if roleId is not recognized
         const username = userData.username.toLowerCase();
-        
         if (username.includes('admin')) {
           redirectUrl = '/admin/dashboard';
-          console.log("Redirecting to admin dashboard based on username");
+          console.log("Fallback redirect to admin dashboard based on username");
         } else if (username.includes('manager')) {
           redirectUrl = '/manager/dashboard';
-          console.log("Redirecting to manager dashboard based on username");
+          console.log("Fallback redirect to manager dashboard based on username");
         } else if (username.includes('client')) {
           redirectUrl = '/client/dashboard';
-          console.log("Redirecting to client dashboard based on username");
+          console.log("Fallback redirect to client dashboard based on username");
         } else {
-          // For users with generic usernames, try to use roleId
-          const userRoleId = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
+          // Final fallback to using the selected role from UI
+          let roleGuess = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
           
-          console.log("🔍 DEBUG - Role ID type:", typeof userData.roleId);
-          console.log("🔍 DEBUG - Role ID value:", userData.roleId);
-          
-          // Trying roleId as number first
-          if (userRoleId === 1002) {
+          // Map role names
+          if (roleGuess === 'admin') {
             redirectUrl = '/admin/dashboard';
-            console.log("Using roleId 1002 (admin) for redirect");
-          } else if (userRoleId === 1000) {
+          } else if (roleGuess === 'manager') {
             redirectUrl = '/manager/dashboard';
-            console.log("Using roleId 1000 (manager) for redirect");
-          } else if (userRoleId === 1001) {
+          } else if (roleGuess === 'client') {
             redirectUrl = '/client/dashboard';
-            console.log("Using roleId 1001 (client) for redirect");
-          } else {
-            // Final fallback to using the selected role name
-            let roleGuess = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
-            
-            // Map role names
-            if (roleGuess === 'admin') {
-              redirectUrl = '/admin/dashboard';
-            } else if (roleGuess === 'manager') {
-              redirectUrl = '/manager/dashboard';
-            } else if (roleGuess === 'client') {
-              redirectUrl = '/client/dashboard';
-            }
-            
-            console.log("Using role name for redirection fallback:", roleGuess, "-> URL:", redirectUrl);
           }
+          
+          console.log("Using role selection for redirection fallback:", roleGuess, "-> URL:", redirectUrl);
         }
       }
       
