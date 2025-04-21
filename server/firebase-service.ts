@@ -30,7 +30,7 @@ export class FirebaseStorage implements IStorage {
   async getUser(id: number | string | undefined): Promise<User | undefined> {
     // Guard against undefined or invalid ID values
     if (id === undefined || id === null) {
-      console.warn("getUser called with undefined/null ID");
+      console.warn("getUser called with undefined/null ID", new Error().stack);
       return undefined;
     }
     
@@ -164,7 +164,7 @@ export class FirebaseStorage implements IStorage {
   async getRole(id: number | string | undefined): Promise<Role | undefined> {
     // Guard against undefined or invalid ID values
     if (id === undefined || id === null) {
-      console.warn("getRole called with undefined/null ID");
+      console.warn("getRole called with undefined/null ID", new Error().stack);
       return undefined;
     }
     

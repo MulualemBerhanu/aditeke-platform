@@ -84,8 +84,10 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
       }
     },
     retry: 1, // Only retry once since a 401 will always be a 401
-    refetchOnWindowFocus: true,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false, // Disable refetch on window focus to reduce API calls
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+    refetchInterval: false, // Disable auto refetching
   });
 
   // Redirect to login if not authenticated
