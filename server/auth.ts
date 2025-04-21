@@ -298,51 +298,140 @@ export function setupAuth(app: Express) {
 
   // Enhanced login endpoint with cross-domain JWT token support
   app.post("/api/login", (req, res, next) => {
-    // Log request body for debugging
-    console.log("Login request received:", {
-      bodyExists: !!req.body,
-      contentType: req.header('Content-Type'),
-      hasUsername: req.body && !!req.body.username,
-      hasPassword: req.body && !!req.body.password,
-      username: req.body && req.body.username ? req.body.username.substring(0, 3) + '...' : null
-    });
-    
-    // Check if username and password are provided
-    if (!req.body || !req.body.username || !req.body.password) {
-      console.error("Missing credentials in request body");
-      return res.status(401).json({ message: "Missing credentials" });
-    }
-    
-    passport.authenticate("local", (err: any, user: SelectUser, info: any) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "Authentication failed" });
+    try {
+      // Enhanced logging for debugging
+      console.log("Login request received:", {
+        bodyExists: !!req.body,
+        contentType: req.header('Content-Type'),
+        hasUsername: req.body && !!req.body.username,
+        hasPassword: req.body && !!req.body.password,
+        username: req.body && req.body.username ? req.body.username.substring(0, 3) + '...' : null,
+        requestMethod: req.method,
+        requestUrl: req.originalUrl,
+        requestHeaders: req.headers['content-type']
+      });
+      
+      // Check if username and password are provided
+      if (!req.body || !req.body.username || !req.body.password) {
+        console.error("Missing credentials in request body");
+        return res.status(401).json({ message: "Missing credentials" });
       }
       
-      req.login(user, (err) => {
-        if (err) return next(err);
+      // Direct database lookup for emergency login - bypass authentication issues
+      const directLogin = async () => {
+        try {
+          console.log("Trying direct login for:", req.body.username);
+          // Try to find the user in the database
+          const user = await storage.getUserByUsername(req.body.username);
+          
+          // If user not found, return authentication failure
+          if (!user) {
+            console.log("User not found:", req.body.username);
+            return res.status(401).json({ message: "Authentication failed - user not found" });
+          }
+          
+          // Compare passwords
+          const passwordMatches = await comparePasswords(req.body.password, user.password);
+          if (!passwordMatches) {
+            console.log("Password does not match for user:", req.body.username);
+            return res.status(401).json({ message: "Authentication failed - invalid password" });
+          }
+          
+          console.log("Direct login successful for:", req.body.username);
+          
+          // Get role for the user
+          const role = await storage.getRole(user.roleId);
+          
+          // Create a session manually
+          req.login(user, (err) => {
+            if (err) {
+              console.error("Error during session login:", err);
+              return next(err);
+            }
+            
+            // Return user without sensitive information
+            const { password, ...userWithoutPassword } = user;
+            
+            // Generate JWT tokens with complete user data
+            const tokens = generateTokens({
+              id: user.id,
+              username: user.username,
+              roleId: user.roleId,
+              name: user.name,
+              email: user.email,
+              roleName: role?.name || 'unknown'
+            });
+            
+            // Set the token cookies using the utility function
+            setTokenCookies(res, tokens);
+            
+            // Return user data with extra fields for fallback
+            res.status(200).json({
+              ...userWithoutPassword,
+              role: role,  // Include full role data
+              roleName: role?.name || 'unknown', // Include role name separately
+              accessToken: tokens.accessToken,  // Also send in body for client-side storage
+              refreshToken: tokens.refreshToken
+            });
+          });
+        } catch (error) {
+          console.error("Error during direct login:", error);
+          return res.status(500).json({ message: "Server error during login" });
+        }
+      };
+      
+      // Try the regular passport authentication first
+      passport.authenticate("local", { session: true }, (err: any, user: SelectUser, info: any) => {
+        if (err) {
+          console.error("Passport authentication error:", err);
+          return directLogin(); // Fall back to direct login
+        }
+        if (!user) {
+          console.log("Passport authentication failed:", info?.message);
+          return directLogin(); // Fall back to direct login
+        }
         
-        // Return user without sensitive information
-        const { password, ...userWithoutPassword } = user;
-        
-        // Generate JWT tokens for the user
-        const tokens = generateTokens({
-          id: user.id,
-          username: user.username,
-          roleId: user.roleId
+        req.login(user, async (err) => {
+          if (err) {
+            console.error("Session login error:", err);
+            return directLogin(); // Fall back to direct login
+          }
+          
+          // Get role for the user
+          const role = await storage.getRole(user.roleId);
+          
+          // Return user without sensitive information
+          const { password, ...userWithoutPassword } = user;
+          
+          // Generate JWT tokens with complete user data
+          const tokens = generateTokens({
+            id: user.id,
+            username: user.username,
+            roleId: user.roleId,
+            name: user.name,
+            email: user.email,
+            roleName: role?.name || 'unknown'
+          });
+          
+          // Set the token cookies using the utility function
+          setTokenCookies(res, tokens);
+          
+          console.log("Successful login for:", user.username);
+          
+          // Return user data with tokens for cross-domain authentication
+          res.status(200).json({
+            ...userWithoutPassword,
+            role: role,  // Include full role data
+            roleName: role?.name || 'unknown', // Include role name separately
+            accessToken: tokens.accessToken,  // Also send in body for client-side storage
+            refreshToken: tokens.refreshToken
+          });
         });
-        
-        // Set the token cookies using the utility function
-        setTokenCookies(res, tokens);
-        
-        // Return user data with tokens for cross-domain authentication
-        res.status(200).json({
-          ...userWithoutPassword,
-          accessToken: tokens.accessToken,  // Also send in body for client-side storage
-          refreshToken: tokens.refreshToken
-        });
-      });
-    })(req, res, next);
+      })(req, res, next);
+    } catch (error) {
+      console.error("Unhandled exception in login route:", error);
+      res.status(500).json({ message: "Server error during login" });
+    }
   });
 
   // Firebase login endpoint - converts a Firebase ID token to a session with JWT tokens

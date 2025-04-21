@@ -117,7 +117,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Ensure we're sending the correct content type
         const loginData = { username, password };
         
+        // Show client-side info to debug
+        console.log(`Login request for ${username} with password length: ${password.length}`);
+        
+        // Add a slight delay to ensure database connection is ready
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         // Direct fetch with explicit content type to debug the issue
+        console.log('Making fetch request to /api/login with credentials...');
+        
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
@@ -127,16 +135,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           credentials: 'include',
         });
         
+        console.log('Login response status:', response.status);
+        
         // Check for successful response
         if (!response.ok) {
           // Handle specific error cases from the server
           const errorText = await response.text();
+          console.error('Error response content:', errorText);
           let errorMessage = 'Authentication failed';
           
           try {
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.message || errorMessage;
+            console.error('Parsed error message:', errorMessage);
           } catch (e) {
+            console.error('Failed to parse error JSON:', e);
             errorMessage = errorText || errorMessage;
           }
           

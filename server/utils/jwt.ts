@@ -133,18 +133,59 @@ export function generateRefreshToken(user: Partial<User>): string {
  * Returns the decoded token payload if valid, throws an error if invalid
  */
 export function verifyToken(token: string): any {
+  // Get a stack trace for debugging
+  const stackTrace = new Error().stack;
+  
+  if (!token) {
+    console.error('verifyToken called with empty token');
+    console.log('Stack trace for empty token:', stackTrace);
+    throw new Error('Token is required');
+  }
+  
+  if (typeof token !== 'string') {
+    console.error(`verifyToken called with non-string token: ${typeof token}`);
+    console.log('Stack trace for non-string token:', stackTrace);
+    throw new Error('Token must be a string');
+  }
+  
   try {
+    // Log token format for debugging (last 4 chars only for security)
+    const tokenLength = token.length;
+    const tokenPreview = tokenLength > 10 ? 
+      `${token.substring(0, 6)}...${token.substring(tokenLength - 4)}` : 
+      'invalid-token';
+    console.log(`Verifying token: ${tokenPreview} (length: ${tokenLength})`);
+    
     // First try with current secret
     return jwt.verify(token, jwtSecrets.current);
   } catch (error: any) {
+    // Log info about the error
+    console.error(`JWT verification error: ${error.name} - ${error.message}`);
+    
     // If token is invalid and we have a previous secret, try that
     if (error.name === 'JsonWebTokenError' && jwtSecrets.previous) {
       try {
+        console.log('Trying previous JWT secret...');
         return jwt.verify(token, jwtSecrets.previous);
-      } catch (error2) {
+      } catch (error2: any) {
+        console.error(`JWT verification failed with previous secret: ${error2.name} - ${error2.message}`);
+        
+        // For debugging only, output full token in development environment
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Token verification failed. Debug info:');
+          try {
+            const decodedHeader = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString());
+            console.log('Token header:', decodedHeader);
+          } catch (err) {
+            console.log('Could not decode token header');
+          }
+        }
+        
         throw error; // If still invalid, throw the original error
       }
     } else {
+      // Add stack trace for unexpected errors
+      console.error('Stack trace for JWT error:', stackTrace);
       throw error;
     }
   }
