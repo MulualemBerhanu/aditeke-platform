@@ -6,6 +6,7 @@ import { z } from "zod";
 import { initializeDatabase } from "./db-init";
 import { updateFirebaseIds } from "./update-id-schema";
 import { authenticateJWT } from "./utils/authMiddleware";
+import { verifyToken } from "./utils/jwt";
 import PDFDocument from "pdfkit";
 import {
   insertUserSchema,
