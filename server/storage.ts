@@ -1361,7 +1361,24 @@ export class PostgresStorage implements IStorage {
   }
   
   async getRolesForPermission(permissionId: number): Promise<Role[]> {
-    throw new Error("Method not implemented.");
+    // Get the role-permission connections
+    const rolePermissionsResult = await this.db.select()
+      .from(rolePermissions)
+      .where(eq(rolePermissions.permissionId, permissionId));
+    
+    if (rolePermissionsResult.length === 0) {
+      return []; // No roles for this permission
+    }
+    
+    // Get the role IDs
+    const roleIds = rolePermissionsResult.map(rp => rp.roleId);
+    
+    // Get the roles
+    const rolesResult = await this.db.select()
+      .from(roles)
+      .where(inArray(roles.id, roleIds));
+    
+    return rolesResult;
   }
   
   async getUserWithPermissions(userId: number): Promise<{ user: User; role: Role; permissions: Permission[] }> {
@@ -1384,7 +1401,23 @@ export class PostgresStorage implements IStorage {
   }
   
   async hasPermission(userId: number, resource: string, action: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    try {
+      // Get the user with permissions
+      const { user, role, permissions } = await this.getUserWithPermissions(userId);
+      
+      // Admin role has all permissions
+      if (role.name === 'admin') {
+        return true;
+      }
+      
+      // Check if the user has the specific permission
+      return permissions.some(
+        permission => permission.resource === resource && permission.action === action
+      );
+    } catch (error) {
+      console.error(`Error checking permission for user ${userId}:`, error);
+      return false;
+    }
   }
 
   // Initialize the database with sample data
