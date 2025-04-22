@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
+import { Loader2, ArrowLeft, Calendar, DollarSign } from 'lucide-react';
 
 // Project creation schema
 // Define a schema for Firebase timestamp format
@@ -494,6 +494,37 @@ export default function ProjectForm({
                   )}
                 />
               </div>
+              
+              {/* Budget Field */}
+              <FormField
+                control={form.control}
+                name="budget"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project Budget</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          type="number" 
+                          className="pl-9"
+                          placeholder="5000"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.value === '' ? undefined : Number(e.target.value);
+                            field.onChange(value);
+                          }}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Set the project budget for payment calculations
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="flex justify-end space-x-4 pt-4">
