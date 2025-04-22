@@ -1591,6 +1591,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Converted clientId from string to number: ${normalizedData.clientId}`);
       }
       
+      // Ensure budget is a number if present
+      if (normalizedData.budget && typeof normalizedData.budget === 'string') {
+        normalizedData.budget = parseFloat(normalizedData.budget);
+        console.log(`Converted budget from string to number: ${normalizedData.budget}`);
+      }
+      
+      // Handle dates - normalize to ISO format strings for database
+      if (normalizedData.startDate) {
+        if (typeof normalizedData.startDate === 'object' && '_seconds' in normalizedData.startDate) {
+          // Firebase timestamp format
+          normalizedData.startDate = new Date(normalizedData.startDate._seconds * 1000).toISOString();
+          console.log(`Converted startDate from Firebase timestamp to ISO string: ${normalizedData.startDate}`);
+        } else if (typeof normalizedData.startDate === 'string' && !normalizedData.startDate.includes('T')) {
+          // Simple date string - convert to ISO format
+          normalizedData.startDate = new Date(normalizedData.startDate).toISOString();
+          console.log(`Converted startDate string to ISO format: ${normalizedData.startDate}`);
+        }
+      }
+      
+      if (normalizedData.endDate) {
+        if (typeof normalizedData.endDate === 'object' && '_seconds' in normalizedData.endDate) {
+          // Firebase timestamp format
+          normalizedData.endDate = new Date(normalizedData.endDate._seconds * 1000).toISOString();
+          console.log(`Converted endDate from Firebase timestamp to ISO string: ${normalizedData.endDate}`);
+        } else if (typeof normalizedData.endDate === 'string' && !normalizedData.endDate.includes('T')) {
+          // Simple date string - convert to ISO format
+          normalizedData.endDate = new Date(normalizedData.endDate).toISOString();
+          console.log(`Converted endDate string to ISO format: ${normalizedData.endDate}`);
+        }
+      }
+      
+      console.log(`Normalized project data for database update:`, normalizedData);
+      
       // Update the project
       const updatedProject = await storage.updateProject(id, normalizedData);
       console.log(`Successfully updated project: ${updatedProject.title}`);
@@ -1598,7 +1631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(updatedProject);
     } catch (error) {
       console.error("Error updating project:", error);
-      return res.status(500).json({ message: "Failed to update project" });
+      return res.status(500).json({ message: "Failed to update project", error: String(error) });
     }
   });
 
