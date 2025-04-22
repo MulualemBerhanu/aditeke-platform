@@ -1386,9 +1386,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Special endpoint to initialize the database with sample data
-  // This would typically be protected or disabled in production
+  // This is temporarily unprotected for development purposes
   app.post("/api/init-database", async (req, res) => {
     try {
+      console.log("Initializing database without authentication...");
       const result = await initializeDatabase();
       if (result) {
         return res.status(200).json({ message: "Database initialized successfully" });
