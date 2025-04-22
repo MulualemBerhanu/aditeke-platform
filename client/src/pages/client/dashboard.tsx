@@ -9,7 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { 
   MessageSquare, FileText, Clock, CheckCircle2, 
-  AlertCircle, ExternalLink, Download, Calendar, Loader2
+  AlertCircle, ExternalLink, Download, Calendar, Loader2,
+  Receipt, DollarSign, CreditCard
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Project } from '@shared/schema';
@@ -104,25 +105,25 @@ export default function ClientDashboard() {
   // Empty projects array - we'll use real data from the API only
   const emptyProjects: Project[] = [];
   
-  // Fetch client's projects - only using real data from API
+  // Fetch client's projects using public API endpoint
   const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery<Project[]>({
-    queryKey: ['/api/clients', userData?.id, 'projects'],
+    queryKey: ['/api/public/client-projects', userData?.id],
     queryFn: async () => {
       if (!userData?.id) {
         return [];
       }
       
       try {
-        console.log(`Attempting to fetch projects for client ID: ${userData.id}`);
-        const res = await fetch(`/api/clients/${userData.id}/projects`);
+        console.log(`Attempting to fetch projects for client ID: ${userData.id} using public API`);
+        const res = await fetch(`/api/public/client-projects/${userData.id}`);
         
         if (!res.ok) {
-          console.log("API request failed");
+          console.log("Public API request failed:", res.status);
           return [];
         }
         
         const data = await res.json();
-        console.log("Projects fetched from API:", data);
+        console.log("Projects fetched from public API:", data);
         
         // Return an empty array if the API returns no data
         if (!data || !Array.isArray(data)) {
@@ -133,6 +134,26 @@ export default function ClientDashboard() {
         return data;
       } catch (error) {
         console.error("Error fetching client projects:", error);
+        return [];
+      }
+    },
+    enabled: !!userData?.id && isClient
+  });
+  
+  // Fetch client's invoices
+  const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
+    queryKey: ['/api/public/client-invoices', userData?.id],
+    queryFn: async () => {
+      if (!userData?.id) {
+        return [];
+      }
+      
+      try {
+        const res = await fetch(`/api/public/client-invoices/${userData.id}`);
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching client invoices:", error);
         return [];
       }
     },
@@ -204,6 +225,129 @@ export default function ClientDashboard() {
                 </CardContent>
               </Card>
             </div>
+            
+            {/* Project Payment Summary Card */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Project Payment Summary</CardTitle>
+                <CardDescription>Overview of your project payments and invoices</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingProjects || isLoadingInvoices ? (
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2">Loading payment information...</span>
+                  </div>
+                ) : projects && projects.length > 0 ? (
+                  <div className="space-y-6">
+                    {projects.map((project) => {
+                      // Find invoices for this project
+                      const projectInvoices = invoices.filter(inv => inv.projectId === project.id);
+                      
+                      // Calculate total paid and total amount
+                      const totalAmount = project.budget || 0;
+                      const totalPaid = projectInvoices
+                        .filter(inv => inv.status === 'Paid')
+                        .reduce((sum, inv) => sum + (inv.amount || 0), 0);
+                      
+                      // Calculate remaining amount
+                      const remainingAmount = totalAmount - totalPaid;
+                      
+                      // Check if there's a paid invoice for this project
+                      const hasPaidInvoice = projectInvoices.some(inv => inv.status === 'Paid');
+                      
+                      return (
+                        <div key={project.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">{project.title}</h3>
+                            <Badge 
+                              className={
+                                project.status === 'Completed' ? 'bg-green-500' : 
+                                project.status === 'In Progress' ? 'bg-amber-500' :
+                                'bg-blue-500'
+                              }
+                            >
+                              {project.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className="flex items-center">
+                              <DollarSign className="h-5 w-5 text-primary mr-2" />
+                              <div>
+                                <p className="text-sm text-muted-foreground">Total Amount</p>
+                                <p className="font-medium">${totalAmount.toFixed(2)}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center">
+                              <CreditCard className="h-5 w-5 text-green-500 mr-2" />
+                              <div>
+                                <p className="text-sm text-muted-foreground">Amount Paid</p>
+                                <p className="font-medium">${totalPaid.toFixed(2)}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center">
+                              <Receipt className="h-5 w-5 text-amber-500 mr-2" />
+                              <div>
+                                <p className="text-sm text-muted-foreground">Remaining</p>
+                                <p className="font-medium">${remainingAmount.toFixed(2)}</p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {projectInvoices.length > 0 ? (
+                              projectInvoices.map((invoice) => (
+                                <div key={invoice.id} className="flex space-x-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      const token = localStorage.getItem('token');
+                                      window.open(`/api/invoice/${invoice.id}/download?token=${token}`, '_blank');
+                                    }}
+                                  >
+                                    <Download className="h-4 w-4 mr-1" />
+                                    Invoice #{invoice.invoiceNumber}
+                                  </Button>
+                                  
+                                  {invoice.status === 'Paid' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="text-green-600 border-green-200 hover:border-green-400"
+                                      onClick={() => {
+                                        const token = localStorage.getItem('token');
+                                        window.open(`/api/receipt/${invoice.id}/download?token=${token}`, '_blank');
+                                      }}
+                                    >
+                                      <Receipt className="h-4 w-4 mr-1" />
+                                      Receipt
+                                    </Button>
+                                  )}
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-muted-foreground">No invoices available for this project.</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">No payment information</h3>
+                    <p className="text-muted-foreground">
+                      No projects or payment information found. Contact your project manager for details.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <div className="space-y-6 mt-6">
               {isLoadingProjects ? (
