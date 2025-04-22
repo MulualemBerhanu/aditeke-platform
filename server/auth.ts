@@ -169,10 +169,10 @@ export function setupAuth(app: Express) {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Only use secure cookies in production
+      secure: false, // Always set to false for Replit environments
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" // Essential for cross-domain cookies in production
+      sameSite: "none" // Always use 'none' for Replit environments
     }
   };
 

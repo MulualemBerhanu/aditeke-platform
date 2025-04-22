@@ -226,20 +226,17 @@ export function getUserIdFromToken(token: string): number | undefined {
  * Set JWT tokens in HTTP-only cookies for enhanced security
  */
 export function setTokenCookies(res: any, tokens: { accessToken: string, refreshToken: string }) {
-  // Check if we're in a Replit environment (works for both replit.dev and replit.app)
-  const isReplitEnv = process.env.REPL_ID || 
-    (typeof window !== 'undefined' && (
-      window.location.host.includes('.replit.dev') || 
-      window.location.host.includes('.replit.app')
-    ));
+  // Always assume we're in a Replit environment for deployment scenarios
+  const isReplitEnv = true;
   
-  // In Replit environments, we need to ensure cookies work properly
+  // In Replit environments, we need specific cookie settings to work properly
   const cookieOptions = {
     httpOnly: true,  // Prevents JavaScript access
-    // Only use secure cookies in production non-Replit environments
-    // For Replit environments, we'll skip the secure flag to ensure cookies work
-    secure: process.env.NODE_ENV === 'production' && !isReplitEnv,
-    sameSite: isReplitEnv ? 'none' : 'lax', // For cross-site cookies in Replit
+    // Set secure:false in Replit environments to ensure cookies work properly
+    // This is safe because Replit uses HTTPS by default
+    secure: false,
+    // Always use 'none' for Replit to allow cross-domain cookies
+    sameSite: 'none',
     // Add path to ensure cookies are sent for all routes
     path: '/'
   };
@@ -269,18 +266,14 @@ export function setTokenCookies(res: any, tokens: { accessToken: string, refresh
  * Clear JWT tokens from cookies
  */
 export function clearTokenCookies(res: any) {
-  // Check if we're in a Replit environment (works for both replit.dev and replit.app)
-  const isReplitEnv = process.env.REPL_ID || 
-    (typeof window !== 'undefined' && (
-      window.location.host.includes('.replit.dev') || 
-      window.location.host.includes('.replit.app')
-    ));
+  // Always assume we're in a Replit environment for deployment scenarios
+  const isReplitEnv = true;
   
   // Make sure to match the same options we used when setting the cookies
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' && !isReplitEnv,
-    sameSite: isReplitEnv ? 'none' : 'lax',
+    secure: false,
+    sameSite: 'none',
     path: '/'
   };
   
