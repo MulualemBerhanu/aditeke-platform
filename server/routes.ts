@@ -1768,8 +1768,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Public endpoint for invoice download - bypasses authentication for easy viewing
   app.get('/api/client-invoices/invoice/:id', async (req, res) => {
-    console.log('Development mode: Auth skipped for:', req.url);
+    console.log('[INVOICE PDF ENDPOINT] Processing invoice download request', {
+      url: req.url,
+      params: req.params,
+      query: req.query,
+      cookies: req.cookies,
+      headers: req.headers,
+      hasUser: !!req.user
+    });
+    
     try {
+      // Check for token in query params if available (for downloads)
+      if (req.query.token) {
+        const token = req.query.token as string;
+        try {
+          const decoded = verifyToken(token);
+          console.log('Token verified successfully for invoice download:', decoded.sub);
+        } catch (tokenError) {
+          console.error('Token verification error, but continuing anyway:', tokenError);
+          // Continue without authentication in dev environment
+        }
+      }
+      
+      // Skip authentication checks for invoice generation to make it publicly accessible
+      console.log('Invoice PDF endpoint: Authentication skipped for development mode');
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid invoice ID" });
@@ -2166,8 +2189,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Generate receipt for already paid invoice - public endpoint
   app.get('/api/generate-receipt/:invoiceId', async (req, res) => {
-    console.log('Development mode: Auth skipped for receipt:', req.url);
+    console.log('[RECEIPT ENDPOINT] Processing receipt request', {
+      url: req.url,
+      params: req.params,
+      query: req.query,
+      cookies: req.cookies,
+      headers: req.headers,
+      hasUser: !!req.user
+    });
+    
     try {
+      // Check for token in query params if available (for downloads)
+      if (req.query.token) {
+        const token = req.query.token as string;
+        try {
+          const decoded = verifyToken(token);
+          console.log('Token verified successfully for receipt download:', decoded.sub);
+        } catch (tokenError) {
+          console.error('Token verification error, but continuing anyway:', tokenError);
+          // Continue without authentication in dev environment
+        }
+      }
+      
+      // Skip authentication checks for receipt generation to make it publicly accessible
+      console.log('Receipt endpoint: Authentication skipped for development mode');
+      
       const invoiceId = parseInt(req.params.invoiceId);
       if (isNaN(invoiceId)) {
         return res.status(400).json({ error: "Invalid invoice ID" });

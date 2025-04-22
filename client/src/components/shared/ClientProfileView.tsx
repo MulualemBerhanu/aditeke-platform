@@ -1385,11 +1385,33 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                     </div>
                                     <DialogFooter>
                                       {invoice.status === 'paid' ? (
-                                        <Button onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}>
+                                        <Button onClick={() => {
+                                          // Get auth token from localStorage
+                                          const accessToken = localStorage.getItem('accessToken');
+                                          
+                                          // Open in new window with token if available
+                                          window.open(
+                                            accessToken 
+                                              ? `/api/generate-receipt/${invoice.id}?token=${accessToken}` 
+                                              : `/api/generate-receipt/${invoice.id}`, 
+                                            '_blank'
+                                          );
+                                        }}>
                                           <Download className="h-4 w-4 mr-1" /> Download Receipt
                                         </Button>
                                       ) : (
-                                        <Button onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')} variant="outline">
+                                        <Button onClick={() => {
+                                          // Get auth token from localStorage  
+                                          const accessToken = localStorage.getItem('accessToken');
+                                          
+                                          // Open in new window with token if available
+                                          window.open(
+                                            accessToken 
+                                              ? `/api/client-invoices/invoice/${invoice.id}?token=${accessToken}` 
+                                              : `/api/client-invoices/invoice/${invoice.id}`, 
+                                            '_blank'
+                                          );
+                                        }} variant="outline">
                                           <Download className="h-4 w-4 mr-1" /> Download Invoice
                                         </Button>
                                       )}
@@ -1402,7 +1424,18 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                   size="default" 
                                   variant="outline"
                                   className="px-4 py-2 h-10"
-                                  onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')}
+                                  onClick={() => {
+                                    // Get auth token from localStorage
+                                    const accessToken = localStorage.getItem('accessToken');
+                                    
+                                    // Open in new window with token if available
+                                    window.open(
+                                      accessToken 
+                                        ? `/api/client-invoices/invoice/${invoice.id}?token=${accessToken}` 
+                                        : `/api/client-invoices/invoice/${invoice.id}`, 
+                                      '_blank'
+                                    );
+                                  }}
                                 >
                                   <Download className="h-4 w-4 mr-2" /> Download
                                 </Button>
