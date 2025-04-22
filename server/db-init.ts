@@ -156,7 +156,7 @@ async function initializeRolePermissions() {
   for (const mapping of mappings) {
     for (const permissionId of mapping.permissionIds) {
       await db.insert(rolePermissions).values({
-        id: `${mapping.roleId}-${permissionId}`, // Composite key
+        // Remove the id field as it's likely auto-generated, or the schema expects a number not a string
         roleId: mapping.roleId,
         permissionId: permissionId
       });
@@ -378,15 +378,6 @@ async function initializeProjects() {
 // Export the initialization function
 export { initializeDatabase };
 
-// Allow direct execution from command line
-if (require.main === module) {
-  initializeDatabase()
-    .then(() => {
-      console.log('Database initialized successfully!');
-      process.exit(0);
-    })
-    .catch(error => {
-      console.error('Database initialization failed:', error);
-      process.exit(1);
-    });
-}
+// In ESM we can't use require.main === module, so we'll export the function directly
+// If someone wants to run this directly, they can use:
+// node --loader tsx server/db-init.ts
