@@ -630,7 +630,8 @@ export function setupAuth(app: Express) {
       '/api/projects',
       '/api/testimonials',
       '/api/blog',
-      '/api/client-invoices'
+      '/api/client-invoices',
+      '/api/init-database' // Added database initialization endpoint
     ];
     
     // Check if the path starts with /api/public/ or is in the publicPaths list

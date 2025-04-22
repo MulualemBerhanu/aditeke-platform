@@ -1390,6 +1390,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/init-database", async (req, res) => {
     try {
       console.log("Initializing database without authentication...");
+      // Import the initializeDatabase function from db-init.ts
+      const { initializeDatabase } = await import('./db-init');
       const result = await initializeDatabase();
       if (result) {
         return res.status(200).json({ message: "Database initialized successfully" });
@@ -1398,7 +1400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error initializing database:", error);
-      return res.status(500).json({ message: "Database initialization failed", error: error.message });
+      return res.status(500).json({ message: "Database initialization failed", error: (error as Error).message });
     }
   });
 
