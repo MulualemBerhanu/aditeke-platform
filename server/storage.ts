@@ -1120,8 +1120,15 @@ export class PostgresStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await this.db.select().from(users).where(eq(users.username, username));
-    return result[0];
+    // Try to find user by username first
+    const resultByUsername = await this.db.select().from(users).where(eq(users.username, username));
+    if (resultByUsername.length > 0) {
+      return resultByUsername[0];
+    }
+    
+    // If not found by username, try by email
+    const resultByEmail = await this.db.select().from(users).where(eq(users.email, username));
+    return resultByEmail[0];
   }
   
   async getAllUsers(): Promise<User[]> {
