@@ -512,6 +512,20 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     }
   };
 
+  // Calculate payment based on selected plan
+  const calculatePayment = (total: number) => {
+    switch (selectedPaymentPlan) {
+      case 'fixed':
+        return { initial: total, remaining: 0 };
+      case '40-60':
+        return { initial: total * 0.4, remaining: total * 0.6 };
+      case 'custom':
+        const initialAmount = parseFloat(customAmount) || 0;
+        return { initial: initialAmount, remaining: total - initialAmount };
+      default:
+        return { initial: total, remaining: 0 };
+    }
+  };
 
   if (isLoadingClient) {
     return (
