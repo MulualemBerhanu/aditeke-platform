@@ -54,6 +54,8 @@ const projectSchema = z.object({
     z.null()
   ]).optional(),
   status: z.string({ required_error: "Please select a status" }),
+  // Budget field - optional number
+  budget: z.number().optional(),
 });
 
 export type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -236,6 +238,8 @@ export default function ProjectForm({
         _seconds: Math.floor(new Date(data.endDate).getTime() / 1000),
         _nanoseconds: 0
       } : undefined,
+      // Ensure budget is a number or undefined
+      budget: typeof data.budget === 'string' ? parseFloat(data.budget) : data.budget,
     };
     
     console.log(`${isEditing ? 'Updating' : 'Creating'} project data:`, formattedData);
