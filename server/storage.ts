@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { eq, sql, like, ilike } from 'drizzle-orm';
+import { eq, sql, like, ilike, inArray } from 'drizzle-orm';
 import postgres from 'postgres';
 import {
   users, type User, type InsertUser,
@@ -1132,6 +1132,22 @@ export class PostgresStorage implements IStorage {
     const result = await this.db.insert(users).values(user).returning();
     return result[0];
   }
+  
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
+    const result = await this.db.update(users)
+      .set({
+        ...userData,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    
+    return result[0];
+  }
 
   // Project methods
   async getAllProjects(category?: string): Promise<Project[]> {
@@ -1259,21 +1275,20 @@ export class PostgresStorage implements IStorage {
     return result[0];
   }
   
-  // Missing methods from IStorage interface - stub implementations
-  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
-    throw new Error("Method not implemented.");
-  }
+  // The following methods are implemented with stubs for now
   
   async getRole(id: number): Promise<Role | undefined> {
-    throw new Error("Method not implemented.");
+    const result = await this.db.select().from(roles).where(eq(roles.id, id));
+    return result[0];
   }
   
   async getRoleByName(name: string): Promise<Role | undefined> {
-    throw new Error("Method not implemented.");
+    const result = await this.db.select().from(roles).where(eq(roles.name, name));
+    return result[0];
   }
   
   async getAllRoles(): Promise<Role[]> {
-    throw new Error("Method not implemented.");
+    return await this.db.select().from(roles);
   }
   
   async createRole(role: InsertRole): Promise<Role> {
@@ -1325,7 +1340,24 @@ export class PostgresStorage implements IStorage {
   }
   
   async getPermissionsForRole(roleId: number): Promise<Permission[]> {
-    throw new Error("Method not implemented.");
+    // Get the role permissions
+    const rolePermissionsResult = await this.db.select()
+      .from(rolePermissions)
+      .where(eq(rolePermissions.roleId, roleId));
+    
+    if (rolePermissionsResult.length === 0) {
+      return []; // No permissions for this role
+    }
+    
+    // Get the permission IDs
+    const permissionIds = rolePermissionsResult.map(rp => rp.permissionId);
+    
+    // Get the permissions
+    const permissionsResult = await this.db.select()
+      .from(permissions)
+      .where(inArray(permissions.id, permissionIds));
+    
+    return permissionsResult;
   }
   
   async getRolesForPermission(permissionId: number): Promise<Role[]> {
@@ -1333,7 +1365,22 @@ export class PostgresStorage implements IStorage {
   }
   
   async getUserWithPermissions(userId: number): Promise<{ user: User; role: Role; permissions: Permission[] }> {
-    throw new Error("Method not implemented.");
+    // Get the user
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    
+    // Get the user's role
+    const role = await this.getRole(user.roleId);
+    if (!role) {
+      throw new Error(`Role with id ${user.roleId} not found`);
+    }
+    
+    // Get the role's permissions
+    const permissions = await this.getPermissionsForRole(role.id);
+    
+    return { user, role, permissions };
   }
   
   async hasPermission(userId: number, resource: string, action: string): Promise<boolean> {
@@ -1543,18 +1590,29 @@ export class PostgresStorage implements IStorage {
   }
 }
 
-// Initialize storage - Use MemStorage for now until PostgreSQL is properly configured
+// Initialize storage - Try PostgreSQL first, then Firebase, then MemStorage
 // Import the FirebaseStorage implementation
 import { FirebaseStorage } from './firebase-service';
 
-// Create the storage instance
-// We'll try to use FirebaseStorage, but fall back to MemStorage if there's an error
+// Create the storage instance with proper fallback
 let storageInstance: IStorage;
 try {
-  storageInstance = new FirebaseStorage();
-  console.log("Using Firebase Firestore as the storage backend");
+  // First try PostgreSQL
+  if (process.env.DATABASE_URL) {
+    storageInstance = new PostgresStorage();
+    console.log("Using PostgreSQL as the storage backend");
+  } else {
+    // Then try Firebase
+    try {
+      storageInstance = new FirebaseStorage();
+      console.log("Using Firebase Firestore as the storage backend");
+    } catch (firebaseError) {
+      console.warn("Failed to initialize Firebase storage, falling back to in-memory storage:", firebaseError);
+      storageInstance = new MemStorage();
+    }
+  }
 } catch (error) {
-  console.warn("Failed to initialize Firebase storage, falling back to in-memory storage:", error);
+  console.warn("Failed to initialize PostgreSQL storage, falling back to in-memory storage:", error);
   storageInstance = new MemStorage();
 }
 
