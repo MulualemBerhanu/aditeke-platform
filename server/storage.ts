@@ -1190,39 +1190,78 @@ export class PostgresStorage implements IStorage {
   }
   
   async updateProject(id: number, projectData: Partial<InsertProject>): Promise<Project> {
-    // Process date fields to ensure proper format for database
-    const processedData = { ...projectData };
+    // Process data for database update - creating a new object to avoid modifying the input
+    const processedData: Record<string, any> = {}; 
     
-    // Handle startDate - convert from Firebase format if needed
-    if (processedData.startDate && typeof processedData.startDate === 'object' && '_seconds' in processedData.startDate) {
-      // Convert Firebase timestamp to ISO string
-      processedData.startDate = new Date(processedData.startDate._seconds * 1000).toISOString();
-      console.log("Converted startDate from Firebase timestamp:", processedData.startDate);
+    // Copy all fields except dates which need special handling
+    Object.keys(projectData).forEach(key => {
+      if (key !== 'startDate' && key !== 'endDate') {
+        processedData[key] = (projectData as any)[key];
+      }
+    });
+    
+    // Handle startDate - convert to proper Date object for database
+    if (projectData.startDate) {
+      if (typeof projectData.startDate === 'object') {
+        if ('_seconds' in projectData.startDate) {
+          // Firebase timestamp format
+          const seconds = (projectData.startDate as any)._seconds;
+          processedData.startDate = new Date(seconds * 1000);
+          console.log("Converted startDate from Firebase timestamp to Date object");
+        } else if (projectData.startDate instanceof Date) {
+          // Already a Date object
+          processedData.startDate = projectData.startDate;
+        }
+      } else if (typeof projectData.startDate === 'string') {
+        // Convert string to Date
+        processedData.startDate = new Date(projectData.startDate);
+        console.log("Converted startDate string to Date object");
+      }
     }
     
-    // Handle endDate - convert from Firebase format if needed
-    if (processedData.endDate && typeof processedData.endDate === 'object' && '_seconds' in processedData.endDate) {
-      // Convert Firebase timestamp to ISO string
-      processedData.endDate = new Date(processedData.endDate._seconds * 1000).toISOString();
-      console.log("Converted endDate from Firebase timestamp:", processedData.endDate);
+    // Handle endDate - convert to proper Date object for database or null
+    if (projectData.endDate) {
+      if (typeof projectData.endDate === 'object') {
+        if ('_seconds' in projectData.endDate) {
+          // Firebase timestamp format
+          const seconds = (projectData.endDate as any)._seconds;
+          processedData.endDate = new Date(seconds * 1000);
+          console.log("Converted endDate from Firebase timestamp to Date object");
+        } else if (projectData.endDate instanceof Date) {
+          // Already a Date object
+          processedData.endDate = projectData.endDate;
+        }
+      } else if (typeof projectData.endDate === 'string') {
+        // Convert string to Date
+        processedData.endDate = new Date(projectData.endDate);
+        console.log("Converted endDate string to Date object");
+      }
+    } else if (projectData.endDate === null) {
+      // Explicitly set to null if that's what was provided
+      processedData.endDate = null;
     }
+    
+    // Add the updatedAt timestamp
+    processedData.updatedAt = new Date();
     
     // Debugging
-    console.log("Processed project data for database update:", JSON.stringify(processedData));
+    console.log("Processed project data for database update:", processedData);
     
-    const result = await this.db.update(projects)
-      .set({
-        ...processedData,
-        updatedAt: new Date()
-      })
-      .where(eq(projects.id, id))
-      .returning();
-    
-    if (result.length === 0) {
-      throw new Error(`Project with id ${id} not found`);
+    try {
+      const result = await this.db.update(projects)
+        .set(processedData)
+        .where(eq(projects.id, id))
+        .returning();
+      
+      if (result.length === 0) {
+        throw new Error(`Project with id ${id} not found`);
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error("Database error updating project:", error);
+      throw error;
     }
-    
-    return result[0];
   }
 
   // Testimonial methods
