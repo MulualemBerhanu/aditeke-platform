@@ -464,6 +464,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Normalized data for validation:", JSON.stringify(normalizedData));
       
+      // Ensure thumbnail is present - provide a default if not
+      if (!normalizedData.thumbnail || normalizedData.thumbnail === '') {
+        normalizedData.thumbnail = '/images/projects/default-project-thumb.jpg';
+        console.log(`Adding default thumbnail URL: ${normalizedData.thumbnail}`);
+      }
+      
       // Parse and validate the data
       const projectData = insertProjectSchema.parse(normalizedData);
       console.log("Project data validated successfully:", JSON.stringify(projectData));
