@@ -101,6 +101,7 @@ export default function ProjectForm({
       startDate: initialValues?.startDate || today,
       endDate: initialValues?.endDate || '',
       status: initialValues?.status || 'Planning',
+      budget: initialValues?.budget || undefined,
     },
   });
 
