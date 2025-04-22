@@ -221,12 +221,35 @@ export default function ProjectForm({
   async function onSubmit(data: ProjectFormValues) {
     setIsSubmitting(true);
     
-    // Ensure all required fields are present and properly formatted
-    const formattedData = {
+    // Check if we're updating or creating to format data appropriately
+    const isUpdate = isEditing && projectId;
+    
+    // Different data formats for create vs update operations
+    const formattedData = isUpdate ? {
+      // For UPDATE operations: Use ISO string format for database storage
       ...data,
-      // Ensure thumbnail is never an empty string (use undefined instead for optional fields)
       thumbnail: data.thumbnail && data.thumbnail.trim() !== '' ? data.thumbnail : undefined,
-      // Ensure clientId is a number
+      clientId: typeof data.clientId === 'string' ? parseInt(data.clientId, 10) : data.clientId,
+      // Convert dates to ISO string format for database
+      startDate: data.startDate ? 
+        (typeof data.startDate === 'string' ? 
+          new Date(data.startDate).toISOString() : 
+          (data.startDate && typeof data.startDate === 'object' && '_seconds' in data.startDate ? 
+            new Date(data.startDate._seconds * 1000).toISOString() : 
+            new Date().toISOString())
+        ) : undefined,
+      endDate: data.endDate && (typeof data.endDate === 'string' ? data.endDate.trim() !== '' : true) ? 
+        (typeof data.endDate === 'string' ? 
+          new Date(data.endDate).toISOString() : 
+          (data.endDate && typeof data.endDate === 'object' && '_seconds' in data.endDate ? 
+            new Date(data.endDate._seconds * 1000).toISOString() : 
+            null)
+        ) : null,
+      budget: typeof data.budget === 'string' ? parseFloat(data.budget) : data.budget,
+    } : {
+      // For CREATE operations: Use Firebase timestamp format
+      ...data,
+      thumbnail: data.thumbnail && data.thumbnail.trim() !== '' ? data.thumbnail : undefined,
       clientId: typeof data.clientId === 'string' ? parseInt(data.clientId, 10) : data.clientId,
       // Format dates for Firebase compatibility - convert YYYY-MM-DD to timestamp objects
       startDate: data.startDate ? {
