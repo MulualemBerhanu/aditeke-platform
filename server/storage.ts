@@ -1174,6 +1174,10 @@ export class PostgresStorage implements IStorage {
     }
     return await this.db.select().from(projects);
   }
+  
+  async getProjectsForClient(clientId: number): Promise<Project[]> {
+    return await this.db.select().from(projects).where(eq(projects.clientId, clientId));
+  }
 
   async getProject(id: number): Promise<Project | undefined> {
     const result = await this.db.select().from(projects).where(eq(projects.id, id));
@@ -1182,6 +1186,22 @@ export class PostgresStorage implements IStorage {
 
   async createProject(project: InsertProject): Promise<Project> {
     const result = await this.db.insert(projects).values(project).returning();
+    return result[0];
+  }
+  
+  async updateProject(id: number, projectData: Partial<InsertProject>): Promise<Project> {
+    const result = await this.db.update(projects)
+      .set({
+        ...projectData,
+        updatedAt: new Date()
+      })
+      .where(eq(projects.id, id))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error(`Project with id ${id} not found`);
+    }
+    
     return result[0];
   }
 
@@ -1245,6 +1265,40 @@ export class PostgresStorage implements IStorage {
     }).returning();
     return result[0];
   }
+  
+  // Client Invoices methods
+  async getClientInvoices(clientId: number): Promise<ClientInvoice[]> {
+    return await this.db.select().from(clientInvoices).where(eq(clientInvoices.clientId, clientId));
+  }
+  
+  async getInvoice(id: number): Promise<ClientInvoice | undefined> {
+    const result = await this.db.select().from(clientInvoices).where(eq(clientInvoices.id, id));
+    return result[0];
+  }
+  
+  async createClientInvoice(invoice: InsertClientInvoice): Promise<ClientInvoice> {
+    const result = await this.db.insert(clientInvoices).values(invoice).returning();
+    return result[0];
+  }
+  
+  async updateInvoiceStatus(id: number, status: string, paymentData?: Partial<InsertClientInvoice>): Promise<ClientInvoice> {
+    const updateData = {
+      status,
+      updatedAt: new Date(),
+      ...paymentData
+    };
+    
+    const result = await this.db.update(clientInvoices)
+      .set(updateData)
+      .where(eq(clientInvoices.id, id))
+      .returning();
+      
+    if (result.length === 0) {
+      throw new Error(`Invoice with id ${id} not found`);
+    }
+    
+    return result[0];
+  }
 
   // Newsletter methods
   async addNewsletterSubscriber(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
@@ -1290,6 +1344,61 @@ export class PostgresStorage implements IStorage {
       postedDate: new Date()
     }).returning();
     return result[0];
+  }
+  
+  // Client Communications methods
+  async getClientCommunications(clientId: number): Promise<ClientCommunication[]> {
+    return await this.db.select().from(clientCommunications).where(eq(clientCommunications.clientId, clientId));
+  }
+  
+  async createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication> {
+    const result = await this.db.insert(clientCommunications).values({
+      ...communication,
+      createdAt: new Date(),
+      isRead: false
+    }).returning();
+    return result[0];
+  }
+  
+  async markCommunicationAsRead(id: number): Promise<ClientCommunication> {
+    const result = await this.db.update(clientCommunications)
+      .set({ isRead: true })
+      .where(eq(clientCommunications.id, id))
+      .returning();
+      
+    if (result.length === 0) {
+      throw new Error(`Communication with id ${id} not found`);
+    }
+    
+    return result[0];
+  }
+  
+  // Client Documents methods
+  async getClientDocuments(clientId: number, category?: string): Promise<ClientDocument[]> {
+    if (category) {
+      return await this.db.select()
+        .from(clientDocuments)
+        .where(sql`${clientDocuments.clientId} = ${clientId} AND ${clientDocuments.category} = ${category}`);
+    }
+    return await this.db.select().from(clientDocuments).where(eq(clientDocuments.clientId, clientId));
+  }
+  
+  async uploadClientDocument(document: InsertClientDocument): Promise<ClientDocument> {
+    const result = await this.db.insert(clientDocuments).values({
+      ...document,
+      uploadedAt: new Date()
+    }).returning();
+    return result[0];
+  }
+  
+  async getDocument(id: number): Promise<ClientDocument | undefined> {
+    const result = await this.db.select().from(clientDocuments).where(eq(clientDocuments.id, id));
+    return result[0];
+  }
+  
+  async deleteDocument(id: number): Promise<boolean> {
+    const result = await this.db.delete(clientDocuments).where(eq(clientDocuments.id, id));
+    return result.count > 0;
   }
   
   // The following methods are implemented with stubs for now
