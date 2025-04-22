@@ -169,94 +169,32 @@ export default function LoginPage() {
         // Try to construct a reliable user representation for hardcoded users in emergency scenarios
         console.log("Using direct fetch for authentication");
         
-        // Add special case for known demo accounts in production/deployment
-        let isEmergencyLogin = false;
-        let emergencyUserData = null;
+        // We no longer need emergency credential logic since we have a working database
+        // authentication system with real users
+        console.log('Using database authentication for all environments');
         
-        // Only allow this emergency login in deployed environments
-        if (isDeployedEnv) {
-          if (data.username === 'admin@aditeke.com' && data.password === 'adminPassword123') {
-            console.log("🧰 EMERGENCY: Using hardcoded admin credentials");
-            emergencyUserData = {
-              id: 60002,
-              username: 'admin',
-              email: 'admin@aditeke.com',
-              name: 'Admin User',
-              roleId: 1002,
-              role: { id: 1002, name: 'admin' },
-              roleName: 'admin',
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            isEmergencyLogin = true;
-          } else if (data.username === 'manager@aditeke.com' && data.password === 'managerPassword123') {
-            console.log("🧰 EMERGENCY: Using hardcoded manager credentials");
-            emergencyUserData = {
-              id: 50000,
-              username: 'manager',
-              email: 'manager@aditeke.com',
-              name: 'Manager User',
-              roleId: 1000,
-              role: { id: 1000, name: 'manager' },
-              roleName: 'manager',
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            isEmergencyLogin = true;
-          } else if (data.username === 'client@example.com' && data.password === 'clientPassword123') {
-            console.log("🧰 EMERGENCY: Using hardcoded client credentials");
-            emergencyUserData = {
-              id: 2000,
-              username: 'client',
-              email: 'client@example.com',
-              name: 'Client User',
-              roleId: 1001,
-              role: { id: 1001, name: 'client' },
-              roleName: 'client',
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            isEmergencyLogin = true;
-          }
+        // Normal login process for all cases
+        console.log("Attempting normal authentication flow");
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: data.username,
+            password: data.password
+          }),
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Login error response:', errorText);
+          throw new Error('Authentication failed. Please check your credentials.');
         }
         
-        // If emergency login is valid, skip normal login process
-        if (isEmergencyLogin && emergencyUserData) {
-          userData = emergencyUserData;
-          console.log("🔐 Using emergency login bypass");
-        } else {
-          // Normal login process for all other cases
-          console.log("Attempting normal authentication flow");
-          const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              username: data.username,
-              password: data.password
-            }),
-            credentials: 'include'
-          });
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Login error response:', errorText);
-            throw new Error('Authentication failed. Please check your credentials.');
-          }
-          
-          userData = await response.json();
-          console.log("Direct fetch authentication successful:", userData);
-        }
+        userData = await response.json();
+        console.log("Direct fetch authentication successful:", userData);
       } catch (error) {
         console.error("Direct fetch authentication failed:", error);
         

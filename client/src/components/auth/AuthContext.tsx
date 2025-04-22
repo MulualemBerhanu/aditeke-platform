@@ -135,75 +135,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           
         console.log(`Login in ${isDeployedEnv ? 'deployed' : 'local'} environment...`);
         
-        // Special handling for demo credentials in deployed environments
-        // Note: This is a security backdoor for development/demo purposes only
-        // Would be removed in a real production environment
-        if (isDeployedEnv) {
-          if (username === 'admin@aditeke.com' && password === 'adminPassword123') {
-            console.log("⚠️ EMERGENCY: Using admin emergency credential bypass");
-            localStorage.setItem('userRole', 'admin');
-            localStorage.setItem('userRoleId', '1002');
-            const adminUserData = {
-              id: 60002,
-              username: 'admin',
-              email: 'admin@aditeke.com',
-              name: 'Admin User',
-              roleId: 1002,
-              role: { id: 1002, name: 'admin' },
-              roleName: 'admin',
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            localStorage.setItem('currentUser', JSON.stringify(adminUserData));
-            localStorage.setItem('isAuthenticated', 'true');
-            return adminUserData;
-          } else if (username === 'manager@aditeke.com' && password === 'managerPassword123') {
-            console.log("⚠️ EMERGENCY: Using manager emergency credential bypass");
-            localStorage.setItem('userRole', 'manager');
-            localStorage.setItem('userRoleId', '1000');
-            const managerUserData = {
-              id: 50000,
-              username: 'manager',
-              email: 'manager@aditeke.com',
-              name: 'Manager User',
-              roleId: 1000,
-              role: { id: 1000, name: 'manager' },
-              roleName: 'manager',
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            localStorage.setItem('currentUser', JSON.stringify(managerUserData));
-            localStorage.setItem('isAuthenticated', 'true');
-            return managerUserData;
-          } else if (username === 'client@example.com' && password === 'clientPassword123') {
-            console.log("⚠️ EMERGENCY: Using client emergency credential bypass");
-            localStorage.setItem('userRole', 'client');
-            localStorage.setItem('userRoleId', '1001');
-            const clientUserData = {
-              id: 2000,
-              username: 'client',
-              email: 'client@example.com',
-              name: 'Client User',
-              roleId: 1001,
-              role: { id: 1001, name: 'client' },
-              roleName: 'client',
-              profilePicture: null,
-              createdAt: new Date().toISOString(),
-              updatedAt: null,
-              lastLogin: new Date().toISOString(),
-              isActive: true
-            };
-            localStorage.setItem('currentUser', JSON.stringify(clientUserData));
-            localStorage.setItem('isAuthenticated', 'true');
-            return clientUserData;
-          }
-        }
+        // We no longer need emergency credential bypasses since we have a working
+        // database authentication system
+        console.log('Using standard authentication flow for all environments');
         
         // Regular API login for all other cases
         const response = await fetch('/api/login', {
