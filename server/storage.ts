@@ -1190,9 +1190,29 @@ export class PostgresStorage implements IStorage {
   }
   
   async updateProject(id: number, projectData: Partial<InsertProject>): Promise<Project> {
+    // Process date fields to ensure proper format for database
+    const processedData = { ...projectData };
+    
+    // Handle startDate - convert from Firebase format if needed
+    if (processedData.startDate && typeof processedData.startDate === 'object' && '_seconds' in processedData.startDate) {
+      // Convert Firebase timestamp to ISO string
+      processedData.startDate = new Date(processedData.startDate._seconds * 1000).toISOString();
+      console.log("Converted startDate from Firebase timestamp:", processedData.startDate);
+    }
+    
+    // Handle endDate - convert from Firebase format if needed
+    if (processedData.endDate && typeof processedData.endDate === 'object' && '_seconds' in processedData.endDate) {
+      // Convert Firebase timestamp to ISO string
+      processedData.endDate = new Date(processedData.endDate._seconds * 1000).toISOString();
+      console.log("Converted endDate from Firebase timestamp:", processedData.endDate);
+    }
+    
+    // Debugging
+    console.log("Processed project data for database update:", JSON.stringify(processedData));
+    
     const result = await this.db.update(projects)
       .set({
-        ...projectData,
+        ...processedData,
         updatedAt: new Date()
       })
       .where(eq(projects.id, id))
