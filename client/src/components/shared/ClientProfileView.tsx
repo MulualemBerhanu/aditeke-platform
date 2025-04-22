@@ -584,7 +584,7 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm">
               <Mail className="h-4 w-4 mr-1" /> Email
             </Button>
@@ -592,8 +592,8 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
               <Phone className="h-4 w-4 mr-1" /> Call
             </Button>
             {onClose && (
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                Close
+              <Button variant="ghost" size="sm" onClick={onClose} className="sm:ml-0 ml-auto">
+                <X className="h-4 w-4 mr-1" /> Close
               </Button>
             )}
           </div>
