@@ -161,11 +161,19 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
         notes: data.notes || ''
       };
       
+      // Get auth token from localStorage
+      const accessToken = localStorage.getItem('accessToken');
+      
       const requestHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
       };
+      
+      // Add Authorization header if token is available
+      if (accessToken) {
+        requestHeaders['Authorization'] = `Bearer ${accessToken}`;
+      }
       
       // Add CSRF token if available
       const csrfToken = document.cookie
@@ -176,6 +184,9 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
       if (csrfToken) {
         requestHeaders['X-CSRF-Token'] = csrfToken;
       }
+      
+      // Debug header info
+      console.log('Payment request headers:', requestHeaders);
       
       const response = await fetch(`/api/client-invoices/${data.invoiceId}/payment-receipt`, {
         method: 'POST',
