@@ -2087,8 +2087,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // New endpoint for manual payment processing with receipt generation
-  app.post('/api/client-invoices/:id/payment-receipt', authenticateJWT, async (req, res) => {
+  app.post('/api/client-invoices/:id/payment-receipt', async (req, res) => {
     try {
+      // First check session-based authentication (for most cases)
+      const isAuthenticated = req.isAuthenticated() || req.user;
+      
+      // If not authenticated, check for JWT in various locations
+      if (!isAuthenticated) {
+        // Get token from Authorization header (Bearer token)
+        let token = req.headers.authorization?.split(' ')[1];
+        
+        // If no token in header, check cookies
+        if (!token && req.cookies) {
+          token = req.cookies.access_token;
+        }
+        
+        // If still no token and we're in a cross-domain situation, check query param
+        if (!token && req.query && req.query.token) {
+          token = req.query.token as string;
+        }
+        
+        // If there's a token, verify it
+        if (token) {
+          try {
+            const decoded = verifyToken(token);
+            req.user = {
+              id: parseInt(decoded.sub, 10),
+              username: decoded.username,
+              email: decoded.email,
+              roleId: decoded.roleId,
+              name: decoded.name || decoded.username,
+              password: '',
+              createdAt: new Date(),
+              updatedAt: null,
+              profilePicture: null,
+              lastLogin: null,
+              isActive: true
+            };
+          } catch (tokenError) {
+            console.error('Token verification failed:', tokenError);
+            return res.status(401).json({ message: 'Authentication required' });
+          }
+        } else if (process.env.NODE_ENV === 'development') {
+          // In development, provide a default user if authenticated via other means
+          console.log('Development mode: Auth skipped for payment processing');
+          req.user = {
+            id: 50000, // Default manager ID
+            username: 'manager',
+            email: 'manager@aditeke.com',
+            roleId: 1000, // Manager role
+            name: 'Manager User',
+            password: '',
+            createdAt: new Date(),
+            updatedAt: null,
+            profilePicture: null,
+            lastLogin: null,
+            isActive: true
+          };
+        } else {
+          return res.status(401).json({ message: 'Authentication required' });
+        }
+      }
+      
+      // Continue with payment processing
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ error: "Invalid invoice ID" });
