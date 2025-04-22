@@ -810,6 +810,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Public version of client projects endpoint - no authentication required
+  app.get("/api/public/client-projects/:clientId", async (req, res) => {
+    try {
+      console.log('Public API: Fetching projects for client', req.params.clientId);
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      // Check if client exists
+      const client = await storage.getUser(clientId);
+      if (!client) {
+        console.log('Public API: Client not found', clientId);
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Get all projects and filter for the client
+      const allProjects = await storage.getAllProjects();
+      console.log(`Public API: Found ${allProjects.length} total projects`);
+      
+      // Filter to get only projects assigned to this client
+      const projects = allProjects.filter(project => {
+        // Handle various clientId formats (including string, number, etc)
+        const projectClientId = typeof project.clientId === 'string' ? 
+          parseInt(project.clientId) : project.clientId;
+        return projectClientId === clientId;
+      });
+      
+      console.log(`Public API: Filtered ${projects.length} projects for client ${clientId}`);
+      return res.json(projects);
+    } catch (error) {
+      console.error("Public API: Error fetching client projects:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   // Get a specific project
   app.get("/api/projects/:id", requirePermission("projects", "read"), async (req, res) => {
     try {
