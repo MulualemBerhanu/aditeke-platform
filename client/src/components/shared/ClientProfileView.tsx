@@ -1101,12 +1101,15 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
             <div>
               <Card className="mb-6">
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>Recent Invoices</CardTitle>
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div>
+                      <CardTitle className="text-3xl">Recent Invoices</CardTitle>
+                      <CardDescription>Manage client invoices and payments</CardDescription>
+                    </div>
                     <Dialog open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" onClick={() => setInvoiceDialogOpen(true)}>
-                          <Plus className="h-4 w-4 mr-1" /> Create Invoice
+                        <Button size="lg" className="gap-2 px-6 h-12 bg-[#15192C] hover:bg-[#0f1321]">
+                          <Plus className="h-5 w-5" /> Create Invoice
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-xl">
@@ -1236,32 +1239,33 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                           : 'General Services';
 
                         return (
-                          <div key={invoice.id} className="border rounded-lg p-4 hover:bg-muted/40 transition-colors">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-medium flex items-center">
-                                  <FileText className="h-4 w-4 mr-2 text-primary" />
+                          <div key={invoice.id} className="border rounded-lg p-5 hover:bg-muted/10 transition-colors">
+                            <div className="flex flex-col">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-medium flex items-center text-lg">
+                                  <FileText className="h-5 w-5 mr-2 text-primary" />
                                   {invoice.invoiceNumber} - {projectTitle}
                                 </h4>
-                                <div className="text-sm text-muted-foreground mt-1">
-                                  Issued: {formatDate(invoice.issueDate)} • Due: {formatDate(invoice.dueDate)}
-                                </div>
+                                <Badge className={
+                                  invoice.status === 'paid' ? 'bg-green-100 text-green-800 px-3 py-1' :
+                                  invoice.status === 'pending' ? 'bg-blue-100 text-blue-800 px-3 py-1' :
+                                  'bg-red-100 text-red-800 px-3 py-1'
+                                }>
+                                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                </Badge>
                               </div>
-                              <Badge className={
-                                invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                invoice.status === 'pending' ? 'bg-blue-100 text-blue-800' :
-                                'bg-red-100 text-red-800'
-                              }>
-                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                              </Badge>
-                            </div>
-                            <div className="mt-4">
-                              <div className="text-lg font-semibold mb-3">${Number(invoice.amount).toLocaleString()}</div>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              
+                              <div className="text-sm text-muted-foreground mb-4">
+                                Issued: {formatDate(invoice.issueDate)} • Due: {formatDate(invoice.dueDate)}
+                              </div>
+                              
+                              <div className="text-2xl font-bold mb-4">${Number(invoice.amount).toLocaleString()}</div>
+                              
+                              <div className="flex flex-wrap gap-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline" className="w-full">
-                                      <Eye className="h-3 w-3 mr-1" /> View
+                                    <Button size="default" variant="outline" className="px-4 py-2 h-10">
+                                      <Eye className="h-4 w-4 mr-2" /> View
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="max-w-3xl">
@@ -1382,75 +1386,46 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                   </DialogContent>
                                 </Dialog>
                                 
-                                {/* Download Button */}
-                                {invoice.status === 'paid' && invoice.receiptNumber ? (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}
-                                  >
-                                    <Download className="h-3 w-3 mr-1" /> Receipt
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')}
-                                  >
-                                    <Download className="h-3 w-3 mr-1" /> Download
-                                  </Button>
-                                )}
+                                {/* Invoice Action Buttons */}
+                                <Button 
+                                  size="default" 
+                                  variant="outline"
+                                  className="px-4 py-2 h-10"
+                                  onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')}
+                                >
+                                  <Download className="h-4 w-4 mr-2" /> Download
+                                </Button>
                                 
-                                {/* Email Button */}
-                                {invoice.status === 'paid' && invoice.receiptNumber ? (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    className="w-full text-green-600 border-green-600 hover:bg-green-50"
-                                    onClick={() => {
-                                      setEmailType('receipt');
-                                      setEmailInvoiceId(invoice.id);
-                                      setEmailSubject(`Receipt for Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
-                                      setEmailMessage(`Dear ${client.name || client.username},\n\nThank you for your payment. Please find attached your receipt for Invoice #${invoice.invoiceNumber}.\n\nWe appreciate your business and look forward to continuing our services.\n\nBest regards,\nAdiTeke Software Solutions Team`);
-                                      setEmailDialogOpen(true);
-                                    }}
-                                  >
-                                    <Send className="h-3 w-3 mr-1" /> Email
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => {
-                                      setEmailType('invoice');
-                                      setEmailInvoiceId(invoice.id);
-                                      setEmailSubject(`Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
-                                      setEmailMessage(`Dear ${client.name || client.username},\n\nPlease find attached your invoice #${invoice.invoiceNumber} for ${invoice.description || 'services rendered'}. Payment is due by ${formatDate(invoice.dueDate) || 'the due date indicated'}.\n\nThank you for your business.\n\nBest regards,\nAdiTeke Software Solutions Team`);
-                                      setEmailDialogOpen(true);
-                                    }}
-                                  >
-                                    <Send className="h-3 w-3 mr-1" /> Send
-                                  </Button>
-                                )}
+                                <Button 
+                                  size="default" 
+                                  variant="outline"
+                                  className="px-4 py-2 h-10"
+                                  onClick={() => {
+                                    setEmailType('invoice');
+                                    setEmailInvoiceId(invoice.id);
+                                    setEmailSubject(`Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
+                                    setEmailMessage(`Dear ${client.name || client.username},\n\nPlease find attached your invoice #${invoice.invoiceNumber} for ${invoice.description || 'services rendered'}. Payment is due by ${formatDate(invoice.dueDate) || 'the due date indicated'}.\n\nThank you for your business.\n\nBest regards,\nAdiTeke Software Solutions Team`);
+                                    setEmailDialogOpen(true);
+                                  }}
+                                >
+                                  <Send className="h-4 w-4 mr-2" /> Send
+                                </Button>
                                 
                                 {/* Payment Button - Only shown for unpaid invoices */}
                                 {invoice.status !== 'paid' && (
                                   <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
                                     <DialogTrigger asChild>
                                       <Button 
-                                        size="sm" 
+                                        size="default" 
                                         variant="default"
-                                        className="w-full"
+                                        className="px-4 py-2 h-10"
                                         onClick={() => {
                                           setPaymentDialogOpen(true);
                                           setPaymentMethod('');
                                           setPaymentNotes('');
                                         }}
                                       >
-                                        <DollarSign className="h-3 w-3 mr-1" /> Record Payment
+                                        <DollarSign className="h-4 w-4 mr-2" /> Record Payment
                                       </Button>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-md">
