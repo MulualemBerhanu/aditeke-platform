@@ -443,11 +443,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get a copy of the request body to normalize before validation
       const normalizedData = {...req.body};
       
+      // Convert Firestore date format (_seconds and _nanoseconds) to ISO string
+      if (normalizedData.startDate && typeof normalizedData.startDate === 'object' && normalizedData.startDate._seconds) {
+        const startDateSeconds = normalizedData.startDate._seconds;
+        normalizedData.startDate = new Date(startDateSeconds * 1000).toISOString();
+        console.log(`Converted startDate from Firestore format to ISO string: ${normalizedData.startDate}`);
+      }
+      
+      if (normalizedData.endDate && typeof normalizedData.endDate === 'object' && normalizedData.endDate._seconds) {
+        const endDateSeconds = normalizedData.endDate._seconds;
+        normalizedData.endDate = new Date(endDateSeconds * 1000).toISOString();
+        console.log(`Converted endDate from Firestore format to ISO string: ${normalizedData.endDate}`);
+      }
+      
       // Ensure clientId is a number (Zod validation may fail if it's a string)
       if (normalizedData.clientId && typeof normalizedData.clientId === 'string') {
         normalizedData.clientId = parseInt(normalizedData.clientId, 10);
         console.log(`Converted clientId from string to number: ${normalizedData.clientId}`);
       }
+      
+      console.log("Normalized data for validation:", JSON.stringify(normalizedData));
       
       // Parse and validate the data
       const projectData = insertProjectSchema.parse(normalizedData);
