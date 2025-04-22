@@ -23,7 +23,7 @@ import {
   Clock, AlertCircle, MoreHorizontal, Trash2, Download, Send,
   Paperclip, Upload, Eye, Edit, Plus, PlusCircle, FileCheck, 
   MessageSquare, Star, PieChart, BarChart2, Share2, Clipboard,
-  ArrowLeft, Image
+  ArrowLeft, Image, X
 } from 'lucide-react';
 
 interface ClientProfileViewProps {
