@@ -1255,12 +1255,12 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                 {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                               </Badge>
                             </div>
-                            <div className="flex justify-between items-center mt-4">
-                              <div className="text-lg font-semibold">${Number(invoice.amount).toLocaleString()}</div>
-                              <div className="flex items-center space-x-2">
+                            <div className="mt-4">
+                              <div className="text-lg font-semibold mb-3">${Number(invoice.amount).toLocaleString()}</div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">
+                                    <Button size="sm" variant="outline" className="w-full">
                                       <Eye className="h-3 w-3 mr-1" /> View
                                     </Button>
                                   </DialogTrigger>
@@ -1382,146 +1382,153 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                                   </DialogContent>
                                 </Dialog>
                                 
+                                {/* Download Button */}
                                 {invoice.status === 'paid' && invoice.receiptNumber ? (
-                                  <div className="flex gap-2">
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}
-                                    >
-                                      <Download className="h-3 w-3 mr-1" /> Receipt
-                                    </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      className="h-7 text-xs inline-flex items-center text-green-600 border-green-600 hover:bg-green-50"
-                                      onClick={() => {
-                                        setEmailType('receipt');
-                                        setEmailInvoiceId(invoice.id);
-                                        setEmailSubject(`Receipt for Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
-                                        setEmailMessage(`Dear ${client.name || client.username},\n\nThank you for your payment. Please find attached your receipt for Invoice #${invoice.invoiceNumber}.\n\nWe appreciate your business and look forward to continuing our services.\n\nBest regards,\nAdiTeke Software Solutions Team`);
-                                        setEmailDialogOpen(true);
-                                      }}
-                                    >
-                                      <Send className="h-3 w-3 mr-1" /> Email Receipt
-                                    </Button>
-                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => window.open(`/api/generate-receipt/${invoice.id}`, '_blank')}
+                                  >
+                                    <Download className="h-3 w-3 mr-1" /> Receipt
+                                  </Button>
                                 ) : (
                                   <Button 
                                     size="sm" 
                                     variant="outline"
+                                    className="w-full"
                                     onClick={() => window.open(`/api/client-invoices/invoice/${invoice.id}`, '_blank')}
                                   >
                                     <Download className="h-3 w-3 mr-1" /> Download
                                   </Button>
                                 )}
                                 
+                                {/* Email Button */}
+                                {invoice.status === 'paid' && invoice.receiptNumber ? (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="w-full text-green-600 border-green-600 hover:bg-green-50"
+                                    onClick={() => {
+                                      setEmailType('receipt');
+                                      setEmailInvoiceId(invoice.id);
+                                      setEmailSubject(`Receipt for Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
+                                      setEmailMessage(`Dear ${client.name || client.username},\n\nThank you for your payment. Please find attached your receipt for Invoice #${invoice.invoiceNumber}.\n\nWe appreciate your business and look forward to continuing our services.\n\nBest regards,\nAdiTeke Software Solutions Team`);
+                                      setEmailDialogOpen(true);
+                                    }}
+                                  >
+                                    <Send className="h-3 w-3 mr-1" /> Email
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => {
+                                      setEmailType('invoice');
+                                      setEmailInvoiceId(invoice.id);
+                                      setEmailSubject(`Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
+                                      setEmailMessage(`Dear ${client.name || client.username},\n\nPlease find attached your invoice #${invoice.invoiceNumber} for ${invoice.description || 'services rendered'}. Payment is due by ${formatDate(invoice.dueDate) || 'the due date indicated'}.\n\nThank you for your business.\n\nBest regards,\nAdiTeke Software Solutions Team`);
+                                      setEmailDialogOpen(true);
+                                    }}
+                                  >
+                                    <Send className="h-3 w-3 mr-1" /> Send
+                                  </Button>
+                                )}
+                                
+                                {/* Payment Button - Only shown for unpaid invoices */}
                                 {invoice.status !== 'paid' && (
-                                  <>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      onClick={() => {
-                                        setEmailType('invoice');
-                                        setEmailInvoiceId(invoice.id);
-                                        setEmailSubject(`Invoice #${invoice.invoiceNumber} from AdiTeke Software Solutions`);
-                                        setEmailMessage(`Dear ${client.name || client.username},\n\nPlease find attached your invoice #${invoice.invoiceNumber} for ${invoice.description || 'services rendered'}. Payment is due by ${formatDate(invoice.dueDate) || 'the due date indicated'}.\n\nThank you for your business.\n\nBest regards,\nAdiTeke Software Solutions Team`);
-                                        setEmailDialogOpen(true);
-                                      }}
-                                    >
-                                      <Send className="h-3 w-3 mr-1" /> Send
-                                    </Button>
-                                    <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-                                      <DialogTrigger asChild>
-                                        <Button 
-                                          size="sm" 
-                                          variant="default" 
-                                          onClick={() => {
-                                            setPaymentDialogOpen(true);
-                                            setPaymentMethod('');
-                                            setPaymentNotes('');
-                                          }}
-                                        >
-                                          <DollarSign className="h-3 w-3 mr-1" /> Process Payment
-                                        </Button>
-                                      </DialogTrigger>
-                                      <DialogContent className="max-w-md">
-                                        <DialogHeader>
-                                          <DialogTitle>Process Payment for Invoice #{invoice.invoiceNumber}</DialogTitle>
-                                          <DialogDescription>
-                                            Record a payment for this invoice.
-                                          </DialogDescription>
-                                        </DialogHeader>
-                                        
-                                        {/* Company Header */}
-                                        <div className="mb-6 flex justify-between items-start border-b pb-4">
-                                          <div>
-                                            <h2 className="text-xl font-bold text-blue-800">AdiTeke Software Solutions</h2>
-                                            <div className="text-sm text-gray-600 mt-1">
-                                              <p>Portland, OR, USA</p>
-                                              <p>contact@aditeke.com</p>
-                                            </div>
-                                          </div>
-                                          <div className="text-right">
-                                            <div className="text-lg font-bold">Payment Processing</div>
-                                            <p className="text-sm">Invoice #{invoice.invoiceNumber}</p>
-                                            <p className="text-sm">Amount: ${Number(invoice.amount).toLocaleString()}</p>
+                                  <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        size="sm" 
+                                        variant="default"
+                                        className="w-full"
+                                        onClick={() => {
+                                          setPaymentDialogOpen(true);
+                                          setPaymentMethod('');
+                                          setPaymentNotes('');
+                                        }}
+                                      >
+                                        <DollarSign className="h-3 w-3 mr-1" /> Record Payment
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle>Process Payment for Invoice #{invoice.invoiceNumber}</DialogTitle>
+                                        <DialogDescription>
+                                          Record a payment for this invoice.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      
+                                      {/* Company Header */}
+                                      <div className="mb-6 flex justify-between items-start border-b pb-4">
+                                        <div>
+                                          <h2 className="text-xl font-bold text-blue-800">AdiTeke Software Solutions</h2>
+                                          <div className="text-sm text-gray-600 mt-1">
+                                            <p>Portland, OR, USA</p>
+                                            <p>contact@aditeke.com</p>
                                           </div>
                                         </div>
-                                        <form onSubmit={(e) => {
-                                          e.preventDefault();
-                                          processPayment.mutate({
-                                            invoiceId: invoice.id,
-                                            paymentMethod: paymentMethod,
-                                            paidAmount: invoice.amount,
-                                            paymentDate: new Date().toISOString().split('T')[0],
-                                            notes: paymentNotes
-                                          });
-                                        }}>
-                                          <div className="grid gap-4 py-4">
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                              <Label htmlFor="payment-method" className="text-right">
-                                                Payment Method
-                                              </Label>
-                                              <Select 
-                                                value={paymentMethod}
-                                                onValueChange={setPaymentMethod}
-                                              >
-                                                <SelectTrigger id="payment-method" className="col-span-3">
-                                                  <SelectValue placeholder="Select method" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="credit_card">Credit Card</SelectItem>
-                                                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                                  <SelectItem value="paypal">PayPal</SelectItem>
-                                                  <SelectItem value="cash">Cash</SelectItem>
-                                                  <SelectItem value="check">Check</SelectItem>
-                                                  <SelectItem value="other">Other</SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                              <Label htmlFor="payment-notes" className="text-right">
-                                                Notes
-                                              </Label>
-                                              <Textarea 
-                                                id="payment-notes"
-                                                className="col-span-3"
-                                                value={paymentNotes}
-                                                onChange={(e) => setPaymentNotes(e.target.value)}
-                                                placeholder="Any notes about this payment..."
-                                              />
-                                            </div>
+                                        <div className="text-right">
+                                          <div className="text-lg font-bold">Payment Processing</div>
+                                          <p className="text-sm">Invoice #{invoice.invoiceNumber}</p>
+                                          <p className="text-sm">Amount: ${Number(invoice.amount).toLocaleString()}</p>
+                                        </div>
+                                      </div>
+                                      <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        processPayment.mutate({
+                                          invoiceId: invoice.id,
+                                          paymentMethod: paymentMethod,
+                                          paidAmount: invoice.amount,
+                                          paymentDate: new Date().toISOString().split('T')[0],
+                                          notes: paymentNotes
+                                        });
+                                      }}>
+                                        <div className="grid gap-4 py-4">
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="payment-method" className="text-right">
+                                              Payment Method
+                                            </Label>
+                                            <Select 
+                                              value={paymentMethod}
+                                              onValueChange={setPaymentMethod}
+                                            >
+                                              <SelectTrigger id="payment-method" className="col-span-3">
+                                                <SelectValue placeholder="Select method" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="credit_card">Credit Card</SelectItem>
+                                                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                                <SelectItem value="paypal">PayPal</SelectItem>
+                                                <SelectItem value="cash">Cash</SelectItem>
+                                                <SelectItem value="check">Check</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                              </SelectContent>
+                                            </Select>
                                           </div>
-                                          <DialogFooter>
-                                            <Button type="submit" disabled={!paymentMethod || processPayment.isPending}>
-                                              {processPayment.isPending ? 'Processing...' : 'Record Payment'}
-                                            </Button>
-                                          </DialogFooter>
-                                        </form>
-                                      </DialogContent>
-                                    </Dialog>
-                                  </>
+                                          <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="payment-notes" className="text-right">
+                                              Notes
+                                            </Label>
+                                            <Textarea 
+                                              id="payment-notes"
+                                              className="col-span-3"
+                                              value={paymentNotes}
+                                              onChange={(e) => setPaymentNotes(e.target.value)}
+                                              placeholder="Any notes about this payment..."
+                                            />
+                                          </div>
+                                        </div>
+                                        <DialogFooter>
+                                          <Button type="submit" disabled={!paymentMethod || processPayment.isPending}>
+                                            {processPayment.isPending ? 'Processing...' : 'Record Payment'}
+                                          </Button>
+                                        </DialogFooter>
+                                      </form>
+                                    </DialogContent>
+                                  </Dialog>
                                 )}
                               </div>
                             </div>
