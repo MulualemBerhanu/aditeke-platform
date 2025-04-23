@@ -2656,6 +2656,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint to download and save images from URLs
+  app.get("/api/download-image", async (req, res) => {
+    try {
+      const imageUrl = req.query.url as string;
+      const outputPath = req.query.path as string;
+      
+      if (!imageUrl || !outputPath) {
+        return res.status(400).json({ error: 'Missing url or path parameters' });
+      }
+      
+      // Execute the download-image.js script to fetch and save the image
+      const { exec } = require('child_process');
+      exec(`node scripts/download-image.js "${imageUrl}" "public${outputPath}"`, (error: any, stdout: string, stderr: string) => {
+        if (error) {
+          console.error(`Error downloading image: ${error.message}`);
+          return res.status(500).json({ error: error.message });
+        }
+        if (stderr) {
+          console.error(`Error: ${stderr}`);
+          return res.status(500).json({ error: stderr });
+        }
+        console.log(`Image download output: ${stdout}`);
+        res.json({ success: true, message: stdout });
+      });
+    } catch (error: any) {
+      console.error('Error handling image download:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   const httpServer = createServer(app);
   return httpServer;
 }
