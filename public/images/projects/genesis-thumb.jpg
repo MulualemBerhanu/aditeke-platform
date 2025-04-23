@@ -1,10 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-    <rect width="800" height="600" fill="#4F46E5" opacity="0.6" />
-    <rect x="0" y="0" width="800" height="600" fill="url(#grid)" />
     <defs>
-      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1" opacity="0.2" />
-      </pattern>
+      <linearGradient id="header-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#2563EB" />
+        <stop offset="100%" stop-color="#1E40AF" />
+      </linearGradient>
     </defs>
-    <text x="400" y="300" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#ffffff">Genesis Group Home Website</text>
+    <!-- Website background -->
+    <rect width="800" height="600" fill="#f8fafc" />
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="800" height="80" fill="url(#header-gradient)" />
+    
+    <!-- Logo -->
+    <text x="50" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">Genesis Home</text>
+    
+    <!-- Navigation -->
+    <text x="650" y="50" font-family="Arial, sans-serif" font-size="16" fill="white">Services</text>
+    <text x="730" y="50" font-family="Arial, sans-serif" font-size="16" fill="white">Contact</text>
+    
+    <!-- Hero Section -->
+    <rect x="50" y="120" width="700" height="250" rx="8" fill="#e2e8f0" />
+    <text x="100" y="200" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#1e293b">Genesis Group Home</text>
+    <text x="100" y="250" font-family="Arial, sans-serif" font-size="18" fill="#334155" width="500">Professional care services for adults with disabilities</text>
+    <rect x="100" y="280" width="180" height="45" rx="6" fill="#2563EB" />
+    <text x="140" y="310" font-family="Arial, sans-serif" font-size="16" fill="white">Our Services</text>
+    
+    <!-- Content Blocks -->
+    <rect x="50" y="400" width="220" height="150" rx="8" fill="#f1f5f9" />
+    <rect x="290" y="400" width="220" height="150" rx="8" fill="#f1f5f9" />
+    <rect x="530" y="400" width="220" height="150" rx="8" fill="#f1f5f9" />
+    
+    <!-- Icons -->
+    <circle cx="160" cy="450" r="30" fill="#bfdbfe" />
+    <circle cx="400" cy="450" r="30" fill="#bfdbfe" />
+    <circle cx="640" cy="450" r="30" fill="#bfdbfe" />
+    
+    <!-- Text under blocks -->
+    <text x="110" y="510" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#334155" text-anchor="middle">24/7 Care</text>
+    <text x="400" y="510" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#334155" text-anchor="middle">Professional Staff</text>
+    <text x="640" y="510" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#334155" text-anchor="middle">Quality of Life</text>
   </svg>

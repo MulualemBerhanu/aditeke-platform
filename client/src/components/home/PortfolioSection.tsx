@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -298,6 +298,23 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
   // Create categories array whether we get a string or array
   const categories = Array.isArray(category) ? category : category.split(',').map(c => c.trim());
   
+  // State to track image loading status
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const fallbackRef = useRef<HTMLDivElement>(null);
+  
+  // Handle image load/error
+  useEffect(() => {
+    // Check if image already exists in cache
+    if (imgRef.current?.complete) {
+      setImageLoaded(true);
+      if (fallbackRef.current) {
+        fallbackRef.current.style.display = 'none';
+      }
+    }
+  }, []);
+  
   // Determine link URL - use external website if available, otherwise use internal portfolio page
   const linkUrl = website_url || `/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`;
   
@@ -339,17 +356,40 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
             {categories[0].charAt(0).toUpperCase() + categories[0].slice(1)}
           </div>
           
-          {/* Image with hover effects and fallback */}
-          <img 
-            src={image} 
-            alt={title} 
-            className="w-full h-full object-cover transform transition-all duration-700 group-hover:scale-110 group-hover:brightness-[0.85]"
-            loading="lazy"
-            onError={(e) => {
-              // When image fails to load, apply a fallback
-              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=6366f1&color=fff&size=400`;
-            }}
-          />
+          {/* Project image or fallback with project initials */}
+          <div className="relative w-full h-full">
+            {/* Actual project image attempt */}
+            <img 
+              ref={imgRef}
+              src={image} 
+              alt={title} 
+              className="w-full h-full object-cover transform transition-all duration-700 group-hover:scale-110 group-hover:brightness-[0.85]"
+              loading="lazy"
+              style={{ display: imageLoaded ? 'block' : 'none' }}
+              onError={() => {
+                setImageError(true);
+                setImageLoaded(false);
+              }}
+              onLoad={() => {
+                setImageLoaded(true);
+                setImageError(false);
+                if (fallbackRef.current) {
+                  fallbackRef.current.style.display = 'none';
+                }
+              }}
+            />
+            
+            {/* Project initials as fallback (always rendered but hidden if image loads) */}
+            <div 
+              ref={fallbackRef}
+              className="absolute inset-0 flex items-center justify-center bg-primary/80"
+              style={{ display: imageLoaded ? 'none' : 'flex' }}
+            >
+              <span className="text-white text-[120px] font-bold leading-none">
+                {title.split(' ').map(word => word[0]).join('')}
+              </span>
+            </div>
+          </div>
           
           {/* Gradient overlay that reveals on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>

@@ -1,10 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
-    <rect width="800" height="600" fill="#0EA5E9" opacity="0.6" />
-    <rect x="0" y="0" width="800" height="600" fill="url(#grid)" />
-    <defs>
-      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1" opacity="0.2" />
-      </pattern>
-    </defs>
-    <text x="400" y="300" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#ffffff">Personal Portfolio Website</text>
+    <!-- Dark theme portfolio -->
+    <rect width="800" height="600" fill="#111827" />
+    
+    <!-- Header -->
+    <rect x="0" y="0" width="800" height="70" fill="#1f2937" />
+    <text x="50" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#f9fafb">Mulualem.dev</text>
+    
+    <!-- Navigation -->
+    <text x="550" y="45" font-family="Arial, sans-serif" font-size="16" fill="#d1d5db">Home</text>
+    <text x="620" y="45" font-family="Arial, sans-serif" font-size="16" fill="#d1d5db">Projects</text>
+    <text x="700" y="45" font-family="Arial, sans-serif" font-size="16" fill="#d1d5db">Contact</text>
+    
+    <!-- Hero Section -->
+    <text x="100" y="170" font-family="Arial, sans-serif" font-size="44" font-weight="bold" fill="#f9fafb">Mulualem Berhanu</text>
+    <text x="100" y="220" font-family="Arial, sans-serif" font-size="24" fill="#9ca3af">Full Stack Developer</text>
+    <text x="100" y="260" font-family="Arial, sans-serif" font-size="16" fill="#d1d5db" width="450">Creating elegant solutions to complex problems with modern technologies</text>
+    
+    <!-- Tech stack -->
+    <rect x="100" y="290" width="100" height="30" rx="15" fill="#3b82f6" opacity="0.6" />
+    <text x="150" y="310" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">React</text>
+    
+    <rect x="210" y="290" width="100" height="30" rx="15" fill="#10b981" opacity="0.6" />
+    <text x="260" y="310" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">Node.js</text>
+    
+    <rect x="320" y="290" width="100" height="30" rx="15" fill="#f59e0b" opacity="0.6" />
+    <text x="370" y="310" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">TypeScript</text>
+    
+    <!-- Projects Grid -->
+    <rect x="100" y="370" width="180" height="150" rx="8" fill="#1f2937" />
+    <rect x="310" y="370" width="180" height="150" rx="8" fill="#1f2937" />
+    <rect x="520" y="370" width="180" height="150" rx="8" fill="#1f2937" />
+    
+    <!-- Project titles -->
+    <text x="140" y="450" font-family="Arial, sans-serif" font-size="16" fill="#f9fafb" text-anchor="start">E-commerce</text>
+    <text x="350" y="450" font-family="Arial, sans-serif" font-size="16" fill="#f9fafb" text-anchor="start">Dashboard</text>
+    <text x="560" y="450" font-family="Arial, sans-serif" font-size="16" fill="#f9fafb" text-anchor="start">Mobile App</text>
+    
+    <!-- Decorative elements -->
+    <circle cx="650" cy="180" r="70" fill="#3b82f6" opacity="0.1" />
+    <circle cx="700" cy="150" r="40" fill="#10b981" opacity="0.1" />
   </svg>
