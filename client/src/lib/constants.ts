@@ -75,11 +75,11 @@ export const SOCIAL_LINKS = [
 
 // Contact info
 export const CONTACT_INFO = {
-  address: "123 Tech Park Avenue, Silicon Valley, CA 94025",
-  email: "info@aditeke.com",
-  supportEmail: "support@aditeke.com",
-  phone: "+1 (555) 123-4567",
-  alternativePhone: "+1 (555) 987-6543",
+  address: "Portland, OR 97222",
+  email: "berhanumulualemadisu@gmail.com",
+  supportEmail: "berhanumulualemadisu@gmail.com",
+  phone: "+1 (641) 481-8560",
+  alternativePhone: "+1 (641) 481-8560",
   workingHours: "Monday - Friday: 9:00 AM - 6:00 PM",
   workingHoursSaturday: "Saturday: 10:00 AM - 4:00 PM"
 };
