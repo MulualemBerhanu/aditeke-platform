@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Service } from '@shared/schema';
 
 const ServicesPage = () => {
-  const [activeTab, setActiveTab] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>('custom-software-development');
   
   const { data: services, isLoading, error } = useQuery<Service[]>({
     queryKey: ['/api/services'],
@@ -152,9 +152,6 @@ const ServicesPage = () => {
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="overflow-x-auto mb-8 pb-4">
               <TabsList className="flex flex-nowrap md:flex-wrap justify-start md:justify-center gap-4 min-w-max md:min-w-0 px-4 md:px-0">
-                <TabsTrigger value="all" className="px-5 py-2 rounded-full font-medium whitespace-nowrap">
-                  All Services
-                </TabsTrigger>
                 {displayServices.map((service) => (
                   <TabsTrigger 
                     key={service.id} 
@@ -167,57 +164,7 @@ const ServicesPage = () => {
               </TabsList>
             </div>
             
-            <TabsContent value="all" className="mt-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {isLoading ? (
-                  // Show skeleton loaders while loading
-                  Array(6).fill(null).map((_, index) => (
-                    <div key={index} className="bg-light rounded-xl p-8 shadow-md animate-pulse">
-                      <div className="w-14 h-14 rounded-lg bg-gray-200 mb-6"></div>
-                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                      <div className="h-4 bg-gray-200 rounded w-2/5"></div>
-                    </div>
-                  ))
-                ) : error ? (
-                  // Show error message
-                  <div className="col-span-full text-center text-red-500">
-                    <p>Failed to load services. Please try again later.</p>
-                  </div>
-                ) : (
-                  // If we have data from API, use it
-                  displayServices.map((service, index) => (
-                    <motion.div 
-                      key={service.id}
-                      className="bg-light rounded-xl p-8 shadow-md hover:shadow-lg transition-shadow group hover:border-primary border border-transparent"
-                      initial={{ opacity: 0, y: 50 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ y: -5 }}
-                    >
-                      <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                        <i className={`fas ${service.icon} text-2xl`}></i>
-                      </div>
-                      <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                      <p className="text-gray-600 mb-4">{service.shortDescription}</p>
-                      <button
-                        onClick={() => {
-                          setActiveTab(service.title.toLowerCase().replace(/\s+/g, '-'));
-                          window.location.hash = service.title.toLowerCase().replace(/\s+/g, '-');
-                        }}
-                        className="text-primary font-medium inline-flex items-center group-hover:text-accent transition-colors cursor-pointer bg-transparent border-0 p-0"
-                      >
-                        Learn more 
-                        <i className="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
-                      </button>
-                    </motion.div>
-                  ))
-                )}
-              </div>
-            </TabsContent>
+
             
             {displayServices.map((service) => (
               <TabsContent 

@@ -242,7 +242,14 @@ const ServiceCard = ({ title, description, icon, href, index }: ServiceCardProps
       
       {/* Enhanced learn more link with improved animation */}
       <div className="relative z-10 inline-block">
-        <Link href={href} className="text-primary font-medium inline-flex items-center group-hover:text-primary-dark transition-colors">
+        <a 
+          href={href} 
+          className="text-primary font-medium inline-flex items-center group-hover:text-primary-dark transition-colors cursor-pointer"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = href;
+          }}
+        >
           <span className="mr-2">Learn more</span>
           <motion.div
             animate={{ x: [0, 5, 0] }}
@@ -257,7 +264,7 @@ const ServiceCard = ({ title, description, icon, href, index }: ServiceCardProps
           >
             →
           </motion.div>
-        </Link>
+        </a>
         
         {/* Advanced animated underline */}
         <motion.div 
