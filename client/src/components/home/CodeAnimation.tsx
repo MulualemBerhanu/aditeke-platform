@@ -10,9 +10,35 @@ interface CodeLine {
 
 // Sample code snippets that look impressive
 const CODE_SNIPPETS = [
+  // Java welcome message
+  [
+    { indent: 0, code: "public class AdiTekeWelcome {", highlight: false },
+    { indent: 1, code: "public static void main(String[] args) {", highlight: false },
+    { indent: 2, code: "System.out.println(\"Welcome to AdiTeke Software Solutions!\");", highlight: true },
+    { indent: 2, code: "System.out.println(\"Building innovative digital experiences\");", highlight: false },
+    { indent: 2, code: "startServices();", highlight: false },
+    { indent: 1, code: "}", highlight: false },
+    { indent: 0, code: "}", highlight: false },
+  ],
+  // Python welcome message
+  [
+    { indent: 0, code: "class AdiTekeSolutions:", highlight: false },
+    { indent: 1, code: "def __init__(self):", highlight: false },
+    { indent: 2, code: "self.company = \"AdiTeke Software Solutions\"", highlight: false },
+    { indent: 2, code: "self.founded = 2018", highlight: false },
+    { indent: 1, code: "", highlight: false },
+    { indent: 1, code: "def welcome_message(self):", highlight: false },
+    { indent: 2, code: "print(f\"Welcome to {self.company}!\")", highlight: true },
+    { indent: 2, code: "print(\"Transforming ideas into powerful digital products\")", highlight: false },
+    { indent: 0, code: "", highlight: false },
+    { indent: 0, code: "aditeke = AdiTekeSolutions()", highlight: false },
+    { indent: 0, code: "aditeke.welcome_message()", highlight: false },
+  ],
+  // JavaScript/TypeScript
   [
     { indent: 0, code: "const createAIModel = async () => {", highlight: false },
-    { indent: 1, code: "const model = await tf.loadLayersModel('https://ai.aditeke.com/models/v2');", highlight: true },
+    { indent: 1, code: "console.log(\"Welcome to AdiTeke Software Solutions!\");", highlight: true },
+    { indent: 1, code: "const model = await tf.loadLayersModel('https://ai.aditeke.com/models/v2');", highlight: false },
     { indent: 1, code: "const prediction = model.predict(tensorData);", highlight: false },
     { indent: 1, code: "return processResults(prediction);", highlight: false },
     { indent: 0, code: "};", highlight: false },
@@ -20,7 +46,8 @@ const CODE_SNIPPETS = [
   [
     { indent: 0, code: "class BlockchainService {", highlight: false },
     { indent: 1, code: "constructor(network: Network) {", highlight: false },
-    { indent: 2, code: "this.web3 = new Web3(network.endpoint);", highlight: true },
+    { indent: 2, code: "console.log(\"AdiTeke Software Solutions - Blockchain Division\");", highlight: true },
+    { indent: 2, code: "this.web3 = new Web3(network.endpoint);", highlight: false },
     { indent: 2, code: "this.contracts = this.loadContracts();", highlight: false },
     { indent: 1, code: "}", highlight: false },
     { indent: 0, code: "}", highlight: false },

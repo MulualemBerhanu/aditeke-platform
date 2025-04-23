@@ -8,6 +8,7 @@ import CustomCountUp from '@/components/common/CustomCountUp';
 import CodeAnimation from './CodeAnimation';
 import ParticleNetwork from './ParticleNetwork';
 import TechSphere from './TechSphere';
+import TechLayersDiagram from './TechLayersDiagram';
 
 // Enhanced video background with animated particles
 const VideoBackground = () => {
@@ -412,9 +413,9 @@ const HeroSection = () => {
               <TechSphere glowColor="rgba(59, 130, 246, 0.6)" />
             </div>
             
-            {/* Live Code Animation */}
-            <div className="absolute bottom-10 -right-8 w-48 h-40 md:w-56 md:h-48 rounded-lg overflow-hidden shadow-xl rotate-6 z-20">
-              <CodeAnimation theme="dark" opacity={0.9} />
+            {/* Live Code Animation - Made larger */}
+            <div className="absolute bottom-16 -right-12 w-64 h-56 md:w-80 md:h-64 lg:w-96 lg:h-72 rounded-lg overflow-hidden shadow-xl rotate-6 z-20">
+              <CodeAnimation theme="dark" opacity={0.9} codeSpeed={3} />
             </div>
             
             {/* Main Visualization */}
@@ -425,6 +426,11 @@ const HeroSection = () => {
             >
               <div className="relative">
                 <VirtualWhiteboard />
+                
+                {/* Tech Layers Diagram - New component in the yellow arrow area */}
+                <div className="absolute top-1/2 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-64 h-72 rotate-3 z-30">
+                  <TechLayersDiagram />
+                </div>
                 
                 {/* Particle Network Overlay */}
                 <div className="absolute inset-0 opacity-50">
