@@ -61,24 +61,120 @@ const AboutSection = () => {
   );
 
   return (
-    <section id="about" className="py-24 bg-gradient-to-b from-light to-white relative overflow-hidden">
-      <BackgroundPattern />
+    <section id="about" className="pt-32 pb-24 relative overflow-hidden">
+      {/* Advanced background with curved transition */}
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#071336]/20 to-transparent -z-10"></div>
+      
+      {/* Main background with dynamic pattern */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 to-white/95 -z-20"></div>
+      
+      {/* Abstract wave divider */}
+      <div className="absolute inset-x-0 top-0 transform -translate-y-[99%] z-0 overflow-hidden pointer-events-none">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-24 text-blue-50">
+          <path 
+            d="M0,0V7.23C0,65.52,268.63,112.77,600,112.77S1200,65.52,1200,7.23V0Z" 
+            fill="currentColor"
+          ></path>
+        </svg>
+      </div>
+      
+      {/* Enhanced background pattern with animations */}
+      <div className="absolute inset-0 overflow-hidden -z-10">
+        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_10%_20%,rgba(59,130,246,0.1)_0%,transparent_50%)]"></div>
+        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_80%_60%,rgba(59,130,246,0.05)_0%,transparent_50%)]"></div>
+        
+        {/* Animated floating elements */}
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-blue-500/5"
+            style={{
+              width: `${20 + i * 10}px`,
+              height: `${20 + i * 10}px`,
+              left: `${5 + i * 12}%`,
+              top: `${10 + (i % 5) * 15}%`,
+            }}
+            animate={{
+              y: [0, -15, 0],
+              x: [0, i % 2 === 0 ? 8 : -8, 0],
+              opacity: [0.3, 0.6, 0.3]
+            }}
+            transition={{
+              duration: 5 + i,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
+        
+        {/* Grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30"></div>
+      </div>
       
       <div className="container mx-auto px-4 relative z-10">
-        {/* Section header */}
+        {/* Enhanced Section header with decorative elements */}
         <motion.div 
-          className="text-center mb-16 max-w-3xl mx-auto"
+          className="text-center mb-20 max-w-3xl mx-auto relative"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
-            About AdiTeke Software Solutions
-          </h2>
-          <p className="text-gray-600 leading-relaxed text-lg">
-            We're more than just developers - we're your technology partners committed to transforming your business challenges into innovative digital solutions.
-          </p>
+          {/* Decorative elements */}
+          <motion.div 
+            className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-40 h-1.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent"
+            initial={{ scaleX: 0, opacity: 0 }}
+            whileInView={{ scaleX: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          />
+          
+          {/* Fancy title with advanced styling */}
+          <div className="relative inline-block mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-primary/90">
+              About AdiTeke Software Solutions
+            </h2>
+            
+            {/* Accent dot */}
+            <motion.span 
+              className="absolute -right-4 top-0 text-primary"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >.</motion.span>
+            
+            {/* Subtle glow effect */}
+            <div className="absolute -inset-3 bg-primary/5 rounded-lg blur-xl opacity-50 -z-10"></div>
+          </div>
+          
+          {/* Enhanced description with backdrop and accent line */}
+          <div className="relative">
+            <p className="text-gray-700 leading-relaxed text-lg px-6 py-4 rounded-lg bg-white/50 backdrop-blur-sm border border-white/60 shadow-sm">
+              We're more than just developers - we're your technology partners committed to transforming your business challenges into innovative digital solutions.
+            </p>
+            
+            {/* Accent line animation */}
+            <motion.div 
+              className="absolute -bottom-2 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+              initial={{ scaleX: 0, opacity: 0 }}
+              whileInView={{ scaleX: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.5 }}
+            />
+          </div>
+          
+          {/* Small decorative dots */}
+          <div className="flex justify-center space-x-2 mt-6">
+            {[...Array(3)].map((_, i) => (
+              <motion.div 
+                key={i}
+                className="h-1.5 w-1.5 rounded-full bg-primary/60"
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8 + (i * 0.1), duration: 0.4 }}
+              />
+            ))}
+          </div>
         </motion.div>
       
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -209,49 +305,158 @@ const AboutSection = () => {
           {features.map((feature, index) => (
             <motion.div 
               key={index}
-              className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 flex"
+              className="relative overflow-hidden backdrop-blur-sm bg-white/80 rounded-xl p-6 shadow-lg border border-white/60 flex group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+              whileHover={{ 
+                y: -5, 
+                boxShadow: "0 20px 30px -10px rgba(59, 130, 246, 0.15)",
+                borderColor: "rgba(59, 130, 246, 0.3)"
+              }}
             >
-              <div className="mr-5 mt-1">
-                <div className="w-12 h-12 bg-primary-light/10 rounded-lg flex items-center justify-center text-primary">
+              {/* Glossy background effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/70 to-white/50 opacity-90 group-hover:opacity-100 transition-all duration-300" />
+              
+              {/* Accent line */}
+              <div className="absolute h-1 bottom-0 left-0 right-0 bg-gradient-to-r from-primary/80 via-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+              
+              {/* Icon with enhanced animation */}
+              <div className="mr-5 mt-1 z-10">
+                <motion.div 
+                  className="relative w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-primary to-primary/80 group-hover:shadow-primary/20 transition-all duration-300"
+                  whileHover={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
                   {feature.icon}
-                </div>
+                  
+                  {/* Glow effect on hover */}
+                  <div className="absolute -inset-0.5 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-70 transition-opacity duration-300 -z-10"></div>
+                </motion.div>
               </div>
-              <div>
-                <h3 className="font-bold text-lg mb-2 text-gray-800">{feature.title}</h3>
+              
+              {/* Content with improved styling */}
+              <div className="z-10">
+                <h3 className="font-bold text-lg mb-2 text-gray-800 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
                 <p className="text-gray-600 text-sm">{feature.description}</p>
               </div>
+              
+              {/* Subtle corner accent */}
+              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </motion.div>
           ))}
         </motion.div>
         
-        {/* CTA Section */}
+        {/* Enhanced CTA Section */}
         <motion.div 
-          className="mt-20 bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-10 text-center"
+          className="mt-24 relative overflow-hidden"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <h3 className="text-2xl font-bold mb-4">Ready to start your digital transformation?</h3>
-          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-            Partner with AdiTeke Software Solutions and turn your vision into reality with our expert team and innovative approach.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/contact">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6">
-                Start a Project
-              </Button>
-            </Link>
-            <Link href="/services">
-              <Button variant="outline" className="text-primary border-primary/30 hover:bg-primary/5 px-8 py-6">
-                Explore Our Services
-              </Button>
-            </Link>
+          {/* Premium glass-morphic card with advanced background */}
+          <div className="relative rounded-2xl overflow-hidden backdrop-blur-md">
+            {/* Fancy background with animated gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-blue-400/5 -z-10" />
+            
+            {/* Animated gradient overlay */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-primary/10 to-blue-500/5 -z-10"
+              animate={{
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{
+                duration: 15,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+              style={{
+                backgroundSize: '200% 200%',
+              }}
+            />
+            
+            {/* Animated dots pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute w-full h-full bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.4)_0%,transparent_30%)]"></div>
+              <div className="absolute w-full h-full bg-[radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.4)_0%,transparent_30%)]"></div>
+            </div>
+            
+            {/* Floating orbs for visual interest */}
+            {[...Array(5)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-white/50"
+                style={{
+                  width: `${10 + i * 8}px`,
+                  height: `${10 + i * 8}px`,
+                  left: `${10 + i * 20}%`,
+                  top: `${40 + (i % 3) * 20}%`,
+                  filter: 'blur(2px)'
+                }}
+                animate={{
+                  y: [0, -15, 0],
+                  x: [0, i % 2 === 0 ? 10 : -10, 0],
+                }}
+                transition={{
+                  duration: 3 + i,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+            
+            <div className="px-8 py-14 text-center relative z-10">
+              {/* Section icon */}
+              <div className="mx-auto mb-6 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Code className="h-8 w-8 text-primary" />
+              </div>
+              
+              {/* Heading with subtle animation */}
+              <motion.h3 
+                className="text-2xl md:text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-primary relative inline-block"
+                whileInView={{
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  backgroundSize: '200% auto',
+                }}
+              >
+                Ready to start your digital transformation?
+              </motion.h3>
+              
+              <p className="text-gray-600 mb-10 max-w-2xl mx-auto text-lg backdrop-blur-sm bg-white/30 py-3 px-6 rounded-lg">
+                Partner with AdiTeke Software Solutions and turn your vision into reality with our expert team and innovative approach.
+              </p>
+              
+              {/* Enhanced buttons with animations */}
+              <div className="flex flex-wrap justify-center gap-6">
+                <Link href="/contact">
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                    <Button className="bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white px-8 py-6 shadow-lg shadow-primary/20">
+                      Start a Project
+                    </Button>
+                  </motion.div>
+                </Link>
+                <Link href="/services">
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                    <Button variant="outline" className="backdrop-blur-sm bg-white/50 text-primary border-primary/30 hover:bg-primary/5 px-8 py-6 shadow-md">
+                      Explore Our Services
+                    </Button>
+                  </motion.div>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Decorative shapes */}
+            <div className="absolute top-0 left-0 w-20 h-20 bg-primary/5 rounded-br-3xl" />
+            <div className="absolute bottom-0 right-0 w-20 h-20 bg-primary/5 rounded-tl-3xl" />
           </div>
         </motion.div>
       </div>
