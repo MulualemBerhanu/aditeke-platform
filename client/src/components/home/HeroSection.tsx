@@ -1,11 +1,15 @@
 import { Link } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { COMPANY_STATS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, ArrowUpRight, Calendar, Code, Lightbulb, Phone, Users } from "lucide-react";
+import CountUp from 'react-countup';
 
+// Enhanced video background with animated particles
 const VideoBackground = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   useEffect(() => {
     // Ensure the video plays automatically and loops
@@ -13,34 +17,98 @@ const VideoBackground = () => {
       videoRef.current.play().catch(error => {
         console.error("Video autoplay failed:", error);
       });
+      
+      // Set listener for when video is loaded
+      videoRef.current.addEventListener('loadeddata', () => {
+        setIsVideoLoaded(true);
+      });
     }
+    
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('loadeddata', () => {
+          setIsVideoLoaded(true);
+        });
+      }
+    };
   }, []);
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
-      {/* Video background */}
-      <video 
-        ref={videoRef}
-        className="absolute w-full h-full object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
+      {/* Video background with fade-in effect */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isVideoLoaded ? 1 : 0 }}
+        transition={{ duration: 1.2 }}
+        className="absolute inset-0"
       >
-        <source src="/assets/background.mp4" type="video/mp4" />
-      </video>
+        <video 
+          ref={videoRef}
+          className="absolute w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src="/assets/background.mp4" type="video/mp4" />
+        </video>
+      </motion.div>
       
-      {/* Overlay to darken video and add blue tint */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#040b29]/70 via-[#0a1a44]/70 to-[#071336]/70"></div>
+      {/* Enhanced overlay with animated gradient */}
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-b from-[#040b29]/80 via-[#0a1a44]/70 to-[#071336]/75"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      ></motion.div>
       
-      {/* Glass-like layer for depth */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-transparent backdrop-blur-[1px]"></div>
+      {/* Animated glass-like layer for depth */}
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-transparent backdrop-blur-[2px]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+      ></motion.div>
       
-      {/* Subtle particle dots */}
-      <div className="absolute inset-0 opacity-30" style={{ 
-        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)', 
-        backgroundSize: '30px 30px' 
-      }}></div>
+      {/* Enhanced animated particle system */}
+      <motion.div 
+        className="absolute inset-0 opacity-40" 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4 }}
+        transition={{ duration: 1.5, delay: 0.8 }}
+        style={{ 
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px)', 
+          backgroundSize: '30px 30px' 
+        }}
+      ></motion.div>
+      
+      {/* Floating tech symbols */}
+      <div className="absolute inset-0 overflow-hidden">
+        {['</>','{}','[]','//','AI','UX','DB'].map((symbol, index) => (
+          <motion.div
+            key={index}
+            className="absolute text-blue-300/20 text-xl font-mono font-bold"
+            initial={{ 
+              x: Math.random() * 100 - 50 + '%', 
+              y: Math.random() * 100 + '%',
+              opacity: 0 
+            }}
+            animate={{ 
+              y: [null, '-20%'],
+              opacity: [0, 0.2, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{
+              duration: 5 + Math.random() * 10,
+              repeat: Infinity,
+              delay: index * 2,
+              ease: "easeInOut"
+            }}
+          >
+            {symbol}
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -228,16 +296,89 @@ const HeroSection = () => {
               We build custom software solutions that drive innovation and deliver exceptional experiences that help businesses thrive in the digital world.
             </p>
             
-            <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-              <Link href="/contact">
-                <Button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-md hover:from-blue-500 hover:to-blue-400 border border-blue-600/50 transition-colors text-center w-full sm:w-auto">
-                  Start Your Project
-                </Button>
+            {/* Enhanced Call-to-Action Buttons with Animation */}
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Link href="/contact">
+                  <Button 
+                    className="px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-lg font-medium rounded-md border border-blue-600/50 shadow-lg shadow-blue-700/20 transition-all hover:shadow-blue-600/30 hover:from-blue-500 hover:to-blue-400 w-full sm:w-auto group"
+                  >
+                    <div className="flex items-center">
+                      <span>Get Started</span>
+                      <motion.div 
+                        className="ml-2"
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{ 
+                          duration: 1.5, 
+                          repeat: Infinity,
+                          repeatType: "loop",
+                          ease: "easeInOut" 
+                        }}
+                      >
+                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      </motion.div>
+                    </div>
+                  </Button>
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Link href="/services">
+                  <Button 
+                    variant="outline" 
+                    className="px-8 py-6 bg-blue-600/10 backdrop-blur-sm border-blue-400/50 text-white text-lg font-medium rounded-md hover:bg-blue-500/20 transition-all w-full sm:w-auto group"
+                  >
+                    <span>Our Services</span>
+                    <ArrowUpRight className="ml-2 h-5 w-5 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                  </Button>
+                </Link>
+              </motion.div>
+            </div>
+            
+            {/* Quick Action Icons */}
+            <div className="hidden md:flex items-center justify-start gap-6 mb-8">
+              <Link href="/contact#schedule">
+                <motion.div 
+                  className="flex items-center text-white/70 hover:text-white/90 transition-colors"
+                  whileHover={{ y: -3 }}
+                >
+                  <div className="p-2 rounded-full bg-blue-500/10 border border-blue-500/30 mr-2">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm">Schedule Call</span>
+                </motion.div>
               </Link>
-              <Link href="/services">
-                <Button variant="outline" className="px-8 py-3 bg-transparent border-blue-400/50 text-white font-medium rounded-md hover:bg-blue-500/10 transition-colors text-center w-full sm:w-auto">
-                  Explore Services
-                </Button>
+              
+              <Link href="/portfolio">
+                <motion.div 
+                  className="flex items-center text-white/70 hover:text-white/90 transition-colors"
+                  whileHover={{ y: -3 }}
+                >
+                  <div className="p-2 rounded-full bg-blue-500/10 border border-blue-500/30 mr-2">
+                    <Code className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm">View Projects</span>
+                </motion.div>
+              </Link>
+              
+              <Link href="/contact#phone">
+                <motion.div 
+                  className="flex items-center text-white/70 hover:text-white/90 transition-colors"
+                  whileHover={{ y: -3 }}
+                >
+                  <div className="p-2 rounded-full bg-blue-500/10 border border-blue-500/30 mr-2">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm">Contact Us</span>
+                </motion.div>
               </Link>
             </div>
             
@@ -278,23 +419,68 @@ const HeroSection = () => {
           </motion.div>
         </div>
         
-        {/* Stats Section */}
+        {/* Enhanced Stats Section */}
         <motion.div 
-          className="mt-20 pt-8 border-t border-blue-500/20"
+          className="mt-20 pt-10 border-t border-blue-500/20"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
+          <h3 className="text-xl font-semibold text-white mb-8 text-center">Proven Track Record of Excellence</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {COMPANY_STATS.map((stat, index) => (
               <motion.div 
                 key={index} 
-                className="bg-blue-500/5 backdrop-blur-sm border border-blue-500/20 rounded-lg p-4"
-                whileHover={{ scale: 1.03, backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
-                transition={{ duration: 0.2 }}
+                className="relative bg-gradient-to-br from-blue-600/10 to-blue-400/5 backdrop-blur-sm border border-blue-500/20 rounded-xl p-6 overflow-hidden group"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 + 0.8 }}
+                whileHover={{ 
+                  scale: 1.03, 
+                  boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.1)",
+                  borderColor: "rgba(59, 130, 246, 0.4)"
+                }}
               >
-                <div className="font-bold text-3xl md:text-4xl text-white mb-1">{stat.count}</div>
-                <div className="text-blue-200 text-sm">{stat.label}</div>
+                {/* Animated background glow */}
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  animate={{ 
+                    opacity: [0, 0.2, 0],
+                  }}
+                  transition={{ 
+                    duration: 3, 
+                    repeat: Infinity,
+                    repeatType: "loop"
+                  }}
+                />
+                
+                {/* Icon for each stat */}
+                <div className="mb-2 text-blue-400 flex justify-center">
+                  {index === 0 && <Code className="h-6 w-6" />}
+                  {index === 1 && <Lightbulb className="h-6 w-6" />}
+                  {index === 2 && <Calendar className="h-6 w-6" />}
+                  {index === 3 && <Users className="h-6 w-6" />}
+                </div>
+                
+                {/* Counter animation for numbers */}
+                <motion.div 
+                  className="font-bold text-3xl md:text-4xl text-white mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: index * 0.1 + 1 }}
+                >
+                  <CountUp
+                    start={0}
+                    end={parseInt(stat.count)}
+                    duration={2}
+                    suffix={stat.count.includes('+') ? '+' : ''}
+                  />
+                </motion.div>
+                
+                <div className="text-blue-100 text-sm font-medium">{stat.label}</div>
+                
+                {/* Subtle accent line at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/40 to-blue-500/0 group-hover:opacity-100 opacity-50 transition-opacity" />
               </motion.div>
             ))}
           </div>
