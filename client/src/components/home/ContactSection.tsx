@@ -136,7 +136,9 @@ const ContactSection = () => {
                 <div>
                   <h3 className="font-bold text-lg mb-1">Call Us</h3>
                   <p className="text-gray-600">{CONTACT_INFO.phone}</p>
-                  <p className="text-gray-600">{CONTACT_INFO.alternativePhone}</p>
+                  {CONTACT_INFO.alternativePhone && (
+                    <p className="text-gray-600">{CONTACT_INFO.alternativePhone}</p>
+                  )}
                 </div>
               </motion.div>
               

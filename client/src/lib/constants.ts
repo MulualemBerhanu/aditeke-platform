@@ -77,9 +77,9 @@ export const SOCIAL_LINKS = [
 export const CONTACT_INFO = {
   address: "Portland, OR 97222",
   email: "berhanumulualemadisu@gmail.com",
-  supportEmail: "berhanumulualemadisu@gmail.com",
+  supportEmail: "support@aditeke.com",
   phone: "+1 (641) 481-8560",
-  alternativePhone: "+1 (641) 481-8560",
+  alternativePhone: "",
   workingHours: "Monday - Friday: 9:00 AM - 6:00 PM",
   workingHoursSaturday: "Saturday: 10:00 AM - 4:00 PM"
 };
