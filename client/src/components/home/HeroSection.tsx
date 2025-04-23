@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Calendar, Code, Lightbulb, Phone, Users } from "lucide-react";
 import CountUp from 'react-countup';
+import CodeAnimation from './CodeAnimation';
+import ParticleNetwork from './ParticleNetwork';
+import TechSphere from './TechSphere';
 
 // Enhanced video background with animated particles
 const VideoBackground = () => {
@@ -397,19 +400,41 @@ const HeroSection = () => {
             </motion.div>
           </motion.div>
           
-          {/* Interactive Tech Visualization */}
+          {/* Advanced Interactive Tech Visualization */}
           <motion.div 
             className="lg:w-1/2 relative"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
+            {/* Interactive 3D Tech Sphere */}
+            <div className="absolute top-0 right-0 w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48">
+              <TechSphere glowColor="rgba(59, 130, 246, 0.6)" />
+            </div>
+            
+            {/* Live Code Animation */}
+            <div className="absolute bottom-10 -right-8 w-48 h-40 md:w-56 md:h-48 rounded-lg overflow-hidden shadow-xl rotate-6 z-20">
+              <CodeAnimation theme="dark" opacity={0.9} />
+            </div>
+            
+            {/* Main Visualization */}
             <motion.div
               className="relative z-10"
               animate={{ y: [0, -12, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <VirtualWhiteboard />
+              <div className="relative">
+                <VirtualWhiteboard />
+                
+                {/* Particle Network Overlay */}
+                <div className="absolute inset-0 opacity-50">
+                  <ParticleNetwork 
+                    particleCount={40} 
+                    connectionDistance={80} 
+                    particleColors={['#4e54c8', '#8f94fb', '#25aae1']} 
+                  />
+                </div>
+              </div>
             </motion.div>
             
             {/* Floating tech shapes in background */}
