@@ -333,7 +333,7 @@ async function initializeProjects() {
       clientId: 2000,
       startDate: new Date('2023-11-15'),
       endDate: new Date('2024-01-10'),
-      thumbnail: '/images/projects/genesis-thumb.jpg',
+      thumbnail: '/images/projects/genesis-group-home.png',
       progress: 100,
       budget: 12000,
       teamSize: 3,
