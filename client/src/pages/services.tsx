@@ -150,20 +150,22 @@ const ServicesPage = () => {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="flex flex-wrap justify-center gap-4 mb-12">
-              <TabsTrigger value="all" className="px-5 py-2 rounded-full font-medium">
-                All Services
-              </TabsTrigger>
-              {displayServices.map((service) => (
-                <TabsTrigger 
-                  key={service.id} 
-                  value={service.title.toLowerCase().replace(/\s+/g, '-')}
-                  className="px-5 py-2 rounded-full font-medium"
-                >
-                  {service.title}
+            <div className="overflow-x-auto mb-8 pb-4">
+              <TabsList className="flex flex-nowrap md:flex-wrap justify-start md:justify-center gap-4 min-w-max md:min-w-0 px-4 md:px-0">
+                <TabsTrigger value="all" className="px-5 py-2 rounded-full font-medium whitespace-nowrap">
+                  All Services
                 </TabsTrigger>
-              ))}
-            </TabsList>
+                {displayServices.map((service) => (
+                  <TabsTrigger 
+                    key={service.id} 
+                    value={service.title.toLowerCase().replace(/\s+/g, '-')}
+                    className="px-5 py-2 rounded-full font-medium whitespace-nowrap"
+                  >
+                    {service.title}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
             
             <TabsContent value="all" className="mt-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -201,15 +203,16 @@ const ServicesPage = () => {
                       </div>
                       <h3 className="text-xl font-bold mb-3">{service.title}</h3>
                       <p className="text-gray-600 mb-4">{service.shortDescription}</p>
-                      <Link href={`#${service.title.toLowerCase().replace(/\s+/g, '-')}`}>
-                        <a 
-                          className="text-primary font-medium inline-flex items-center group-hover:text-accent transition-colors"
-                          onClick={() => setActiveTab(service.title.toLowerCase().replace(/\s+/g, '-'))}
-                        >
-                          Learn more 
-                          <i className="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
-                        </a>
-                      </Link>
+                      <button
+                        onClick={() => {
+                          setActiveTab(service.title.toLowerCase().replace(/\s+/g, '-'));
+                          window.location.hash = service.title.toLowerCase().replace(/\s+/g, '-');
+                        }}
+                        className="text-primary font-medium inline-flex items-center group-hover:text-accent transition-colors cursor-pointer bg-transparent border-0 p-0"
+                      >
+                        Learn more 
+                        <i className="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                      </button>
                     </motion.div>
                   ))
                 )}
