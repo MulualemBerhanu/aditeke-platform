@@ -2656,8 +2656,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API endpoint to download and save images from URLs
-  app.get("/api/download-image", async (req, res) => {
+  // Public API endpoint to download and save images from URLs (no authentication required)
+  app.get("/api/public/download-image", async (req, res) => {
     try {
       const imageUrl = req.query.url as string;
       const outputPath = req.query.path as string;
