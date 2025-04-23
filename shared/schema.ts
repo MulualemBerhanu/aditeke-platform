@@ -104,6 +104,8 @@ export const projects = pgTable("projects", {
   progress: integer("progress").default(0),
   budget: integer("budget"),
   teamSize: integer("team_size"),
+  website_url: text("website_url"),
+  sort_order: integer("sort_order"),
 });
 
 // Create a custom project schema that accepts string dates
@@ -119,6 +121,8 @@ export const insertProjectSchema = z.object({
   progress: z.number().optional(),
   budget: z.number().optional(),
   teamSize: z.number().optional(),
+  website_url: z.string().optional(),
+  sort_order: z.number().optional(),
 });
 
 // Testimonial schema

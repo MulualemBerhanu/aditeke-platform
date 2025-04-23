@@ -326,45 +326,80 @@ async function initializeProjects() {
   const projectsToCreate = [
     {
       id: 500,
-      title: 'E-commerce Platform Redesign',
-      description: 'Complete redesign and modernization of an e-commerce platform, including payment integration, inventory management, and a responsive UI.',
+      title: 'Genesis Group Home Website',
+      description: 'Professional website design and development for Genesis Group Home, featuring responsive design, service information, and contact functionality.',
       status: 'completed',
       category: 'Web Development',
-      clientId: 2000, // Assigned to the client user
-      startDate: new Date('2024-01-15'),
-      endDate: new Date('2024-03-20'),
-      thumbnail: '/images/projects/ecommerce-thumb.jpg',
+      clientId: 2000,
+      startDate: new Date('2023-11-15'),
+      endDate: new Date('2024-01-10'),
+      thumbnail: '/images/projects/genesis-thumb.jpg',
       progress: 100,
-      budget: 15000,
-      teamSize: 5
+      budget: 12000,
+      teamSize: 3,
+      website_url: 'https://genesisgrouphome.com',
+      sort_order: 1 // High priority - actual project
     },
     {
       id: 501,
-      title: 'Healthcare Management System',
-      description: 'Development of a comprehensive healthcare management system for patient records, appointment scheduling, and billing.',
-      status: 'in-progress',
-      category: 'Software Development',
-      clientId: 2000, // Assigned to the client user
-      startDate: new Date('2024-02-10'),
-      endDate: null,
-      thumbnail: '/images/projects/healthcare-thumb.jpg',
-      progress: 60,
-      budget: 25000,
-      teamSize: 7
+      title: 'Personal Portfolio Website',
+      description: 'Modern portfolio website for Mulualem Berhanu showcasing professional experience, skills, and projects with a clean, interactive design.',
+      status: 'completed',
+      category: 'Web Development',
+      clientId: 2000,
+      startDate: new Date('2023-10-01'),
+      endDate: new Date('2023-12-15'),
+      thumbnail: '/images/projects/portfolio-thumb.jpg',
+      progress: 100,
+      budget: 8000,
+      teamSize: 2,
+      website_url: 'http://MulualemBerhanu.com',
+      sort_order: 2 // High priority - actual project
     },
     {
       id: 502,
       title: 'Mobile Banking Application',
       description: 'Secure mobile banking application for a financial institution, featuring account management, transfers, and biometric authentication.',
-      status: 'planning',
+      status: 'in-progress',
       category: 'Mobile Development',
-      clientId: 2000, // Assigned to the client user
+      clientId: 2000,
       startDate: new Date('2024-04-01'),
       endDate: null,
       thumbnail: '/images/projects/banking-thumb.jpg',
-      progress: 10,
+      progress: 65,
       budget: 30000,
-      teamSize: 6
+      teamSize: 6,
+      sort_order: 10
+    },
+    {
+      id: 503,
+      title: 'E-commerce Platform Redesign',
+      description: 'Complete redesign and modernization of an e-commerce platform, including payment integration, inventory management, and a responsive UI.',
+      status: 'completed',
+      category: 'Web Development',
+      clientId: 2000,
+      startDate: new Date('2024-01-15'),
+      endDate: new Date('2024-03-20'),
+      thumbnail: '/images/projects/ecommerce-thumb.jpg',
+      progress: 100,
+      budget: 15000,
+      teamSize: 5,
+      sort_order: 15
+    },
+    {
+      id: 504,
+      title: 'Healthcare Management System',
+      description: 'Development of a comprehensive healthcare management system for patient records, appointment scheduling, and billing.',
+      status: 'planning',
+      category: 'Software Development',
+      clientId: 2000,
+      startDate: new Date('2024-05-10'),
+      endDate: null,
+      thumbnail: '/images/projects/healthcare-thumb.jpg',
+      progress: 20,
+      budget: 25000,
+      teamSize: 7,
+      sort_order: 20
     }
   ];
   
