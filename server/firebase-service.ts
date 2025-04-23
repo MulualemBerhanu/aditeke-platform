@@ -729,7 +729,21 @@ export class FirebaseStorage implements IStorage {
         return [];
       }
       
-      return snapshot.docs.map((doc: any) => doc.data() as Project);
+      const projects = snapshot.docs.map((doc: any) => doc.data() as Project);
+      
+      // Sort projects by sort_order (if available) and then by id
+      return projects.sort((a, b) => {
+        // First prioritize by sort_order field if it exists
+        if (a.sort_order !== undefined && b.sort_order !== undefined) {
+          return a.sort_order - b.sort_order;
+        } else if (a.sort_order !== undefined) {
+          return -1; // a has sort_order, b doesn't -> a comes first
+        } else if (b.sort_order !== undefined) {
+          return 1;  // b has sort_order, a doesn't -> b comes first
+        }
+        // Fall back to sorting by id if sort_order is not available
+        return a.id - b.id;
+      });
     } catch (error) {
       console.error("Error getting projects from Firestore:", error);
       throw error;
