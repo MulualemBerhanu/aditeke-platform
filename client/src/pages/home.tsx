@@ -7,6 +7,7 @@ import TestimonialsSection from '@/components/home/TestimonialsSection';
 import ContactSection from '@/components/home/ContactSection';
 import NewsletterSection from '@/components/home/NewsletterSection';
 import ClientDashboardPreview from '@/components/home/ClientDashboardPreview';
+import TechStackShowcase from '@/components/home/TechStackShowcase';
 
 const Home = () => {
   return (
@@ -19,6 +20,7 @@ const Home = () => {
       <HeroSection />
       <ServicesSection />
       <AboutSection />
+      <TechStackShowcase />
       <PortfolioSection />
       <TestimonialsSection />
       <ContactSection />

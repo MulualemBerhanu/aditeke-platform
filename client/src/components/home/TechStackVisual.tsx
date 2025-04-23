@@ -1,8 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 
 const TechStackVisual = () => {
   const codeControls = useAnimation();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  
+  // Measure container size and update on resize
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        setContainerSize({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight
+        });
+      }
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   useEffect(() => {
     const sequence = async () => {
@@ -12,14 +30,13 @@ const TechStackVisual = () => {
   }, [codeControls]);
 
   return (
-    <div className="w-full relative">
+    <div className="w-full h-full relative" ref={containerRef}>
       {/* Responsive container that scales with screen size */}
-      <div className="max-w-full mx-auto relative w-full h-full">
+      <div className="w-full h-full mx-auto relative">
         {/* Outer terminal window container with proper aspect ratio */}
-        <div className="relative w-full" style={{ 
+        <div className="relative w-full h-full" style={{ 
           maxWidth: '100%',
           margin: '0 auto',
-          aspectRatio: '16/10',
         }}>
           {/* Background layers */}
           <motion.div 
