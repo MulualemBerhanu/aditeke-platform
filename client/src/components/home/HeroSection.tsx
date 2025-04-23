@@ -4,7 +4,7 @@ import { COMPANY_STATS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Calendar, Code, Lightbulb, Phone, Users } from "lucide-react";
-import CountUp from 'react-countup';
+import CustomCountUp from '@/components/common/CustomCountUp';
 import CodeAnimation from './CodeAnimation';
 import ParticleNetwork from './ParticleNetwork';
 import TechSphere from './TechSphere';
@@ -494,7 +494,7 @@ const HeroSection = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: index * 0.1 + 1 }}
                 >
-                  <CountUp
+                  <CustomCountUp
                     start={0}
                     end={parseInt(stat.count)}
                     decimals={0}
