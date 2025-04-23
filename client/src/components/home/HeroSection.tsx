@@ -472,7 +472,8 @@ const HeroSection = () => {
                   <CountUp
                     start={0}
                     end={parseInt(stat.count)}
-                    duration={2}
+                    decimals={0}
+                    delay={0}
                     suffix={stat.count.includes('+') ? '+' : ''}
                   />
                 </motion.div>
