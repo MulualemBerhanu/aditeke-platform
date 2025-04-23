@@ -413,8 +413,8 @@ const HeroSection = () => {
               <TechSphere glowColor="rgba(59, 130, 246, 0.6)" />
             </div>
             
-            {/* Live Code Animation - Made larger and wider */}
-            <div className="absolute bottom-16 -right-16 w-72 h-56 md:w-96 md:h-64 lg:w-[32rem] lg:h-72 rounded-lg overflow-hidden shadow-xl rotate-6 z-20">
+            {/* Live Code Animation - Made larger and positioned to cover TechLayersDiagram */}
+            <div className="absolute bottom-10 -right-8 w-72 h-56 md:w-96 md:h-64 lg:w-[34rem] lg:h-80 rounded-lg overflow-hidden shadow-xl rotate-6 z-40">
               <CodeAnimation theme="dark" opacity={0.9} codeSpeed={3} />
             </div>
             
@@ -427,14 +427,14 @@ const HeroSection = () => {
               <div className="relative">
                 <VirtualWhiteboard />
                 
-                {/* Tech Layers Diagram - New component in the yellow arrow area */}
-                <div className="absolute top-1/2 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-64 h-72 rotate-3 z-30">
+                {/* Tech Layers Diagram - Positioned to be covered by code editor */}
+                <div className="absolute bottom-8 right-0 w-64 h-72 rotate-3 z-20">
                   <TechLayersDiagram />
                 </div>
                 
-                {/* Backend Label */}
+                {/* Backend Label with strategic positioning */}
                 <motion.div 
-                  className="absolute bottom-12 right-20 z-40"
+                  className="absolute bottom-4 right-8 z-50"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.8 }}
