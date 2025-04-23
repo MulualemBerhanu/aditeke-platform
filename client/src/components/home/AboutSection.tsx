@@ -39,10 +39,10 @@ const AboutSection = () => {
 
   // Timeline data for company milestones
   const timeline = [
-    { year: "2018", title: "Company Founded", description: "Started with a team of 4 software engineers" },
-    { year: "2020", title: "Expanded Services", description: "Added mobile and cloud development offerings" },
-    { year: "2022", title: "Global Expansion", description: "Opened international offices and partnerships" },
-    { year: "2023", title: "AI Integration", description: "Incorporated advanced AI solutions in our services" }
+    { title: "Company Founded", description: "Started with a team of passionate software engineers" },
+    { title: "Expanded Services", description: "Added mobile and cloud development offerings" },
+    { title: "Global Expansion", description: "Opened international offices and partnerships" },
+    { title: "AI Integration", description: "Incorporated advanced AI solutions in our services" }
   ];
 
   // Animated background pattern for visual interest
@@ -255,7 +255,7 @@ const AboutSection = () => {
                 
                 <div className="space-y-4 text-gray-600 mb-8">
                   <p>
-                    Founded in 2018, AdiTeke Software Solutions has grown from a small team of passionate developers to a global technology partner for businesses across industries.
+                    AdiTeke Software Solutions has grown from a small team of passionate developers to a global technology partner for businesses across industries.
                   </p>
                   <p>
                     We combine technical expertise with industry knowledge to deliver custom software solutions that drive innovation, efficiency, and growth for our clients.
@@ -276,7 +276,6 @@ const AboutSection = () => {
                       <div className="absolute -left-[2.2rem] w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                         <div className="w-2 h-2 rounded-full bg-white"></div>
                       </div>
-                      <div className="font-bold text-primary">{item.year}</div>
                       <div className="font-medium text-gray-800">{item.title}</div>
                       <div className="text-gray-600 text-sm">{item.description}</div>
                     </motion.div>
