@@ -18,8 +18,15 @@ const PortfolioSection = () => {
     setActiveFilter(category);
   };
 
-  // Filter projects based on active filter
-  const filteredProjects = projects?.filter(project => {
+  // First sort projects by sort_order (or default to 100 if not set)
+  const sortedProjects = projects?.sort((a, b) => {
+    const aOrder = a.sort_order || 100;
+    const bOrder = b.sort_order || 100;
+    return aOrder - bOrder;
+  });
+  
+  // Then filter projects based on active filter
+  const filteredProjects = sortedProjects?.filter(project => {
     if (activeFilter === 'all') return true;
     
     // Handle both string and array category formats
@@ -297,6 +304,13 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
   // Determine if link should open in new tab (for external URLs)
   const isExternalLink = website_url && website_url.startsWith('http');
   
+  const handleExternalLink = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isExternalLink && website_url) {
+      e.preventDefault();
+      window.open(website_url, '_blank', 'noopener,noreferrer');
+    }
+  };
+  
   // Define the technology icon based on category
   const getTechIcon = () => {
     if (categories.some(c => c.includes('ai'))) return <Code className="h-5 w-5 mr-1" />;
@@ -342,6 +356,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
               href={linkUrl} 
               target={isExternalLink ? "_blank" : undefined}
               rel={isExternalLink ? "noopener noreferrer" : undefined}
+              onClick={handleExternalLink}
               className="bg-white/90 backdrop-blur-sm text-primary px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 hover:bg-white transition-colors"
             >
               <Eye className="h-4 w-4" />
@@ -369,6 +384,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
             href={linkUrl}
             target={isExternalLink ? "_blank" : undefined}
             rel={isExternalLink ? "noopener noreferrer" : undefined}
+            onClick={handleExternalLink}
             className="inline-flex items-center text-primary font-medium hover:text-primary-dark transition-colors group/link text-sm"
           >
             {isExternalLink ? "Visit Website" : "View Case Study"}
