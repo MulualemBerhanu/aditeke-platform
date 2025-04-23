@@ -427,10 +427,35 @@ const HeroSection = () => {
               <div className="relative">
                 <VirtualWhiteboard />
                 
-                {/* Tech Layers Diagram - Positioned to cover backend area */}
-                <div className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-64 h-72 rotate-3 z-30">
+                {/* Tech Layers Diagram - New component in the yellow arrow area */}
+                <div className="absolute top-1/2 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-64 h-72 rotate-3 z-30">
                   <TechLayersDiagram />
                 </div>
+                
+                {/* Backend Label */}
+                <motion.div 
+                  className="absolute bottom-12 right-20 z-40"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.8 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <div className="bg-gradient-to-r from-[#37B9BE] to-[#37B9BE]/80 text-white font-semibold px-5 py-2 rounded-md shadow-lg transform rotate-3 border border-[#37B9BE]/30 backdrop-blur-sm">
+                    Backend
+                  </div>
+                  <motion.div 
+                    className="absolute inset-0 bg-[#37B9BE]/20 rounded-md blur-md -z-10"
+                    animate={{
+                      scale: [1, 1.05, 1],
+                      opacity: [0.5, 0.8, 0.5]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                </motion.div>
                 
                 {/* Particle Network Overlay */}
                 <div className="absolute inset-0 opacity-50">

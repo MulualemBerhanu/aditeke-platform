@@ -30,7 +30,7 @@ const TechLayersDiagram: React.FC<TechLayerProps> = ({
     { 
       name: 'Backend', 
       color: '#37B9BE', 
-      elements: ['Node.js', 'Express', 'Authentication', 'Storage'] 
+      elements: ['Node.js', 'Express', 'Authentication', 'Storage', 'APIs'] 
     },
     { 
       name: 'Database', 
