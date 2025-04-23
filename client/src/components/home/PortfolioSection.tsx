@@ -21,7 +21,13 @@ const PortfolioSection = () => {
   // Filter projects based on active filter
   const filteredProjects = projects?.filter(project => {
     if (activeFilter === 'all') return true;
-    return project.category.includes(activeFilter);
+    
+    // Handle both string and array category formats
+    const categories = typeof project.category === 'string' 
+      ? project.category.split(',').map(c => c.trim()) 
+      : project.category;
+      
+    return categories.includes(activeFilter);
   });
 
   return (
@@ -223,7 +229,7 @@ const PortfolioSection = () => {
                   description={project.description}
                   image={project.thumbnail}
                   index={index}
-                  category={project.category}
+                  category={Array.isArray(project.category) ? project.category : [project.category]}
                 />
               ))}
             </AnimatePresence>
@@ -276,16 +282,19 @@ interface ProjectCardProps {
   description: string;
   image: string;
   index: number;
-  category: string[];
+  category: string | string[];
 }
 
 const ProjectCard = ({ title, description, image, index, category }: ProjectCardProps) => {
+  // Create categories array whether we get a string or array
+  const categories = Array.isArray(category) ? category : category.split(',').map(c => c.trim());
+  
   // Define the technology icon based on category
   const getTechIcon = () => {
-    if (category.includes('ai')) return <Code className="h-5 w-5 mr-1" />;
-    if (category.includes('mobile')) return <Server className="h-5 w-5 mr-1" />;
-    if (category.includes('web')) return <Layout className="h-5 w-5 mr-1" />;
-    if (category.includes('ecommerce')) return <Database className="h-5 w-5 mr-1" />;
+    if (categories.some(c => c.includes('ai'))) return <Code className="h-5 w-5 mr-1" />;
+    if (categories.some(c => c.includes('mobile'))) return <Server className="h-5 w-5 mr-1" />;
+    if (categories.some(c => c.includes('web'))) return <Layout className="h-5 w-5 mr-1" />;
+    if (categories.some(c => c.includes('ecommerce'))) return <Database className="h-5 w-5 mr-1" />;
     return <Layout className="h-5 w-5 mr-1" />;
   };
   
@@ -305,7 +314,7 @@ const ProjectCard = ({ title, description, image, index, category }: ProjectCard
           {/* Category badge */}
           <div className="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-primary shadow-sm border border-white/80 flex items-center">
             {getTechIcon()}
-            {category[0].charAt(0).toUpperCase() + category[0].slice(1)}
+            {categories[0].charAt(0).toUpperCase() + categories[0].slice(1)}
           </div>
           
           {/* Image with hover effects */}
