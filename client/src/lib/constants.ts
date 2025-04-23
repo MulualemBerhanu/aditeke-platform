@@ -5,7 +5,6 @@ export const NAV_ITEMS = [
   { label: "Services", href: "/services" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Careers", href: "/careers" },
-  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -101,7 +100,6 @@ export const FOOTER_QUICK_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Careers", href: "/careers" },
-  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" }
 ];
 
