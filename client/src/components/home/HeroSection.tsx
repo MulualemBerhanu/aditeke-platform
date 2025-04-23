@@ -8,7 +8,7 @@ import CustomCountUp from '@/components/common/CustomCountUp';
 import CodeAnimation from './CodeAnimation';
 import ParticleNetwork from './ParticleNetwork';
 import TechSphere from './TechSphere';
-import TechLayersDiagram from './TechLayersDiagram';
+import TechStackVisual from './TechStackVisual';
 
 // Enhanced video background with animated particles
 const VideoBackground = () => {
@@ -427,9 +427,9 @@ const HeroSection = () => {
               <div className="relative">
                 <VirtualWhiteboard />
                 
-                {/* Tech Layers Diagram - Positioned to be covered by code editor */}
+                {/* Tech Stack Visualization - Positioned to be covered by code editor */}
                 <div className="absolute bottom-8 right-0 w-64 h-72 rotate-3 z-20">
-                  <TechLayersDiagram />
+                  <TechStackVisual />
                 </div>
                 
                 {/* Backend Label with strategic positioning */}
