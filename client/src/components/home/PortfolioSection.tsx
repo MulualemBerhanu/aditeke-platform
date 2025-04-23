@@ -230,6 +230,7 @@ const PortfolioSection = () => {
                   image={project.thumbnail}
                   index={index}
                   category={Array.isArray(project.category) ? project.category : [project.category]}
+                  website_url={project.website_url || undefined}
                 />
               ))}
             </AnimatePresence>
