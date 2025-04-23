@@ -339,12 +339,16 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
             {categories[0].charAt(0).toUpperCase() + categories[0].slice(1)}
           </div>
           
-          {/* Image with hover effects */}
+          {/* Image with hover effects and fallback */}
           <img 
             src={image} 
             alt={title} 
             className="w-full h-full object-cover transform transition-all duration-700 group-hover:scale-110 group-hover:brightness-[0.85]"
             loading="lazy"
+            onError={(e) => {
+              // When image fails to load, apply a fallback
+              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=6366f1&color=fff&size=400`;
+            }}
           />
           
           {/* Gradient overlay that reveals on hover */}
