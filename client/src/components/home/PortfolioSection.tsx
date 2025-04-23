@@ -283,11 +283,18 @@ interface ProjectCardProps {
   image: string;
   index: number;
   category: string | string[];
+  website_url?: string;
 }
 
-const ProjectCard = ({ title, description, image, index, category }: ProjectCardProps) => {
+const ProjectCard = ({ title, description, image, index, category, website_url }: ProjectCardProps) => {
   // Create categories array whether we get a string or array
   const categories = Array.isArray(category) ? category : category.split(',').map(c => c.trim());
+  
+  // Determine link URL - use external website if available, otherwise use internal portfolio page
+  const linkUrl = website_url || `/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`;
+  
+  // Determine if link should open in new tab (for external URLs)
+  const isExternalLink = website_url && website_url.startsWith('http');
   
   // Define the technology icon based on category
   const getTechIcon = () => {
@@ -331,11 +338,13 @@ const ProjectCard = ({ title, description, image, index, category }: ProjectCard
           {/* View button that reveals on hover */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
             <Link 
-              href={`/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`} 
+              href={linkUrl} 
+              target={isExternalLink ? "_blank" : undefined}
+              rel={isExternalLink ? "noopener noreferrer" : undefined}
               className="bg-white/90 backdrop-blur-sm text-primary px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 hover:bg-white transition-colors"
             >
               <Eye className="h-4 w-4" />
-              <span>View Details</span>
+              <span>{isExternalLink ? "Visit Website" : "View Details"}</span>
             </Link>
           </div>
         </div>
@@ -354,12 +363,14 @@ const ProjectCard = ({ title, description, image, index, category }: ProjectCard
             {description}
           </p>
           
-          {/* "View Case Study" link with animation */}
+          {/* Link with animation - changes to "Visit Website" for external links */}
           <Link 
-            href={`/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`} 
+            href={linkUrl}
+            target={isExternalLink ? "_blank" : undefined}
+            rel={isExternalLink ? "noopener noreferrer" : undefined}
             className="inline-flex items-center text-primary font-medium hover:text-primary-dark transition-colors group/link text-sm"
           >
-            View Case Study
+            {isExternalLink ? "Visit Website" : "View Case Study"}
             <ArrowRight className="ml-2 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" />
           </Link>
         </div>
