@@ -34,7 +34,7 @@ const AboutPage = () => {
       name: "Mulualem Berhanu",
       position: "CTO & Founder",
       bio: "Mulualem has over 7 years of experience in software development and technical leadership.",
-      image: "/mulualem.jpeg"
+      image: "https://randomuser.me/api/portraits/men/42.jpg"
     },
     {
       name: "Samrawit Kassa",
