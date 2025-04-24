@@ -31,28 +31,16 @@ const AboutPage = () => {
   // Team members
   const team = [
     {
-      name: "Sarah Johnson",
-      position: "CEO & Founder",
-      bio: "Sarah has over 15 years of experience in software development and business leadership.",
-      image: "https://randomuser.me/api/portraits/women/23.jpg"
-    },
-    {
-      name: "Michael Chen",
-      position: "CTO",
-      bio: "Michael leads our technical team with expertise in AI, cloud computing, and system architecture.",
+      name: "Mulualem Berhanu",
+      position: "CTO & Founder",
+      bio: "Mulualem has over 7 years of experience in software development and technical leadership.",
       image: "https://randomuser.me/api/portraits/men/45.jpg"
     },
     {
-      name: "Elena Rodriguez",
-      position: "Head of Design",
-      bio: "Elena specializes in creating beautiful, intuitive user interfaces and experiences.",
-      image: "https://randomuser.me/api/portraits/women/68.jpg"
-    },
-    {
-      name: "David Kim",
-      position: "Lead Developer",
-      bio: "David is an expert in full-stack development with a focus on performance optimization.",
-      image: "https://randomuser.me/api/portraits/men/32.jpg"
+      name: "Samrawit Kassa",
+      position: "CEO",
+      bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.",
+      image: "https://randomuser.me/api/portraits/women/23.jpg"
     }
   ];
 
@@ -197,7 +185,7 @@ const AboutPage = () => {
             </p>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {team.map((member, index) => (
               <motion.div 
                 key={index}
