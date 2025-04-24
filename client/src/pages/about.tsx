@@ -181,7 +181,7 @@ const AboutPage = () => {
               whileHover={{ y: -5 }}
             >
               <img 
-                src="/mulualem.jpeg" 
+                src="/images/team/mulualem.jpeg" 
                 alt="Mulualem Berhanu" 
                 className="w-full h-64 object-cover"
               />
