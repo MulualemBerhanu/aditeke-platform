@@ -59,27 +59,22 @@ const AboutPage = () => {
   // Company milestones
   const milestones = [
     {
-      year: "2015",
       title: "Company Founded",
       description: "AdiTeke Software Solutions was established with a team of 5 developers."
     },
     {
-      year: "2017",
       title: "First Major Client",
       description: "Secured our first enterprise client and expanded the team to 15 members."
     },
     {
-      year: "2019",
       title: "International Expansion",
       description: "Opened our first international office and started serving clients globally."
     },
     {
-      year: "2021",
       title: "AI Division Launch",
       description: "Launched our specialized AI solutions division to meet growing market demands."
     },
     {
-      year: "2023",
       title: "50+ Team Members",
       description: "Grew to over 50 talented professionals and 200+ successful projects delivered."
     }
@@ -274,7 +269,6 @@ const AboutPage = () => {
                   {/* Content */}
                   <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-12' : 'pl-12'}`}>
                     <div className="bg-white p-6 rounded-xl shadow-md">
-                      <div className="text-2xl font-bold text-primary mb-2">{milestone.year}</div>
                       <h3 className="text-xl font-bold mb-2">{milestone.title}</h3>
                       <p className="text-gray-600">{milestone.description}</p>
                     </div>
