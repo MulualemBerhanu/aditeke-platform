@@ -26,10 +26,18 @@ export async function sendEmail(params: {
 }) {
   try {
     // Check for API key
+    console.log('Checking for Brevo API key...');
+    console.log('BREVO_API_KEY is', process.env.BREVO_API_KEY ? 'set' : 'not set');
+    
     if (!process.env.BREVO_API_KEY) {
       console.warn('Email sending skipped: BREVO_API_KEY not set');
       throw new Error('Brevo API key is not configured');
     }
+    
+    // Debug log API key prefix
+    const keyPrefix = process.env.BREVO_API_KEY.substring(0, 5);
+    console.log(`Using Brevo API key with prefix: ${keyPrefix}...`);
+    
 
     // Format the sender with name
     const sender = {
