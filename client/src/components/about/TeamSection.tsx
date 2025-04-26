@@ -2,8 +2,9 @@ import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 
-// Import base64 image
+// Import base64 images
 import mulualemBase64 from './mulualem_base64.txt';
+import samrawitBase64 from './samrawit_base64.txt';
 
 const TeamSection = () => {
   // Team members
