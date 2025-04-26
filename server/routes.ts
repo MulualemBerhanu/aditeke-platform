@@ -2842,6 +2842,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Diagnostic endpoint for API key
+  app.get('/api/public/check-email-config', async (req, res) => {
+    try {
+      // Check if the Brevo API key exists
+      const apiKey = process.env.BREVO_API_KEY;
+      const keyPrefix = apiKey ? apiKey.substring(0, 8) + '...' : 'not set';
+      
+      console.log('Brevo API key check:', apiKey ? 'present' : 'missing');
+      
+      // Try a simple API call to validate the key
+      let apiValid = false;
+      let apiMessage = 'Not tested';
+      
+      if (apiKey) {
+        try {
+          const response = await fetch('https://api.sendinblue.com/v3/account', {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+              'api-key': apiKey
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            apiValid = true;
+            apiMessage = `API key is valid. Account: ${data.email || 'Unknown'}`;
+          } else {
+            const error = await response.json();
+            apiMessage = `API key validation failed: ${error.message || response.statusText}`;
+          }
+        } catch (apiError: any) {
+          apiMessage = `API connection error: ${apiError.message}`;
+        }
+      }
+      
+      return res.json({
+        success: true,
+        apiKeyPresent: !!apiKey,
+        apiKeyPrefix: keyPrefix,
+        apiValid,
+        apiMessage,
+        environmentVariables: {
+          NODE_ENV: process.env.NODE_ENV || 'not set',
+        }
+      });
+    } catch (error: any) {
+      console.error('Error checking email config:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error checking email config',
+        error: error.message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

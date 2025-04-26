@@ -25,17 +25,20 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // Check for API key
-    console.log('Checking for Brevo API key...');
-    console.log('BREVO_API_KEY is', process.env.BREVO_API_KEY ? 'set' : 'not set');
+    // Force reload environment variable 
+    // (In some runtime environments, environment variables loaded via secrets might need this)
+    const brevoApiKey = process.env.BREVO_API_KEY;
     
-    if (!process.env.BREVO_API_KEY) {
+    console.log('Checking for Brevo API key...');
+    console.log('BREVO_API_KEY is', brevoApiKey ? 'set' : 'not set');
+    
+    if (!brevoApiKey) {
       console.warn('Email sending skipped: BREVO_API_KEY not set');
       throw new Error('Brevo API key is not configured');
     }
     
     // Debug log API key prefix
-    const keyPrefix = process.env.BREVO_API_KEY.substring(0, 5);
+    const keyPrefix = brevoApiKey.substring(0, 5);
     console.log(`Using Brevo API key with prefix: ${keyPrefix}...`);
     
 
@@ -60,7 +63,7 @@ export async function sendEmail(params: {
     
     console.log('Attempting to send email via Brevo API to:', params.to);
     
-    console.log('Using Brevo API key prefix:', process.env.BREVO_API_KEY?.substring(0, 5) + '...');
+    console.log('Using Brevo API key prefix:', brevoApiKey.substring(0, 5) + '...');
     
     // Make a direct fetch request to the Brevo API
     const response = await fetch('https://api.sendinblue.com/v3/smtp/email', {
@@ -68,7 +71,7 @@ export async function sendEmail(params: {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': process.env.BREVO_API_KEY // The key should be in the format "xkeysib-XXXXX..."
+        'api-key': brevoApiKey // Using our local variable that we confirmed exists
       },
       body: JSON.stringify(payload)
     });
