@@ -2811,6 +2811,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Simple test route for email (public endpoint for testing)
+  app.get('/api/public/test-simple-email', async (req, res) => {
+    try {
+      // Import email service directly for testing
+      const { sendEmail } = await import('./utils/emailService');
+      
+      console.log('Attempting to send simple test email');
+      
+      // Send a simple test email with direct API usage
+      const result = await sendEmail({
+        to: 'berhanumulualemadisu@gmail.com',
+        subject: 'Test Email from AdiTeke App',
+        text: 'This is a test email to verify Brevo email integration is working correctly.',
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #333;">
+            <h1 style="color: #0040A1;">Test Email</h1>
+            <p>This is a test email to verify Brevo email integration is working correctly.</p>
+            <p>If you received this email, it means the Brevo email service is properly configured!</p>
+            <p>Time sent: ${new Date().toISOString()}</p>
+            <p style="margin-top: 15px;">Best regards,<br>AdiTeke Software Solutions</p>
+          </div>
+        `,
+      });
+      
+      res.json({ success: true, message: 'Simple test email sent successfully', result });
+    } catch (error: any) {
+      console.error('Simple test email sending failed:', error);
+      res.status(500).json({ error: 'Simple email test failed', details: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

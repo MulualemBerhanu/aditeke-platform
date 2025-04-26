@@ -52,13 +52,15 @@ export async function sendEmail(params: {
     
     console.log('Attempting to send email via Brevo API to:', params.to);
     
+    console.log('Using Brevo API key prefix:', process.env.BREVO_API_KEY?.substring(0, 5) + '...');
+    
     // Make a direct fetch request to the Brevo API
     const response = await fetch('https://api.sendinblue.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': process.env.BREVO_API_KEY
+        'api-key': process.env.BREVO_API_KEY // The key should be in the format "xkeysib-XXXXX..."
       },
       body: JSON.stringify(payload)
     });
