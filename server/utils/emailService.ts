@@ -1,8 +1,9 @@
-import * as sgMail from '@sendgrid/mail';
+import { MailService } from '@sendgrid/mail';
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
 // Initialize SendGrid with API key
+const sgMail = new MailService();
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
 interface EmailAttachment {
