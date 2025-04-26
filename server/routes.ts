@@ -2897,6 +2897,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Direct email test endpoint that bypasses the wrapper
+  app.get('/api/public/direct-email-test', async (req, res) => {
+    try {
+      const apiKey = process.env.BREVO_API_KEY;
+      
+      if (!apiKey) {
+        return res.status(400).json({
+          success: false,
+          message: 'API key not configured'
+        });
+      }
+      
+      const sender = {
+        email: 'berhanumulualemadisu@gmail.com',
+        name: 'AdiTeke Software Solutions'
+      };
+      
+      const payload = {
+        sender,
+        to: [{ email: 'berhanumulualemadisu@gmail.com' }],
+        subject: 'Direct Test Email from AdiTeke App',
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; color: #333;">
+            <h1 style="color: #0040A1;">Direct Test Email</h1>
+            <p>This email bypasses the wrapper layer to test direct API access.</p>
+            <p>If you received this email, it confirms the Brevo API key is working properly.</p>
+            <p>Time sent: ${new Date().toISOString()}</p>
+          </div>
+        `,
+        textContent: 'This is a direct test email to verify Brevo API integration is working.'
+      };
+      
+      console.log('Sending direct API email test...');
+      
+      const response = await fetch('https://api.sendinblue.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'api-key': apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorDetails = '';
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorDetails = errorJson.message || errorJson.error || JSON.stringify(errorJson);
+        } catch (e) {
+          errorDetails = `Status ${response.status}: ${errorText}`;
+        }
+        
+        return res.status(500).json({
+          success: false,
+          message: 'Direct email test failed',
+          error: `Brevo API error: ${errorDetails}`
+        });
+      }
+      
+      const result = await response.json();
+      
+      console.log('Direct email sent successfully:', result);
+      
+      return res.json({
+        success: true,
+        message: 'Direct test email sent successfully',
+        result
+      });
+    } catch (error: any) {
+      console.error('Error sending direct test email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error sending direct test email',
+        error: error.message
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

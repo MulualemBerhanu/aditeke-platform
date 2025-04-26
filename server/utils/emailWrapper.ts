@@ -2,21 +2,6 @@
 import { ClientInvoice, User } from '../../shared/schema';
 import * as EmailFallback from './emailFallback';
 
-// Try to import the real email service but don't fail if it's not available
-let realEmailService: any = null;
-try {
-  import('./emailService')
-    .then((module) => {
-      realEmailService = module;
-      console.log('Real email service loaded successfully');
-    })
-    .catch((error) => {
-      console.warn('Could not load real email service, using fallback mode:', error.message);
-    });
-} catch (error) {
-  console.warn('Could not load real email service, using fallback mode');
-}
-
 // Email attachment interface
 interface EmailAttachment {
   content: string;
@@ -37,13 +22,16 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // Check if real email service is available and configured
-    if (realEmailService && process.env.BREVO_API_KEY) {
-      // Try with real service
+    // Check if API key is available
+    if (process.env.BREVO_API_KEY) {
       try {
-        console.log('Attempting to send email using real service...');
-        return await realEmailService.sendEmail(params);
-      } catch (error) {
+        // Dynamically import for each call to ensure latest env vars
+        const emailService = await import('./emailService');
+        
+        // Try with real service
+        console.log('Attempting to send email using real Brevo service...');
+        return await emailService.sendEmail(params);
+      } catch (error: any) {
         console.warn('Real email service failed, using fallback:', error.message);
         return await EmailFallback.logEmailToConsole(params);
       }
@@ -52,7 +40,7 @@ export async function sendEmail(params: {
       console.log('Using email fallback mode (real service not available)');
       return await EmailFallback.logEmailToConsole(params);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Email wrapper error:', error);
     throw new Error(`Email sending failed: ${error.message}`);
   }
@@ -63,13 +51,16 @@ export async function sendEmail(params: {
  */
 export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, customSubject?: string, customMessage?: string, customEmail?: string) {
   try {
-    // Check if real email service is available and configured
-    if (realEmailService && process.env.BREVO_API_KEY) {
-      // Try with real service
+    // Check if API key is configured
+    if (process.env.BREVO_API_KEY) {
       try {
-        console.log('Attempting to send invoice email using real service...');
-        return await realEmailService.sendInvoicePdfEmail(invoice, client, customSubject, customMessage, customEmail);
-      } catch (error) {
+        // Dynamically import for each call to ensure latest env vars
+        const emailService = await import('./emailService');
+        
+        // Try with real service
+        console.log('Attempting to send invoice email using real Brevo service...');
+        return await emailService.sendInvoicePdfEmail(invoice, client, customSubject, customMessage, customEmail);
+      } catch (error: any) {
         console.warn('Real invoice email service failed, using fallback:', error.message);
         return await EmailFallback.logInvoiceEmail(invoice, client, customSubject, customMessage, customEmail);
       }
@@ -78,7 +69,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
       console.log('Using invoice email fallback mode (real service not available)');
       return await EmailFallback.logInvoiceEmail(invoice, client, customSubject, customMessage, customEmail);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Invoice email wrapper error:', error);
     throw new Error(`Invoice email sending failed: ${error.message}`);
   }
@@ -89,13 +80,16 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
  */
 export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, customSubject?: string, customMessage?: string, customEmail?: string) {
   try {
-    // Check if real email service is available and configured
-    if (realEmailService && process.env.BREVO_API_KEY) {
-      // Try with real service
+    // Check if API key is configured
+    if (process.env.BREVO_API_KEY) {
       try {
-        console.log('Attempting to send receipt email using real service...');
-        return await realEmailService.sendReceiptPdfEmail(invoice, client, customSubject, customMessage, customEmail);
-      } catch (error) {
+        // Dynamically import for each call to ensure latest env vars
+        const emailService = await import('./emailService');
+        
+        // Try with real service
+        console.log('Attempting to send receipt email using real Brevo service...');
+        return await emailService.sendReceiptPdfEmail(invoice, client, customSubject, customMessage, customEmail);
+      } catch (error: any) {
         console.warn('Real receipt email service failed, using fallback:', error.message);
         return await EmailFallback.logReceiptEmail(invoice, client, customSubject, customMessage, customEmail);
       }
@@ -104,7 +98,7 @@ export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, 
       console.log('Using receipt email fallback mode (real service not available)');
       return await EmailFallback.logReceiptEmail(invoice, client, customSubject, customMessage, customEmail);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Receipt email wrapper error:', error);
     throw new Error(`Receipt email sending failed: ${error.message}`);
   }
