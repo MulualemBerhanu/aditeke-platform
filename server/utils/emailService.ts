@@ -25,8 +25,8 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // Use from address provided or default to contact@aditeke.com
-    const from = params.from || 'contact@aditeke.com';
+    // Use from address provided or default to verified email
+    const from = params.from || 'berhanumulualemadisu@gmail.com';
     
     // We must provide at least one of: text, html, templateId, or content
     // Check if we have either text or html
@@ -125,7 +125,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: client.email,
-      from: 'contact@aditeke.com',
+      from: 'berhanumulualemadisu@gmail.com', // Use an email that's verified in SendGrid
       subject: emailSubject,
       html: emailHtml,
       attachments: [
@@ -206,7 +206,7 @@ export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: client.email,
-      from: 'contact@aditeke.com',
+      from: 'berhanumulualemadisu@gmail.com', // Use an email that's verified in SendGrid
       subject: emailSubject,
       html: emailHtml,
       attachments: [

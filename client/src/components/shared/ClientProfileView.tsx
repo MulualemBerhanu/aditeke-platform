@@ -1778,6 +1778,17 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
           
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email-to" className="text-right">
+                To
+              </Label>
+              <Input
+                id="email-to"
+                className="col-span-3"
+                value={client.email}
+                readOnly
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email-subject" className="text-right">
                 Subject
               </Label>
