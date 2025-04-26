@@ -2970,6 +2970,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Simple email test failed', details: error.message });
     }
   });
+  
+  // Test endpoint for receipt emails
+  app.get('/api/public/test-receipt-email', async (req, res) => {
+    try {
+      console.log('Attempting to send test receipt email');
+      
+      // Create mock invoice and client data for testing
+      const mockInvoice = {
+        id: 999,
+        invoiceNumber: 'TEST-123',
+        clientId: 2000,
+        amount: 150.00,
+        description: 'Test Invoice',
+        dueDate: new Date(),
+        status: 'paid',
+        issueDate: new Date(),
+        paidDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: null,
+        notes: null,
+        projectId: null,
+        paymentMethod: 'credit_card',
+        paidAmount: 150.00,
+        receiptNumber: 'RCPT-123',
+        items: [
+          { description: 'Web Development', quantity: 10, unitPrice: 10.00, amount: 100.00 },
+          { description: 'Design Services', quantity: 2, unitPrice: 25.00, amount: 50.00 }
+        ]
+      };
+      
+      const mockClient = {
+        id: 2000,
+        username: 'test-client',
+        email: 'berhanumulualemadisu@gmail.com', // Use admin email for testing
+        name: 'Test Client',
+        company: 'Test Company Inc.',
+        address: '123 Test St.',
+        phone: '+1234567890'
+      };
+      
+      // Import the sendReceiptPdfEmail function
+      const { sendReceiptPdfEmail } = await import('./utils/emailService');
+      
+      // Send the receipt email
+      const result = await sendReceiptPdfEmail(mockInvoice, mockClient);
+      
+      // Return success response
+      return res.json({
+        success: true,
+        message: 'Test receipt email sent successfully',
+        result
+      });
+    } catch (error) {
+      console.error('Error sending test receipt email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send test receipt email',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Test endpoint for invoice emails
+  app.get('/api/public/test-invoice-email', async (req, res) => {
+    try {
+      console.log('Attempting to send test invoice email');
+      
+      // Create mock invoice and client data for testing
+      const mockInvoice = {
+        id: 888,
+        invoiceNumber: 'INV-TEST-123',
+        clientId: 2000,
+        amount: 250.00,
+        description: 'Software Development Services',
+        dueDate: new Date(new Date().getTime() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+        status: 'pending',
+        issueDate: new Date(),
+        paidDate: null,
+        createdAt: new Date(),
+        updatedAt: null,
+        notes: null,
+        projectId: null,
+        paymentMethod: null,
+        paidAmount: null,
+        receiptNumber: null,
+        items: [
+          { description: 'Frontend Development', quantity: 20, unitPrice: 10.00, amount: 200.00 },
+          { description: 'UI/UX Design', quantity: 2, unitPrice: 25.00, amount: 50.00 }
+        ]
+      };
+      
+      const mockClient = {
+        id: 2000,
+        username: 'test-client',
+        email: 'berhanumulualemadisu@gmail.com', // Use admin email for testing
+        name: 'Test Client',
+        company: 'Test Company Inc.',
+        address: '123 Test St.',
+        phone: '+1234567890'
+      };
+      
+      // Import the sendInvoicePdfEmail function
+      const { sendInvoicePdfEmail } = await import('./utils/emailService');
+      
+      // Send the invoice email
+      const result = await sendInvoicePdfEmail(mockInvoice, mockClient);
+      
+      // Return success response
+      return res.json({
+        success: true,
+        message: 'Test invoice email sent successfully',
+        result
+      });
+    } catch (error) {
+      console.error('Error sending test invoice email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send test invoice email',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
 
   // Diagnostic endpoint for API key
   app.get('/api/public/check-email-config', async (req, res) => {
