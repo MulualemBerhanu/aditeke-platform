@@ -1,8 +1,10 @@
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
-// The verified sender email address
-const VERIFIED_SENDER = 'berhanumulualemadisu@gmail.com';
+// The verified sender email addresses
+const NOTIFICATION_SENDER = 'noreply@aditeke.com';
+const SUPPORT_SENDER = 'support@aditeke.com';
+const INVOICE_SENDER = 'billing@aditeke.com';
 
 // Define our own interface for email attachments
 interface EmailAttachment {
@@ -10,6 +12,17 @@ interface EmailAttachment {
   filename: string;
   type: string;
   disposition: string;
+}
+
+/**
+ * Get a plain text version from HTML content
+ */
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<style[^>]*>.*?<\/style>/g, '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -41,28 +54,52 @@ export async function sendEmail(params: {
     const keyPrefix = brevoApiKey.substring(0, 5);
     console.log(`Using Brevo API key with prefix: ${keyPrefix}...`);
     
+    // Select appropriate sender email based on email type/content
+    let senderEmail = NOTIFICATION_SENDER;
+    
+    if (params.subject.toLowerCase().includes('invoice')) {
+      senderEmail = INVOICE_SENDER;
+    } else if (params.subject.toLowerCase().includes('receipt')) {
+      senderEmail = INVOICE_SENDER;
+    } else if (params.subject.toLowerCase().includes('support') || 
+               params.subject.toLowerCase().includes('help') ||
+               params.subject.toLowerCase().includes('contact')) {
+      senderEmail = SUPPORT_SENDER;
+    }
 
     // Format the sender with name
     const sender = {
-      email: params.from || VERIFIED_SENDER,
+      email: senderEmail,
       name: 'AdiTeke Software Solutions'
     };
     
-    // Prepare API request payload
+    // Use reply-to for custom sender addresses
+    const replyTo = params.from && params.from !== senderEmail ? 
+      { email: params.from } : undefined;
+    
+    // Always include plain text for better deliverability
+    const plainText = params.text || (params.html ? htmlToPlainText(params.html) : 'Please enable HTML to view this email properly.');
+    
+    // Prepare API request payload with enhanced deliverability features
     const payload = {
       sender,
+      replyTo,
       to: [{ email: params.to }],
       subject: params.subject,
       htmlContent: params.html || undefined,
-      textContent: params.text || (params.html ? undefined : ' '),
+      textContent: plainText,
       attachment: params.attachments ? params.attachments.map(attachment => ({
         content: attachment.content,
         name: attachment.filename
-      })) : undefined
+      })) : undefined,
+      headers: {
+        'X-Mailer': 'AdiTeke-Mailer/1.0',
+        'X-Entity-Ref-ID': `aditeke-${Date.now()}`,
+        'List-Unsubscribe': '<mailto:unsubscribe@aditeke.com>'
+      }
     };
     
     console.log('Attempting to send email via Brevo API to:', params.to);
-    
     console.log('Using Brevo API key prefix:', brevoApiKey.substring(0, 5) + '...');
     
     // Make a direct fetch request to the Brevo API
@@ -71,7 +108,7 @@ export async function sendEmail(params: {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': brevoApiKey // Using our local variable that we confirmed exists
+        'api-key': brevoApiKey
       },
       body: JSON.stringify(payload)
     });
@@ -162,7 +199,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: customEmail || client.email,
-      from: VERIFIED_SENDER, // Using our defined verified sender
+      from: INVOICE_SENDER, // Using our defined invoice sender
       subject: emailSubject,
       html: emailHtml,
       attachments: [
@@ -243,7 +280,7 @@ export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: customEmail || client.email,
-      from: VERIFIED_SENDER, // Using our defined verified sender
+      from: INVOICE_SENDER, // Using our defined invoice sender
       subject: emailSubject,
       html: emailHtml,
       attachments: [
