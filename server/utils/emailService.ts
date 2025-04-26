@@ -2,27 +2,39 @@ import * as SibApiV3Sdk from 'sib-api-v3-sdk';
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
-// Initialize the Brevo SDK API client
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
+// Set global configuration for TypeScript safety
+const setupBrevo = () => {
+  // Check if API key is set
+  if (!process.env.BREVO_API_KEY) {
+    console.warn('BREVO_API_KEY environment variable is not set. Email functionality will be disabled.');
+    return false;
+  }
+  
+  try {
+    // Access the instance directly from our type definition
+    const apiKey = SibApiV3Sdk.ApiClient.instance?.authentications?.['api-key'];
+    
+    if (apiKey) {
+      apiKey.apiKey = process.env.BREVO_API_KEY;
+      console.log('Brevo API initialized successfully');
+      return true;
+    } else {
+      console.warn('Failed to get Brevo API client authentication');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error setting up Brevo API:', error);
+    return false;
+  }
+};
 
-// Set Brevo API key
-if (!process.env.BREVO_API_KEY) {
-  console.warn('BREVO_API_KEY environment variable is not set. Email functionality will be disabled.');
-} else {
-  apiKey.apiKey = process.env.BREVO_API_KEY;
-  console.log('Brevo API initialized successfully');
-}
+// Initialize Brevo configuration
+const isBrevoConfigured = setupBrevo();
 
 // The verified sender email address
 const VERIFIED_SENDER = 'berhanumulualemadisu@gmail.com';
 
-// Default sender configuration to use in all emails
-const DEFAULT_SENDER = {
-  email: VERIFIED_SENDER,
-  name: 'AdiTeke Software Solutions'
-};
-
+// Define our own interface for email attachments
 interface EmailAttachment {
   content: string;
   filename: string;
@@ -42,10 +54,10 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // If Brevo API key is not set, log warning and return
-    if (!process.env.BREVO_API_KEY) {
-      console.warn('Email sending skipped: BREVO_API_KEY not set');
-      throw new Error('Brevo API key is not configured');
+    // Final validation check for API key
+    if (!process.env.BREVO_API_KEY || !isBrevoConfigured) {
+      console.warn('Email sending skipped: Brevo is not properly configured');
+      throw new Error('Brevo API is not properly configured');
     }
 
     // Format the sender with name
@@ -53,9 +65,6 @@ export async function sendEmail(params: {
       email: params.from || VERIFIED_SENDER,
       name: 'AdiTeke Software Solutions'
     };
-    
-    // Initialize Brevo API client
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     
     // Create a new email object
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -87,6 +96,9 @@ export async function sendEmail(params: {
         name: attachment.filename
       }));
     }
+    
+    // Create a new API instance for this request
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     
     // Send the email
     console.log('Attempting to send email via Brevo to:', params.to);
