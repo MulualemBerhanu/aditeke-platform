@@ -1,10 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-
-// Import base64 image data
-import mulualemBase64 from './images/mulualem_base64.txt';
-import samrawitBase64 from './images/samrawit_base64.txt';
+import TeamImage from './TeamImage';
 
 const TeamSection = () => {
   // Team members
@@ -12,16 +9,12 @@ const TeamSection = () => {
     {
       name: "Mulualem Berhanu",
       position: "CTO & Founder",
-      bio: "Mulualem has over 7 years of experience in software development and technical leadership.",
-      // Use base64-encoded image data
-      image: `data:image/jpeg;base64,${mulualemBase64}`
+      bio: "Mulualem has over 7 years of experience in software development and technical leadership."
     },
     {
       name: "Samrawit Kassa",
       position: "CEO",
-      bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.",
-      // Use base64-encoded image data
-      image: `data:image/jpeg;base64,${samrawitBase64}`
+      bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth."
     }
   ];
 
@@ -52,11 +45,8 @@ const TeamSection = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5 }}
             >
-              <img 
-                src={member.image} 
-                alt={member.name} 
-                className="w-full h-64 object-cover object-top"
-                style={{ objectPosition: member.name === "Samrawit Kassa" ? "center 15%" : "center 15%" }}
+              <TeamImage 
+                name={member.name}
               />
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2">{member.name}</h3>
