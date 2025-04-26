@@ -9,15 +9,15 @@ const TeamSection = () => {
       name: "Mulualem Berhanu",
       position: "CTO & Founder",
       bio: "Mulualem has over 7 years of experience in software development and technical leadership.",
-      // Use direct path to the image
-      image: "/assets/mulualem.jpeg"
+      // Use standard image path for consistent behavior in local and deployed environments
+      image: "/images/team/mulualem.jpeg"
     },
     {
       name: "Samrawit Kassa",
       position: "CEO",
       bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.",
-      // Use direct path to the image
-      image: "/assets/samrawit.jpg"
+      // Use standard image path for consistent behavior in local and deployed environments
+      image: "/images/team/samrawit-kassa.jpg"
     }
   ];
 
