@@ -726,10 +726,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </div>
           `;
           
-          // Send email notification to admin
+          // Send email notification to admin using the verified sender
           await sendEmail({
             to: 'berhanumulualemadisu@gmail.com', // Admin email
-            from: 'berhanumulualemadisu@gmail.com',
             subject: `New Contact Form Submission: ${messageData.subject || 'Contact Request'}`,
             html: emailHtml
           });
@@ -791,10 +790,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </div>
           `;
           
-          // Send welcome email to the new subscriber
+          // Send welcome email to the new subscriber using the verified sender
           await sendEmail({
             to: subscriberData.email,
-            from: 'berhanumulualemadisu@gmail.com',
+            subject: 'Welcome to AdiTeke Newsletter',
+            html: emailHtml
+          });
+          
+          console.log('Newsletter welcome email sent via Brevo to:', subscriberData.email);
+        } else {
+          console.warn('Newsletter welcome email skipped: BREVO_API_KEY not set');
+        }
+      } catch (emailError) {
+        // Just log the email error but don't fail the entire request
+        console.error('Error sending newsletter welcome email:', emailError);
+      }
+      
+      // Return success response
+      return res.status(201).json({
+        ...subscriber,
+        welcomeEmailSent: !!process.env.BREVO_API_KEY
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid subscription data", errors: error.errors });
+      }
+      console.error("Error adding newsletter subscriber:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Public newsletter subscription endpoint for testing
+  app.post("/api/public/newsletter/subscribe", async (req, res) => {
+    try {
+      const subscriberData = insertNewsletterSubscriberSchema.parse(req.body);
+      const subscriber = await storage.addNewsletterSubscriber(subscriberData);
+      
+      // Send confirmation email using Brevo if API key is available
+      try {
+        if (process.env.BREVO_API_KEY) {
+          // Import the sendEmail function from emailService
+          const { sendEmail } = await import('./utils/emailWrapper');
+          
+          // Prepare welcome email HTML content
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background-color: #0040A1; color: white; padding: 20px; text-align: center;">
+                <h1>Welcome to Our Newsletter!</h1>
+              </div>
+              <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
+                <p>Dear ${subscriberData.name || subscriberData.email},</p>
+                <p>Thank you for subscribing to the AdiTeke Software Solutions newsletter!</p>
+                <p>You'll now receive updates about our latest services, tech insights, and special offers.</p>
+                <p>If you have any questions or need assistance, feel free to contact our support team at support@aditeke.com.</p>
+                <p style="margin-top: 20px;">Best regards,<br>The AdiTeke Team</p>
+              </div>
+              <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px;">
+                <p>AdiTeke Software Solutions<br>Portland, OR, USA<br>www.aditeke.com</p>
+                <p style="margin-top: 10px; font-size: 10px; color: #777;">
+                  If you wish to unsubscribe, please <a href="mailto:support@aditeke.com?subject=Unsubscribe">contact us</a>.
+                </p>
+              </div>
+            </div>
+          `;
+          
+          // Send welcome email to the new subscriber using the verified sender
+          await sendEmail({
+            to: subscriberData.email,
             subject: 'Welcome to AdiTeke Newsletter',
             html: emailHtml
           });
@@ -1438,6 +1500,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid job data", errors: error.errors });
       }
       console.error("Error creating job:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Public contact form submission endpoint for testing
+  app.post("/api/public/contact", async (req, res) => {
+    try {
+      const messageData = insertContactMessageSchema.parse(req.body);
+      
+      // Save message to database
+      const message = await storage.saveContactMessage(messageData);
+      
+      // Send notification email to admin using Brevo if API key is available
+      try {
+        if (process.env.BREVO_API_KEY) {
+          // Import the sendEmail function from emailService
+          const { sendEmail } = await import('./utils/emailWrapper');
+          
+          // Prepare email HTML content
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background-color: #0040A1; color: white; padding: 20px; text-align: center;">
+                <h1>New Contact Form Submission</h1>
+              </div>
+              <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
+                <p><strong>Name:</strong> ${messageData.name}</p>
+                <p><strong>Email:</strong> ${messageData.email}</p>
+                <p><strong>Phone:</strong> ${messageData.phone || 'Not provided'}</p>
+                <p><strong>Subject:</strong> ${messageData.subject || 'Not provided'}</p>
+                <p><strong>Message:</strong></p>
+                <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #0040A1;">
+                  ${messageData.message.replace(/\n/g, '<br>')}
+                </div>
+                <p style="margin-top: 20px;">This message was sent from the contact form on your website.</p>
+              </div>
+              <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px;">
+                <p>AdiTeke Software Solutions<br>Portland, OR, USA<br>www.aditeke.com</p>
+              </div>
+            </div>
+          `;
+          
+          // Send email notification to admin using the verified sender
+          await sendEmail({
+            to: 'berhanumulualemadisu@gmail.com', // Admin email
+            subject: `New Contact Form Submission: ${messageData.subject || 'Contact Request'}`,
+            html: emailHtml
+          });
+          
+          console.log('Contact form notification email sent via Brevo');
+        } else {
+          console.warn('Contact form email notification skipped: BREVO_API_KEY not set');
+        }
+      } catch (emailError) {
+        // Just log the email error but don't fail the entire request
+        console.error('Error sending contact form notification email:', emailError);
+      }
+      
+      // Return success response
+      return res.status(201).json({
+        ...message,
+        notificationSent: !!process.env.BREVO_API_KEY
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid contact data", errors: error.errors });
+      }
+      console.error("Error saving contact message:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
