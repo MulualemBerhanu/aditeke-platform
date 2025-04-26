@@ -1,35 +1,5 @@
-import * as SibApiV3Sdk from 'sib-api-v3-sdk';
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
-
-// Set global configuration for TypeScript safety
-const setupBrevo = () => {
-  // Check if API key is set
-  if (!process.env.BREVO_API_KEY) {
-    console.warn('BREVO_API_KEY environment variable is not set. Email functionality will be disabled.');
-    return false;
-  }
-  
-  try {
-    // Access the instance directly from our type definition
-    const apiKey = SibApiV3Sdk.ApiClient.instance?.authentications?.['api-key'];
-    
-    if (apiKey) {
-      apiKey.apiKey = process.env.BREVO_API_KEY;
-      console.log('Brevo API initialized successfully');
-      return true;
-    } else {
-      console.warn('Failed to get Brevo API client authentication');
-      return false;
-    }
-  } catch (error) {
-    console.error('Error setting up Brevo API:', error);
-    return false;
-  }
-};
-
-// Initialize Brevo configuration
-const isBrevoConfigured = setupBrevo();
 
 // The verified sender email address
 const VERIFIED_SENDER = 'berhanumulualemadisu@gmail.com';
@@ -43,7 +13,8 @@ interface EmailAttachment {
 }
 
 /**
- * Sends an email with optional attachments using Brevo
+ * Direct implementation of the Brevo API v3 for sending emails
+ * This avoids using the SDK which has compatibility issues
  */
 export async function sendEmail(params: {
   to: string;
@@ -54,10 +25,10 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // Final validation check for API key
-    if (!process.env.BREVO_API_KEY || !isBrevoConfigured) {
-      console.warn('Email sending skipped: Brevo is not properly configured');
-      throw new Error('Brevo API is not properly configured');
+    // Check for API key
+    if (!process.env.BREVO_API_KEY) {
+      console.warn('Email sending skipped: BREVO_API_KEY not set');
+      throw new Error('Brevo API key is not configured');
     }
 
     // Format the sender with name
@@ -66,63 +37,51 @@ export async function sendEmail(params: {
       name: 'AdiTeke Software Solutions'
     };
     
-    // Create a new email object
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    
-    // Set email parameters
-    sendSmtpEmail.subject = params.subject;
-    sendSmtpEmail.sender = sender;
-    sendSmtpEmail.to = [{ email: params.to }];
-    
-    // Add HTML content if available
-    if (params.html) {
-      sendSmtpEmail.htmlContent = params.html;
-    }
-    
-    // Add text content if available
-    if (params.text) {
-      sendSmtpEmail.textContent = params.text;
-    }
-    
-    // If neither text nor HTML is provided, add a space to the text content
-    if (!params.html && !params.text) {
-      sendSmtpEmail.textContent = ' ';
-    }
-    
-    // Add attachments if provided
-    if (params.attachments && params.attachments.length > 0) {
-      sendSmtpEmail.attachment = params.attachments.map(attachment => ({
+    // Prepare API request payload
+    const payload = {
+      sender,
+      to: [{ email: params.to }],
+      subject: params.subject,
+      htmlContent: params.html || undefined,
+      textContent: params.text || (params.html ? undefined : ' '),
+      attachment: params.attachments ? params.attachments.map(attachment => ({
         content: attachment.content,
         name: attachment.filename
-      }));
+      })) : undefined
+    };
+    
+    console.log('Attempting to send email via Brevo API to:', params.to);
+    
+    // Make a direct fetch request to the Brevo API
+    const response = await fetch('https://api.sendinblue.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorJson;
+      try {
+        errorJson = JSON.parse(errorText);
+      } catch (e) {
+        throw new Error(`Brevo API error: ${response.status} ${errorText}`);
+      }
+      throw new Error(`Brevo API error: ${errorJson.message || errorJson.error || JSON.stringify(errorJson)}`);
     }
     
-    // Create a new API instance for this request
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-    
-    // Send the email
-    console.log('Attempting to send email via Brevo to:', params.to);
-    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Email sent successfully via Brevo:', response);
-    return { success: true, messageId: response.messageId };
+    const result = await response.json();
+    console.log('Email sent successfully via Brevo:', result);
+    return { success: true, messageId: result.messageId };
   } catch (error: any) {
     console.error('Error sending email with Brevo:', error);
     
-    // Get more detailed error information if available
-    let errorMessage = 'Unknown error occurred';
-    
-    if (error.response && error.response.text) {
-      try {
-        // Parse the error response if it's JSON
-        const errorBody = JSON.parse(error.response.text);
-        errorMessage = errorBody.message || errorBody.error || String(error);
-      } catch (e) {
-        // If parsing fails, use the raw text
-        errorMessage = error.response.text;
-      }
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
+    // Get error message
+    const errorMessage = error.message || 'Unknown error occurred';
     
     // Enhanced error with more context
     const enhancedError = new Error(`Brevo email error: ${errorMessage}`);
