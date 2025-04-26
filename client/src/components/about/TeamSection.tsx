@@ -2,10 +2,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 
-// Import team images
-import mulualemBase64 from './mulualem_base64.txt';
-import samrawitImage from '@/assets/samrawit-kassa.jpg';
-
 const TeamSection = () => {
   // Team members
   const team = [
@@ -13,15 +9,15 @@ const TeamSection = () => {
       name: "Mulualem Berhanu",
       position: "CTO & Founder",
       bio: "Mulualem has over 7 years of experience in software development and technical leadership.",
-      // Use the imported base64 data
-      image: `data:image/jpeg;base64,${mulualemBase64}`
+      // Use direct path to the image
+      image: "/assets/mulualem.jpeg"
     },
     {
       name: "Samrawit Kassa",
       position: "CEO",
       bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.",
-      // Use the imported image
-      image: samrawitImage
+      // Use direct path to the image
+      image: "/assets/samrawit.jpg"
     }
   ];
 
