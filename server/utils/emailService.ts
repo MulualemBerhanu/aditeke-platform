@@ -1,12 +1,20 @@
-import { MailService } from '@sendgrid/mail';
+import * as SibApiV3Sdk from 'sib-api-v3-sdk';
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
-// Initialize SendGrid with API key
-const sgMail = new MailService();
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+// Set up the Brevo client
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
 
-// The verified sender email address (this email must be verified in SendGrid)
+// Set Brevo API key
+if (!process.env.BREVO_API_KEY) {
+  console.warn('BREVO_API_KEY environment variable is not set. Email functionality will be disabled.');
+} else {
+  apiKey.apiKey = process.env.BREVO_API_KEY;
+  console.log('Brevo API initialized with API key');
+}
+
+// The verified sender email address
 const VERIFIED_SENDER = 'berhanumulualemadisu@gmail.com';
 
 // Default sender configuration to use in all emails
@@ -23,7 +31,7 @@ interface EmailAttachment {
 }
 
 /**
- * Sends an email with optional attachments
+ * Sends an email with optional attachments using Brevo
  */
 export async function sendEmail(params: {
   to: string;
@@ -34,60 +42,78 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // Use the properly formatted sender object with name and email
-    const from = {
+    // If Brevo API key is not set, log warning and return
+    if (!process.env.BREVO_API_KEY) {
+      console.warn('Email sending skipped: BREVO_API_KEY not set');
+      throw new Error('Brevo API key is not configured');
+    }
+
+    // Format the sender with name
+    const sender = {
       email: params.from || VERIFIED_SENDER,
       name: 'AdiTeke Software Solutions'
     };
     
-    // We must provide at least one of: text, html, templateId, or content
-    // Check if we have either text or html
-    if (!params.text && !params.html) {
-      // Default to empty text if neither is provided
-      params.text = ' '; // Space character to ensure it's not empty
-    }
+    // Initialize Brevo TransactionalEmailsApi
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     
-    // Prepare email data for SendGrid
-    const msg: any = {
-      to: params.to,
-      from, // Using the properly formatted sender object
-      subject: params.subject,
-    };
+    // Create a SendSmtpEmail object
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     
-    // Add content based on what's provided
+    // Set email parameters
+    sendSmtpEmail.subject = params.subject;
+    sendSmtpEmail.sender = sender;
+    sendSmtpEmail.to = [{ email: params.to }];
+    
+    // Add HTML content if available
     if (params.html) {
-      msg.html = params.html;
+      sendSmtpEmail.htmlContent = params.html;
     }
     
+    // Add text content if available
     if (params.text) {
-      msg.text = params.text;
+      sendSmtpEmail.textContent = params.text;
+    }
+    
+    // If neither text nor HTML is provided, add a space to the text content
+    if (!params.html && !params.text) {
+      sendSmtpEmail.textContent = ' ';
     }
     
     // Add attachments if provided
     if (params.attachments && params.attachments.length > 0) {
-      msg.attachments = params.attachments;
+      sendSmtpEmail.attachment = params.attachments.map(attachment => ({
+        content: attachment.content,
+        name: attachment.filename
+      }));
     }
-
-    const response = await sgMail.send(msg);
-    console.log('Email sent successfully:', response[0].statusCode);
-    return { success: true, statusCode: response[0].statusCode };
+    
+    // Send the email
+    console.log('Attempting to send email via Brevo to:', params.to);
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log('Email sent successfully via Brevo:', response);
+    return { success: true, messageId: response.messageId };
   } catch (error: any) {
-    console.error('Error sending email:', error);
+    console.error('Error sending email with Brevo:', error);
     
     // Get more detailed error information if available
     let errorMessage = 'Unknown error occurred';
     
-    if (error.code === 403) {
-      errorMessage = 'Email sending forbidden. This may be due to: 1) Sender email not verified in SendGrid, 2) SendGrid API key needs to be refreshed, or 3) Mail sending limits reached';
-    } else if (error.response && error.response.body && error.response.body.errors) {
-      // Extract detailed error information from SendGrid response
-      errorMessage = error.response.body.errors.map((e: any) => e.message).join(', ');
+    if (error.response && error.response.text) {
+      try {
+        // Parse the error response if it's JSON
+        const errorBody = JSON.parse(error.response.text);
+        errorMessage = errorBody.message || errorBody.error || String(error);
+      } catch (e) {
+        // If parsing fails, use the raw text
+        errorMessage = error.response.text;
+      }
     } else if (error.message) {
       errorMessage = error.message;
     }
     
     // Enhanced error with more context
-    const enhancedError = new Error(`SendGrid email error: ${errorMessage}`);
+    const enhancedError = new Error(`Brevo email error: ${errorMessage}`);
     throw enhancedError;
   }
 }
