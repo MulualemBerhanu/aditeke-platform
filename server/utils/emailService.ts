@@ -1,10 +1,13 @@
 import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
-// The verified sender email addresses
-const NOTIFICATION_SENDER = 'noreply@aditeke.com';
-const SUPPORT_SENDER = 'support@aditeke.com';
-const INVOICE_SENDER = 'billing@aditeke.com';
+// The verified sender email address (registered with Brevo)
+const VERIFIED_SENDER = 'mule2069@gmail.com';
+
+// Display names for different types of emails
+const NOTIFICATION_NAME = 'AdiTeke Notifications';
+const SUPPORT_NAME = 'AdiTeke Support';
+const INVOICE_NAME = 'AdiTeke Billing';
 
 // Define our own interface for email attachments
 interface EmailAttachment {
@@ -54,27 +57,27 @@ export async function sendEmail(params: {
     const keyPrefix = brevoApiKey.substring(0, 5);
     console.log(`Using Brevo API key with prefix: ${keyPrefix}...`);
     
-    // Select appropriate sender email based on email type/content
-    let senderEmail = NOTIFICATION_SENDER;
+    // Select appropriate sender display name based on email type/content
+    let senderName = NOTIFICATION_NAME;
     
     if (params.subject.toLowerCase().includes('invoice')) {
-      senderEmail = INVOICE_SENDER;
+      senderName = INVOICE_NAME;
     } else if (params.subject.toLowerCase().includes('receipt')) {
-      senderEmail = INVOICE_SENDER;
+      senderName = INVOICE_NAME;
     } else if (params.subject.toLowerCase().includes('support') || 
                params.subject.toLowerCase().includes('help') ||
                params.subject.toLowerCase().includes('contact')) {
-      senderEmail = SUPPORT_SENDER;
+      senderName = SUPPORT_NAME;
     }
 
-    // Format the sender with name
+    // Format the sender with name - always use the verified sender
     const sender = {
-      email: senderEmail,
-      name: 'AdiTeke Software Solutions'
+      email: VERIFIED_SENDER,
+      name: senderName
     };
     
     // Use reply-to for custom sender addresses
-    const replyTo = params.from && params.from !== senderEmail ? 
+    const replyTo = params.from && params.from !== VERIFIED_SENDER ? 
       { email: params.from } : undefined;
     
     // Always include plain text for better deliverability
@@ -199,7 +202,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: customEmail || client.email,
-      from: INVOICE_SENDER, // Using our defined invoice sender
+      from: VERIFIED_SENDER, // Using our verified sender with invoice display name
       subject: emailSubject,
       html: emailHtml,
       attachments: [
@@ -280,7 +283,7 @@ export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: customEmail || client.email,
-      from: INVOICE_SENDER, // Using our defined invoice sender
+      from: VERIFIED_SENDER, // Using our verified sender with invoice display name
       subject: emailSubject,
       html: emailHtml,
       attachments: [
