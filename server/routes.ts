@@ -701,7 +701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         if (process.env.BREVO_API_KEY) {
           // Import the sendEmail function from emailService
-          const { sendEmail } = await import('./utils/emailService');
+          const { sendEmail } = await import('./utils/emailWrapper');
           
           // Prepare email HTML content
           const emailHtml = `
@@ -767,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         if (process.env.BREVO_API_KEY) {
           // Import the sendEmail function from emailService
-          const { sendEmail } = await import('./utils/emailService');
+          const { sendEmail } = await import('./utils/emailWrapper');
           
           // Prepare welcome email HTML content
           const emailHtml = `
@@ -2542,7 +2542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Import email service
-      const { sendInvoicePdfEmail } = await import('./utils/emailService');
+      const { sendInvoicePdfEmail } = await import('./utils/emailWrapper');
       
       // Send the invoice email
       const result = await sendInvoicePdfEmail(invoice, client);
@@ -2587,7 +2587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Import email service
-      const { sendReceiptPdfEmail } = await import('./utils/emailService');
+      const { sendReceiptPdfEmail } = await import('./utils/emailWrapper');
       
       // Send the receipt email
       const result = await sendReceiptPdfEmail(invoice, client);
@@ -2631,7 +2631,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Import email service
-      const { sendInvoicePdfEmail } = await import('./utils/emailService');
+      const { sendInvoicePdfEmail } = await import('./utils/emailWrapper');
       
       // Send the invoice email (with optional custom subject and message)
       const result = await sendInvoicePdfEmail(invoice, client, subject, message);
@@ -2682,8 +2682,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Cannot send receipt for unpaid invoice" });
       }
       
-      // Import email service
-      const { sendInvoicePdfEmail, sendReceiptPdfEmail } = await import('./utils/emailService');
+      // Import email service (wrapper handles both real service and fallback)
+      const { sendInvoicePdfEmail, sendReceiptPdfEmail } = await import('./utils/emailWrapper');
       
       let result;
       
@@ -2762,7 +2762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Import email service
-      const { sendReceiptPdfEmail } = await import('./utils/emailService');
+      const { sendReceiptPdfEmail } = await import('./utils/emailWrapper');
       
       // Send the receipt email (with optional custom subject and message)
       const result = await sendReceiptPdfEmail(invoice, client, subject, message);
@@ -2815,7 +2815,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/public/test-simple-email', async (req, res) => {
     try {
       // Import email service directly for testing
-      const { sendEmail } = await import('./utils/emailService');
+      const { sendEmail } = await import('./utils/emailWrapper');
       
       console.log('Attempting to send simple test email');
       
