@@ -2600,11 +2600,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `${emailType === 'invoice' ? 'Invoice' : 'Receipt'} email sent to ${recipientEmail}`,
         result
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error sending customized email:`, error);
+      
+      // Extract detailed error info for a better user experience
+      let errorMessage = 'Failed to send email';
+      let additionalInfo = '';
+      
+      if (error.code === 403) {
+        errorMessage = 'Email sending access denied';
+        additionalInfo = 'This may be due to: 1) SendGrid API key needs to be refreshed, 2) Sender email not properly verified, or 3) Account restrictions';
+      } else if (error.message) {
+        errorMessage = error.message;
+        
+        // Parse JSON response if available
+        if (error.response && error.response.body && error.response.body.errors) {
+          const apiErrors = error.response.body.errors;
+          if (Array.isArray(apiErrors) && apiErrors.length > 0) {
+            additionalInfo = apiErrors.map((e: any) => e.message).join(', ');
+          }
+        }
+      }
+      
       res.status(500).json({ 
-        error: `Failed to send email`, 
-        message: error instanceof Error ? error.message : String(error)
+        error: errorMessage,
+        additionalInfo: additionalInfo || undefined,
+        suggestion: 'Please check SendGrid account settings or try again later'
       });
     }
   });

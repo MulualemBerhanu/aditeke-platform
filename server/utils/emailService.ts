@@ -6,6 +6,15 @@ import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 const sgMail = new MailService();
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
 
+// The verified sender email address (this email must be verified in SendGrid)
+const VERIFIED_SENDER = 'berhanumulualemadisu@gmail.com';
+
+// Default sender configuration to use in all emails
+const DEFAULT_SENDER = {
+  email: VERIFIED_SENDER,
+  name: 'AdiTeke Software Solutions'
+};
+
 interface EmailAttachment {
   content: string;
   filename: string;
@@ -25,8 +34,11 @@ export async function sendEmail(params: {
   attachments?: EmailAttachment[];
 }) {
   try {
-    // Use from address provided or default to verified email
-    const from = params.from || 'berhanumulualemadisu@gmail.com';
+    // Use the properly formatted sender object with name and email
+    const from = {
+      email: params.from || VERIFIED_SENDER,
+      name: 'AdiTeke Software Solutions'
+    };
     
     // We must provide at least one of: text, html, templateId, or content
     // Check if we have either text or html
@@ -38,7 +50,7 @@ export async function sendEmail(params: {
     // Prepare email data for SendGrid
     const msg: any = {
       to: params.to,
-      from,
+      from, // Using the properly formatted sender object
       subject: params.subject,
     };
     
@@ -59,9 +71,24 @@ export async function sendEmail(params: {
     const response = await sgMail.send(msg);
     console.log('Email sent successfully:', response[0].statusCode);
     return { success: true, statusCode: response[0].statusCode };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending email:', error);
-    throw error;
+    
+    // Get more detailed error information if available
+    let errorMessage = 'Unknown error occurred';
+    
+    if (error.code === 403) {
+      errorMessage = 'Email sending forbidden. This may be due to: 1) Sender email not verified in SendGrid, 2) SendGrid API key needs to be refreshed, or 3) Mail sending limits reached';
+    } else if (error.response && error.response.body && error.response.body.errors) {
+      // Extract detailed error information from SendGrid response
+      errorMessage = error.response.body.errors.map((e: any) => e.message).join(', ');
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    // Enhanced error with more context
+    const enhancedError = new Error(`SendGrid email error: ${errorMessage}`);
+    throw enhancedError;
   }
 }
 
@@ -125,7 +152,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: customEmail || client.email,
-      from: 'berhanumulualemadisu@gmail.com', // Use an email that's verified in SendGrid
+      from: VERIFIED_SENDER, // Using our defined verified sender
       subject: emailSubject,
       html: emailHtml,
       attachments: [
@@ -206,7 +233,7 @@ export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, 
     // Send email with PDF attachment
     await sendEmail({
       to: customEmail || client.email,
-      from: 'berhanumulualemadisu@gmail.com', // Use an email that's verified in SendGrid
+      from: VERIFIED_SENDER, // Using our defined verified sender
       subject: emailSubject,
       html: emailHtml,
       attachments: [
