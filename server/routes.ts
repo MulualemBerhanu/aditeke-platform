@@ -2712,7 +2712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (error.code === 403) {
         errorMessage = 'Email sending access denied';
-        additionalInfo = 'This may be due to: 1) SendGrid API key needs to be refreshed, 2) Sender email not properly verified, or 3) Account restrictions';
+        additionalInfo = 'This may be due to: 1) Brevo API key needs to be refreshed, 2) Sender email not properly verified, or 3) Account restrictions';
       } else if (error.message) {
         errorMessage = error.message;
         
@@ -2728,7 +2728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: errorMessage,
         additionalInfo: additionalInfo || undefined,
-        suggestion: 'Please check SendGrid account settings or try again later'
+        suggestion: 'Please check Brevo account settings or try again later'
       });
     }
   });
