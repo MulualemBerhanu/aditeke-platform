@@ -51,7 +51,8 @@ const TeamSection = () => {
               <img 
                 src={member.image} 
                 alt={member.name} 
-                className="w-full h-64 object-cover"
+                className="w-full h-64 object-cover object-top"
+                style={{ objectPosition: member.name === "Samrawit Kassa" ? "center 15%" : "center 15%" }}
               />
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2">{member.name}</h3>
