@@ -20,7 +20,8 @@ const TeamSection = () => {
       name: "Samrawit Kassa",
       position: "CEO",
       bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.",
-      image: "https://randomuser.me/api/portraits/women/23.jpg"
+      // Use the imported base64 data for CEO's image
+      image: `data:image/jpeg;base64,${samrawitBase64}`
     }
   ];
 
