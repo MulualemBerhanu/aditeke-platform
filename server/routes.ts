@@ -2551,7 +2551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/public/send-customized-email', async (req, res) => {
     console.log('Processing customized email request');
     try {
-      const { invoiceId, emailType, subject, message } = req.body;
+      const { invoiceId, emailType, subject, message, to } = req.body;
       
       if (!invoiceId || !emailType || !subject || !message) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -2585,18 +2585,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let result;
       
       if (emailType === 'invoice') {
-        // Send the invoice email with custom subject and message
-        result = await sendInvoicePdfEmail(invoice, client, subject, message);
+        // Send the invoice email with custom subject, message, and recipient
+        result = await sendInvoicePdfEmail(invoice, client, subject, message, to);
       } else if (emailType === 'receipt') {
-        // Send the receipt email with custom subject and message
-        result = await sendReceiptPdfEmail(invoice, client, subject, message);
+        // Send the receipt email with custom subject, message, and recipient
+        result = await sendReceiptPdfEmail(invoice, client, subject, message, to);
       } else {
         return res.status(400).json({ error: "Invalid email type" });
       }
       
+      const recipientEmail = to || client.email;
       res.status(200).json({
         success: true,
-        message: `${emailType === 'invoice' ? 'Invoice' : 'Receipt'} email sent to ${client.email}`,
+        message: `${emailType === 'invoice' ? 'Invoice' : 'Receipt'} email sent to ${recipientEmail}`,
         result
       });
     } catch (error) {

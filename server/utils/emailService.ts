@@ -68,7 +68,7 @@ export async function sendEmail(params: {
 /**
  * Generates an invoice PDF and sends it as an email attachment
  */
-export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, customSubject?: string, customMessage?: string) {
+export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, customSubject?: string, customMessage?: string, customEmail?: string) {
   try {
     // Generate PDF buffer using pdfGenerator
     const pdfBuffer = await generateInvoicePdf(invoice, client);
@@ -124,7 +124,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
     
     // Send email with PDF attachment
     await sendEmail({
-      to: client.email,
+      to: customEmail || client.email,
       from: 'berhanumulualemadisu@gmail.com', // Use an email that's verified in SendGrid
       subject: emailSubject,
       html: emailHtml,
@@ -148,7 +148,7 @@ export async function sendInvoicePdfEmail(invoice: ClientInvoice, client: User, 
 /**
  * Generates a receipt PDF and sends it as an email attachment
  */
-export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, customSubject?: string, customMessage?: string) {
+export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, customSubject?: string, customMessage?: string, customEmail?: string) {
   try {
     // Generate PDF buffer using pdfGenerator
     const pdfBuffer = await generateReceiptPdf(invoice, client);
@@ -205,7 +205,7 @@ export async function sendReceiptPdfEmail(invoice: ClientInvoice, client: User, 
     
     // Send email with PDF attachment
     await sendEmail({
-      to: client.email,
+      to: customEmail || client.email,
       from: 'berhanumulualemadisu@gmail.com', // Use an email that's verified in SendGrid
       subject: emailSubject,
       html: emailHtml,

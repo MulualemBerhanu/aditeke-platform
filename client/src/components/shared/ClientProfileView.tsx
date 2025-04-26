@@ -1784,8 +1784,8 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
               <Input
                 id="email-to"
                 className="col-span-3"
-                value={client.email}
-                readOnly
+                defaultValue={client.email}
+                placeholder="recipient@example.com"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -1838,11 +1838,15 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                   
                   const endpoint = '/api/public/send-customized-email';
                     
+                  // Get the email address from the input field
+                  const toEmail = (document.getElementById('email-to') as HTMLInputElement)?.value || client.email;
+                  
                   const payload = {
                     invoiceId: emailInvoiceId,
                     emailType: emailType,
                     subject: emailSubject,
-                    message: emailMessage
+                    message: emailMessage,
+                    to: toEmail
                   };
                   
                   const response = await fetch(endpoint, {
