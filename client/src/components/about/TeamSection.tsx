@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
+import { TEAM_IMAGES } from '@/assets/images';
 
 const TeamSection = () => {
   // Team members
@@ -9,15 +10,15 @@ const TeamSection = () => {
       name: "Mulualem Berhanu",
       position: "CTO & Founder",
       bio: "Mulualem has over 7 years of experience in software development and technical leadership.",
-      // Use standard image path for consistent behavior in local and deployed environments
-      image: "/images/team/mulualem.jpeg"
+      // Use imported image which will be properly processed during build
+      image: TEAM_IMAGES.mulualem
     },
     {
       name: "Samrawit Kassa",
       position: "CEO",
       bio: "Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.",
-      // Use standard image path for consistent behavior in local and deployed environments
-      image: "/images/team/samrawit-kassa.jpg"
+      // Use imported image which will be properly processed during build
+      image: TEAM_IMAGES.samrawit
     }
   ];
 
