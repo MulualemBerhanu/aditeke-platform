@@ -6,41 +6,39 @@ interface TeamImageProps {
 }
 
 const TeamImage: React.FC<TeamImageProps> = ({ name, style = {} }) => {
-  // Use a static placeholder image from a reliable CDN service
-  // This will ensure the image loads consistently in all environments
-  if (name === "Mulualem Berhanu") {
-    return (
-      <img 
-        src="https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"
-        alt={name}
-        className="w-full h-64 object-cover"
-        style={{
-          objectPosition: "center top",
-          ...style
-        }}
-      />
-    );
-  } else if (name === "Samrawit Kassa") {
-    return (
-      <img 
-        src="https://res.cloudinary.com/demo/image/upload/c_fill,g_north,h_400,w_400/v1573574749/lhtny0ix70ifluczlrq5.jpg"
-        alt={name}
-        className="w-full h-64 object-cover"
-        style={{
-          objectPosition: "center top",
-          ...style
-        }}
-      />
-    );
-  }
+  // Create clean initials for the SVG
+  const initials = name.split(' ')
+    .map(part => part.charAt(0))
+    .join('')
+    .toUpperCase();
   
-  // Default fallback to a simple SVG placeholder with the name
+  // Set colors based on the person's name for visual distinction
+  const bgColor = name === "Mulualem Berhanu" 
+    ? "#4F46E5" // Indigo for Mulualem
+    : "#3B82F6"; // Blue for Samrawit
+  
+  // Create SVG avatar with initials
+  const svgContent = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+      <rect width="200" height="200" fill="${bgColor}" />
+      <text x="50%" y="50%" font-family="Arial" font-size="70" fill="white" text-anchor="middle" dominant-baseline="middle">${initials}</text>
+    </svg>
+  `;
+  
+  // Convert SVG to a data URL
+  const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgContent)}`;
+  
   return (
-    <div 
-      className="w-full h-64 bg-gray-200 flex items-center justify-center text-gray-500"
-      style={style}
-    >
-      {name}
+    <div className="w-full h-64 bg-gray-100 flex items-center justify-center relative">
+      <img 
+        src={dataUrl}
+        alt={name}
+        className="w-full h-full object-cover"
+        style={style}
+      />
+      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center py-2">
+        {name}
+      </div>
     </div>
   );
 };
