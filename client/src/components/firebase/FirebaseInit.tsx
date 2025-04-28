@@ -65,12 +65,11 @@ export const FirebaseInit = ({ children }: { children: React.ReactNode }) => {
         
         // Mark as initialized
         setInitialized(true);
-        console.log('Firebase initialized successfully');
         
         // If we get here, mark as initialized and proceed with the app
         setIsLoading(false);
       } catch (err) {
-        console.error('Firebase initialization error:', err);
+        // Handle Firebase initialization error silently in production
         setError(err instanceof Error ? err.message : 'Failed to initialize Firebase');
         
         toast({

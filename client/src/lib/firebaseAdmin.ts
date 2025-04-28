@@ -7,9 +7,9 @@ export const initializeFirebaseDatabase = async () => {
   try {
     // Initialize Firestore with roles and default users
     await initializeFirestoreData();
-    console.log("Firebase database initialization complete!");
+    // Initialization complete - silent in production
   } catch (error) {
-    console.error("Error initializing Firebase database:", error);
+    // Error handling - silent in production
     throw error;
   }
 };

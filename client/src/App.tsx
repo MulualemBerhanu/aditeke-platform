@@ -18,7 +18,7 @@ import Login from "./pages/login";
 import Auth from "./pages/auth";
 import DirectLogin from "./pages/direct-login";
 import Dashboard from "./pages/dashboard";
-import SecurityTest from "./pages/security-test";
+// Security test page removed for production
 
 // Admin pages
 import AdminDashboard from "./pages/admin/dashboard";
@@ -56,7 +56,6 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/auth" component={Auth} />
       <Route path="/direct-login" component={DirectLogin} />
-      <Route path="/security-test" component={SecurityTest} />
       
       {/* Legacy dashboard - will redirect to the appropriate role-based dashboard */}
       <Route path="/dashboard">
@@ -156,15 +155,10 @@ function App() {
   const isClientRoute = pathname.startsWith('/client');
   const isDashboardRoute = isAdminRoute || isManagerRoute || isClientRoute;
   
-  // Check if we have the bypass flag in the URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const bypassFirebase = urlParams.get('bypass') === 'true';
-  
-  // Set up the application with or without Firebase initialization
+  // Standard application setup with Firebase initialization
   return (
     <QueryClientProvider client={queryClient}>
-      {bypassFirebase ? (
-        // Skip Firebase initialization if bypass=true in URL
+      <FirebaseInit>
         <AuthProvider>
           <div className="font-sans text-dark bg-light">
             {/* Only show navbar on non-dashboard routes */}
@@ -179,25 +173,7 @@ function App() {
             <Toaster />
           </div>
         </AuthProvider>
-      ) : (
-        // Normal flow with Firebase initialization
-        <FirebaseInit>
-          <AuthProvider>
-            <div className="font-sans text-dark bg-light">
-              {/* Only show navbar on non-dashboard routes */}
-              {!isDashboardRoute && <Navbar />}
-              
-              <Router />
-              
-              {/* Only show footer and chatbot on non-dashboard routes */}
-              {!isDashboardRoute && <Footer />}
-              {!isDashboardRoute && <Chatbot />}
-              
-              <Toaster />
-            </div>
-          </AuthProvider>
-        </FirebaseInit>
-      )}
+      </FirebaseInit>
     </QueryClientProvider>
   );
 }

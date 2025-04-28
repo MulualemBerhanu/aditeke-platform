@@ -215,7 +215,7 @@ const AboutPage = () => {
               whileHover={{ y: -5 }}
             >
               <img
-                src="/src/assets/team/mulualem.jpeg"
+                src="/assets/team/mulualem.jpeg"
                 alt="Mulualem Berhanu"
                 className="w-full h-80 object-cover object-center"
               />
@@ -239,7 +239,7 @@ const AboutPage = () => {
               whileHover={{ y: -5 }}
             >
               <img
-                src="/src/assets/team/samrawit-kassa.jpg"
+                src="/assets/team/samrawit-kassa.jpg"
                 alt="Samrawit Kassa"
                 className="w-full h-80 object-cover object-top"
               />
