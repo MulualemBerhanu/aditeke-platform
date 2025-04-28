@@ -8,7 +8,7 @@ import Footer from "./components/layout/Footer";
 import Chatbot from "./components/layout/Chatbot";
 import FirebaseInit from "./components/firebase/FirebaseInit";
 import Home from "./pages/home";
-import About from "./pages/about";
+import AboutPage from "./pages/about-page";
 import Services from "./pages/services";
 import Portfolio from "./pages/portfolio";
 import Careers from "./pages/careers";
@@ -47,7 +47,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/about" component={About} />
+      <Route path="/about" component={AboutPage} />
       <Route path="/services" component={Services} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/careers" component={Careers} />
