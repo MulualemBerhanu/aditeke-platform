@@ -166,7 +166,7 @@ export const createDefaultAdminUser = async (): Promise<void> => {
  * Creates default manager user if no manager exists
  */
 export const createDefaultManagerUser = async (): Promise<void> => {
-  console.log("Checking for manager users...");
+  // Check for manager users silently in production
   
   try {
     // Get the manager role ID from the roles collection
@@ -184,11 +184,9 @@ export const createDefaultManagerUser = async (): Promise<void> => {
     });
     
     if (!managerRoleId) {
-      console.error("Manager role not found in the database");
+      // Manager role not found - silent in production
       return;
     }
-    
-    console.log("Found manager role with ID:", managerRoleId);
     
     // Check if any manager user exists
     const usersCollection = collection(db, "users");
@@ -209,13 +207,11 @@ export const createDefaultManagerUser = async (): Promise<void> => {
     }
     
     if (!managerSnapshot.empty) {
-      console.log("Manager user already exists");
+      // Manager user exists - silent in production
       return;
     }
     
     // No manager user exists, create a default one
-    console.log("No manager user found, creating default manager...");
-    
     // Create a unique user ID for the manager
     const managerId = "manager-" + Date.now().toString();
     
@@ -239,9 +235,9 @@ export const createDefaultManagerUser = async (): Promise<void> => {
       }
     });
     
-    console.log("Default manager user created successfully with email: berhanumule6@gmail.com");
+    // Manager user created - silent in production
   } catch (error) {
-    console.error("Error creating manager user:", error);
+    // Error handling - silent in production
   }
 };
 

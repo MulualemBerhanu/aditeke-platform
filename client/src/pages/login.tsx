@@ -563,18 +563,6 @@ export default function LoginPage() {
             )}
             
             <Separator className="my-4" />
-            
-            <div className="text-center text-sm text-muted-foreground">
-              <p className="font-semibold mb-1">Demo Account</p>
-              <p className="font-medium">Username: <span className="font-mono bg-gray-100 px-1 py-0.5 rounded text-primary">{currentRole.username}</span></p>
-              <p className="font-medium">Password: <span className="font-mono bg-gray-100 px-1 py-0.5 rounded text-primary">{currentRole.password}</span></p>
-              <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-xs">
-                <p className="font-semibold">Important: Use username (not email) to login</p>
-              </div>
-              <p className="mt-4 text-xs">
-                This is a demo application. In a production environment, real user authentication would be required.
-              </p>
-            </div>
           </CardContent>
           <CardFooter className="flex flex-col items-center justify-between">
             <div className="w-full my-2">

@@ -30,7 +30,7 @@ export default function AuthPage() {
     localStorage.removeItem('refreshToken');
   }, []);
 
-  // Direct login handler - completely bypasses complex authentication
+  // Authentication handler using database system
   const handleDirectLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -38,87 +38,28 @@ export default function AuthPage() {
     try {
       console.log(`Login attempt for: ${username}`);
 
-      // Check if this is a demo account
-      let userData = null;
-      let redirectUrl = '/dashboard';
-      
-      if (username === 'admin@aditeke.com' && password === 'adminPassword123') {
-        userData = {
-          id: 60002,
-          username: 'admin',
-          email: 'admin@aditeke.com',
-          name: 'Admin User',
-          roleId: 1002,
-          profilePicture: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          lastLogin: new Date().toISOString(),
-          isActive: true
-        };
-        redirectUrl = '/admin/dashboard';
-        console.log('✅ Admin login successful');
-      } 
-      else if (username === 'manager@aditeke.com' && password === 'managerPassword123') {
-        userData = {
-          id: 50000,
-          username: 'manager',
-          email: 'manager@aditeke.com',
-          name: 'Manager User',
-          roleId: 1000,
-          profilePicture: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          lastLogin: new Date().toISOString(),
-          isActive: true
-        };
-        redirectUrl = '/manager/dashboard';
-        console.log('✅ Manager login successful');
-      } 
-      else if (username === 'client@example.com' && password === 'clientPassword123') {
-        userData = {
-          id: 2000,
-          username: 'client',
-          email: 'client@example.com',
-          name: 'Client User',
-          roleId: 1001,
-          profilePicture: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          lastLogin: new Date().toISOString(),
-          isActive: true
-        };
-        redirectUrl = '/client/dashboard';
-        console.log('✅ Client login successful');
-      } 
-      else {
-        // If not a demo account, try the actual API login
-        try {
-          const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
-          });
+      // Use the API for all authentication
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
+      });
 
-          if (!response.ok) {
-            throw new Error('Authentication failed');
-          }
-
-          userData = await response.json();
-          
-          // Determine redirect URL based on roleId
-          if (userData.roleId) {
-            const roleId = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
-            redirectUrl = ROLE_REDIRECTS[roleId] || '/dashboard';
-          }
-        } catch (error) {
-          console.error('API login failed:', error);
-          throw new Error('Login failed. Please check your credentials.');
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Login error response:', errorText);
+        throw new Error('Authentication failed');
       }
 
-      if (!userData) {
-        throw new Error('Authentication failed');
+      const userData = await response.json();
+      console.log("Authentication successful:", userData);
+        
+      // Determine redirect URL based on roleId
+      let redirectUrl = '/dashboard';
+      if (userData.roleId) {
+        const roleId = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
+        redirectUrl = ROLE_REDIRECTS[roleId] || '/dashboard';
       }
 
       // Store user data in localStorage for persistence
@@ -224,49 +165,7 @@ export default function AuthPage() {
               </Button>
             </form>
             
-            <div className="mt-6">
-              <p className="text-center text-sm text-muted-foreground mb-2">Demo Accounts:</p>
-              <div className="grid grid-cols-3 gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    setUsername('admin@aditeke.com');
-                    setPassword('adminPassword123');
-                  }}
-                  className="flex flex-col items-center p-2 h-auto"
-                >
-                  <UserCog className="h-4 w-4 mb-1" />
-                  <span className="text-xs">Admin</span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    setUsername('manager@aditeke.com');
-                    setPassword('managerPassword123');
-                  }}
-                  className="flex flex-col items-center p-2 h-auto"
-                >
-                  <Building2 className="h-4 w-4 mb-1" />
-                  <span className="text-xs">Manager</span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    setUsername('client@example.com');
-                    setPassword('clientPassword123');
-                  }}
-                  className="flex flex-col items-center p-2 h-auto"
-                >
-                  <UsersRound className="h-4 w-4 mb-1" />
-                  <span className="text-xs">Client</span>
-                </Button>
-              </div>
-            </div>
+            {/* Demo accounts section removed for production */}
           </CardContent>
           
           <CardFooter className="flex flex-col">
