@@ -2,6 +2,12 @@ import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 
+// These constants will be available even after build/deployment
+// Using data URLs ensures the images will always be available
+const MULUALEM_IMAGE = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234F46E5'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='35' fill='white' text-anchor='middle' dominant-baseline='middle'%3EMB%3C/text%3E%3C/svg%3E";
+
+const SAMRAWIT_IMAGE = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%233B82F6'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='35' fill='white' text-anchor='middle' dominant-baseline='middle'%3ESK%3C/text%3E%3C/svg%3E";
+
 const TeamSection = () => {
   return (
     <section className="py-20 bg-white">
@@ -29,11 +35,13 @@ const TeamSection = () => {
             transition={{ duration: 0.5 }}
             whileHover={{ y: -5 }}
           >
-            <img
-              src="/cto-mulualem.jpeg"
-              alt="Mulualem Berhanu"
-              className="w-full h-80 object-cover object-center"
-            />
+            <div className="w-full h-80 bg-indigo-600 flex items-center justify-center">
+              <img
+                src={MULUALEM_IMAGE}
+                alt="Mulualem Berhanu"
+                className="w-full h-full" 
+              />
+            </div>
             <div className="p-6 flex flex-col flex-1">
               <h3 className="text-xl font-bold mb-2">Mulualem Berhanu</h3>
               <p className="text-primary font-medium mb-3">CTO & Founder</p>
@@ -53,11 +61,13 @@ const TeamSection = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <img
-              src="/ceo-samrawit.jpg"
-              alt="Samrawit Kassa"
-              className="w-full h-80 object-cover object-top"
-            />
+            <div className="w-full h-80 bg-blue-600 flex items-center justify-center">
+              <img
+                src={SAMRAWIT_IMAGE}
+                alt="Samrawit Kassa"
+                className="w-full h-full"
+              />
+            </div>
             <div className="p-6 flex flex-col flex-1">
               <h3 className="text-xl font-bold mb-2">Samrawit Kassa</h3>
               <p className="text-primary font-medium mb-3">CEO</p>
