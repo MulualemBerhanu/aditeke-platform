@@ -246,7 +246,7 @@ export const createDefaultManagerUser = async (): Promise<void> => {
  * since client users will be created through the UI as requested
  */
 export const checkClientUsers = async (): Promise<void> => {
-  console.log("Checking for client users...");
+  // Check for client users silently in production
   
   try {
     // Get the client role ID from the roles collection
@@ -264,11 +264,9 @@ export const checkClientUsers = async (): Promise<void> => {
     });
     
     if (!clientRoleId) {
-      console.error("Client role not found in the database");
+      // Client role not found - silent in production
       return;
     }
-    
-    console.log("Found client role with ID:", clientRoleId);
     
     // Check if any client user exists
     const usersCollection = collection(db, "users");
@@ -289,11 +287,10 @@ export const checkClientUsers = async (): Promise<void> => {
     }
     
     if (!clientSnapshot.empty) {
-      console.log("Client users exist:", clientSnapshot.size);
+      // Client users exist - silent in production
+      return;
     } else {
-      console.log("No client users found. Creating a default client for testing...");
-      
-      // Create a unique user ID for the client
+      // No client users found, create a default one for system functionality
       const clientId = "client-" + Date.now().toString();
       
       // Create the client user document
@@ -316,10 +313,10 @@ export const checkClientUsers = async (): Promise<void> => {
         }
       });
       
-      console.log("Default client user created successfully for testing");
+      // Default client created - silent in production
     }
   } catch (error) {
-    console.error("Error checking for client users:", error);
+    // Error handling - silent in production
   }
 };
 

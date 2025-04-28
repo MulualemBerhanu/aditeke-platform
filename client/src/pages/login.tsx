@@ -89,8 +89,6 @@ export default function LoginPage() {
     const roleParam = urlParams.get('role');
     
     if (roleParam) {
-      console.log("⚠️ URL param detected:", roleParam);
-      
       // Try different ways to match the role
       const foundRole = USER_ROLES.find(role => 
         role.name.toLowerCase() === roleParam.toLowerCase() || 
@@ -99,13 +97,10 @@ export default function LoginPage() {
       );
       
       if (foundRole) {
-        console.log("⚠️ Found matching role:", foundRole.name);
         setSelectedRole(foundRole);
         
         // Save to localStorage for persistence
         localStorage.setItem('selectedRole', JSON.stringify(foundRole));
-      } else {
-        console.log("⚠️ No matching role found for:", roleParam);
       }
     }
   }, [form]);
@@ -136,45 +131,30 @@ export default function LoginPage() {
         window.location.host.includes('.replit.app') || 
         window.location.host.includes('.replit.dev');
         
-      console.log(`🔄 Attempting login in ${isDeployedEnv ? 'deployed' : 'local'} environment...`);
-      
       // If in deployed environment, store explicit role information before login attempt
       if (isDeployedEnv && selectedRole) {
         // Double check if this is a manager username trying to log in as admin
         if (selectedRole.id === 1002 && data.username.toLowerCase().includes('manager')) {
-          console.warn("⚠️ Security check: Manager username with Admin role selected!");
-          // Force correction to manager role
+          // Force correction to manager role for security
           const managerRole = USER_ROLES.find(role => role.id === 1000);
           if (managerRole) {
-            console.log("🔒 Security override: Switching from Admin to Manager role");
             localStorage.setItem('userRole', managerRole.name.toLowerCase());
             localStorage.setItem('userRoleId', managerRole.id.toString());
             setSelectedRole(managerRole);
-            console.log(`Security-corrected role information: ${managerRole.name} (${managerRole.id})`);
           } else {
             localStorage.setItem('userRole', 'manager');
             localStorage.setItem('userRoleId', '1000');
-            console.log(`Security-enforced role information: Manager (1000)`);
           }
         } else {
           localStorage.setItem('userRole', selectedRole.name.toLowerCase());
           localStorage.setItem('userRoleId', selectedRole.id.toString());
-          console.log(`Pre-storing selected role information: ${selectedRole.name} (${selectedRole.id})`);
         }
       }
       
       // Use direct fetch in all environments to ensure reliable authentication
       let userData;
       try {
-        // Try to construct a reliable user representation for hardcoded users in emergency scenarios
-        console.log("Using direct fetch for authentication");
-        
-        // We no longer need emergency credential logic since we have a working database
-        // authentication system with real users
-        console.log('Using database authentication for all environments');
-        
-        // Normal login process for all cases
-        console.log("Attempting normal authentication flow");
+        // Normal authentication flow using API
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
@@ -188,31 +168,22 @@ export default function LoginPage() {
         });
         
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Login error response:', errorText);
           throw new Error('Authentication failed. Please check your credentials.');
         }
         
         userData = await response.json();
-        console.log("Direct fetch authentication successful:", userData);
       } catch (error) {
-        console.error("Direct fetch authentication failed:", error);
-        
-        // Special case for deployed environment with very specific credentials
         // Try the context login as fallback
         if (!isDeployedEnv) {
           try {
-            console.log("Falling back to context auth method...");
             userData = await login(data.username, data.password);
           } catch (contextError) {
-            console.error("Context auth method also failed:", contextError);
             throw error; // Throw the original error
           }
         } else {
           throw error; // Rethrow to be handled by the outer catch block
         }
       }
-      console.log("✅ Login successful, redirecting user:", userData);
       
       // Explicitly save user data to localStorage with exact keys AuthContext expects
       localStorage.setItem('currentUser', JSON.stringify(userData));
