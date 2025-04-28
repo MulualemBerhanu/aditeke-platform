@@ -36,8 +36,6 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
-      console.log(`Login attempt for: ${username}`);
-
       // Use the API for all authentication
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -47,13 +45,10 @@ export default function AuthPage() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Login error response:', errorText);
         throw new Error('Authentication failed');
       }
 
       const userData = await response.json();
-      console.log("Authentication successful:", userData);
         
       // Determine redirect URL based on roleId
       let redirectUrl = '/dashboard';
@@ -90,13 +85,10 @@ export default function AuthPage() {
       
       // Short delay before redirect
       setTimeout(() => {
-        console.log('Redirecting to:', redirectUrl);
         window.location.href = redirectUrl;
       }, 500);
       
     } catch (error) {
-      console.error('Login error:', error);
-      
       toast({
         title: 'Authentication Failed',
         description: 'Your login credentials are incorrect. Please try again.',

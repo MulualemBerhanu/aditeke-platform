@@ -192,12 +192,10 @@ export default function LoginPage() {
       // Store JWT tokens if they're in the response
       if (userData.accessToken) {
         localStorage.setItem('accessToken', userData.accessToken);
-        console.log("Saved access token to localStorage");
       }
       
       if (userData.refreshToken) {
         localStorage.setItem('refreshToken', userData.refreshToken);
-        console.log("Saved refresh token to localStorage");
       }
       
       // Also save numeric role ID explicitly for better cross-environment compatibility
@@ -205,7 +203,6 @@ export default function LoginPage() {
         let roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
         if (!isNaN(roleIdNum)) {
           localStorage.setItem('userNumericRoleId', roleIdNum.toString());
-          console.log(`Saved numeric role ID to localStorage: ${roleIdNum}`);
         }
       }
       
@@ -213,17 +210,12 @@ export default function LoginPage() {
       // This will handle all redirection logic in one place
       let redirectUrl = '/dashboard';
       
-      console.log("🔍 DEBUG - User data:", userData);
-      console.log("🔍 DEBUG - Username:", userData.username);
-      console.log("🔍 DEBUG - Role ID:", userData.roleId);
-      
       // Convert roleId to a numeric value for consistency
       let numericRoleId = null;
       if (typeof userData.roleId === 'string') {
         const parsedId = parseInt(userData.roleId);
         if (!isNaN(parsedId)) {
           numericRoleId = parsedId;
-          console.log("Converted string roleId to number:", numericRoleId);
         }
       } else if (typeof userData.roleId === 'number') {
         numericRoleId = userData.roleId;
@@ -232,27 +224,21 @@ export default function LoginPage() {
       // Direct dashboard redirect based on roleId
       if (numericRoleId === 1002) {
         redirectUrl = '/admin/dashboard';
-        console.log("Direct redirect to admin dashboard based on roleId 1002");
       } else if (numericRoleId === 1000) {
         redirectUrl = '/manager/dashboard';
-        console.log("Direct redirect to manager dashboard based on roleId 1000");
         // Force a refresh to help get around any state issues
         localStorage.setItem('forceRefresh', 'true');
       } else if (numericRoleId === 1001) {
         redirectUrl = '/client/dashboard';
-        console.log("Direct redirect to client dashboard based on roleId 1001");
       } else {
         // Fallback to username pattern if roleId is not recognized
         const username = userData.username.toLowerCase();
         if (username.includes('admin')) {
           redirectUrl = '/admin/dashboard';
-          console.log("Fallback redirect to admin dashboard based on username");
         } else if (username.includes('manager')) {
           redirectUrl = '/manager/dashboard';
-          console.log("Fallback redirect to manager dashboard based on username");
         } else if (username.includes('client')) {
           redirectUrl = '/client/dashboard';
-          console.log("Fallback redirect to client dashboard based on username");
         } else {
           // Final fallback to using the selected role from UI
           let roleGuess = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
@@ -265,19 +251,14 @@ export default function LoginPage() {
           } else if (roleGuess === 'client') {
             redirectUrl = '/client/dashboard';
           }
-          
-          console.log("Using role selection for redirection fallback:", roleGuess, "-> URL:", redirectUrl);
         }
       }
       
-      console.log("⚠️ REDIRECTING TO:", redirectUrl);
-      
-      // If in a deployed environment, set additional flags to help with troubleshooting
+      // If in a deployed environment, set additional flags to help with login tracking
       if (isDeployedEnv) {
         localStorage.setItem('loginTimestamp', Date.now().toString());
         localStorage.setItem('loginStatus', 'success');
         localStorage.setItem('targetRedirect', redirectUrl);
-        console.log("Login completed at:", new Date().toISOString());
       }
       
       // Force a small delay to give time for localStorage to update
@@ -288,27 +269,10 @@ export default function LoginPage() {
       }, 800); // Slightly longer delay for deployed environments
       
     } catch (error) {
-      console.error('Login error:', error);
-      
-      // Check if we're in a deployed environment
-      const isDeployedEnv = 
-        window.location.host.includes('.replit.app') || 
-        window.location.host.includes('.replit.dev');
-        
-      // We've removed insecure fallback authentication - proper authentication is required
       // Remove any auth-related localStorage items to prevent confusion
       localStorage.removeItem('loginStatus');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('currentUser');
-      
-      // For debug logging in deployed environment
-      if (isDeployedEnv) {
-        console.error("Login attempt failed:", {
-          timestamp: new Date().toISOString(),
-          username: data.username ? "Provided" : "Missing",
-          password: data.password ? "Provided (length: " + data.password.length + ")" : "Missing"
-        });
-      }
       
       // Standard error handling for all environments
       toast({
@@ -330,7 +294,6 @@ export default function LoginPage() {
       
       // The user's authentication status will be determined by the server
       // upon their return from the Google OAuth flow
-      console.log("Initiated Google authentication flow");
       
       // We don't need to do anything else here
       // The Firebase auth handler will manage the process
@@ -342,7 +305,6 @@ export default function LoginPage() {
       // Don't use setTimeout or manual redirects
       // The googleLogin() function should handle all redirections
     } catch (error) {
-      console.error('Google login error:', error);
       toast({
         title: "Login failed",
         description: "There was a problem logging in with Google. Please try again.",
