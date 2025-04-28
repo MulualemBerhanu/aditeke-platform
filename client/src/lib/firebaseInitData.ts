@@ -6,7 +6,7 @@ import { FirebaseRole, ResourcePermissions } from "@shared/firebaseTypes";
  * Initializes the database with default roles
  */
 export const initializeRoles = async (): Promise<void> => {
-  console.log("Initializing roles...");
+  // Initialize roles quietly in production
   
   // Default permissions for different roles
   const adminPermissions: ResourcePermissions = {
@@ -44,7 +44,7 @@ export const initializeRoles = async (): Promise<void> => {
   const rolesSnapshot = await getDocs(rolesCollection);
   
   if (!rolesSnapshot.empty) {
-    console.log("Roles collection already initialized with", rolesSnapshot.size, "roles");
+    // Roles already exist - silent in production
     return;
   }
   
@@ -80,14 +80,14 @@ export const initializeRoles = async (): Promise<void> => {
   
   // Commit the batch
   await batch.commit();
-  console.log("Roles initialized successfully");
+  // Roles initialized - silent in production
 };
 
 /**
  * Creates default admin user if no admin exists
  */
 export const createDefaultAdminUser = async (): Promise<void> => {
-  console.log("Checking for admin users...");
+  // Check for admin users silently in production
   
   try {
     // Get the admin role ID from the roles collection
@@ -105,11 +105,9 @@ export const createDefaultAdminUser = async (): Promise<void> => {
     });
     
     if (!adminRoleId) {
-      console.error("Admin role not found in the database");
+      // Admin role not found - silent in production
       return;
     }
-    
-    console.log("Found admin role with ID:", adminRoleId);
     
     // Check if any admin user exists
     const usersCollection = collection(db, "users");
@@ -130,13 +128,11 @@ export const createDefaultAdminUser = async (): Promise<void> => {
     }
     
     if (!adminSnapshot.empty) {
-      console.log("Admin user already exists");
+      // Admin user exists - silent in production
       return;
     }
     
     // No admin user exists, create a default one
-    console.log("No admin user found, creating default admin...");
-    
     // Create a unique user ID for the admin
     const adminId = "admin-" + Date.now().toString();
     
@@ -160,9 +156,9 @@ export const createDefaultAdminUser = async (): Promise<void> => {
       }
     });
     
-    console.log("Default admin user created successfully with email: berhanumule6@gmail.com");
+    // Admin user created - silent in production
   } catch (error) {
-    console.error("Error creating admin user:", error);
+    // Error handling - silent in production
   }
 };
 
@@ -346,9 +342,9 @@ export const initializeFirestoreData = async (): Promise<void> => {
     // Check client users but don't create any (will be done through UI)
     await checkClientUsers();
     
-    console.log("Firebase database initialized successfully with initial data");
+    // Successfully initialized - silent in production
   } catch (error) {
-    console.error("Error initializing Firebase database:", error);
+    // Error silently handled in production
     throw error;
   }
 };
