@@ -39,6 +39,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Configure auth to work with custom domains
+const currentDomain = window.location.hostname;
+if (currentDomain.includes('aditeke.com')) {
+  // Update settings for custom domain
+  auth.useDeviceLanguage();
+}
+
 // User Authentication Functions
 export const registerWithEmailPassword = async (
   email: string, 
