@@ -13,8 +13,23 @@ app.use((req, res, next) => {
   // Get the origin from the request headers, or use a default value
   const origin = req.headers.origin || '';
   
+  // List of allowed origins including custom domain
+  const allowedOrigins = [
+    'https://aditeke.com',
+    'https://www.aditeke.com',
+    'http://aditeke.com',
+    'http://www.aditeke.com',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'https://aditeke.replit.app',
+    'https://aditeke.replit.dev'
+  ];
+  
+  // Allow specified origins
+  const allowedOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NODE_ENV === 'development' ? '*' : '');
+  
   // Set necessary CORS headers for all responses
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin || origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token');
   res.setHeader('Access-Control-Allow-Credentials', 'true');

@@ -226,19 +226,23 @@ export function getUserIdFromToken(token: string): number | undefined {
  * Set JWT tokens in HTTP-only cookies for enhanced security
  */
 export function setTokenCookies(res: any, tokens: { accessToken: string, refreshToken: string }) {
-  // Always assume we're in a Replit environment for deployment scenarios
-  const isReplitEnv = true;
+  // Get the hostname from the request
+  const hostname = res.req?.hostname || '';
   
-  // In Replit environments, we need specific cookie settings to work properly
+  // Check if we're on the custom domain
+  const isCustomDomain = hostname.includes('aditeke.com');
+  
+  // Cookie settings based on environment
   const cookieOptions = {
     httpOnly: true,  // Prevents JavaScript access
-    // Set secure:false in Replit environments to ensure cookies work properly
-    // This is safe because Replit uses HTTPS by default
-    secure: false,
-    // Always use 'none' for Replit to allow cross-domain cookies
-    sameSite: 'none',
+    // Secure cookies for production and custom domain
+    secure: process.env.NODE_ENV === 'production' || isCustomDomain,
+    // Use 'none' for cross-domain cookies
+    sameSite: isCustomDomain ? 'none' as const : 'lax' as const,
     // Add path to ensure cookies are sent for all routes
-    path: '/'
+    path: '/',
+    // Set domain for custom domain
+    domain: isCustomDomain ? '.aditeke.com' : undefined
   };
   
   // Set access token cookie (short-lived)
@@ -255,7 +259,8 @@ export function setTokenCookies(res: any, tokens: { accessToken: string, refresh
   
   // Log cookie settings for debugging
   console.log('Cookie settings:', {
-    inReplit: isReplitEnv,
+    customDomain: isCustomDomain,
+    hostname,
     environment: process.env.NODE_ENV,
     secure: cookieOptions.secure,
     sameSite: cookieOptions.sameSite
@@ -266,15 +271,19 @@ export function setTokenCookies(res: any, tokens: { accessToken: string, refresh
  * Clear JWT tokens from cookies
  */
 export function clearTokenCookies(res: any) {
-  // Always assume we're in a Replit environment for deployment scenarios
-  const isReplitEnv = true;
+  // Get the hostname from the request
+  const hostname = res.req?.hostname || '';
+  
+  // Check if we're on the custom domain
+  const isCustomDomain = hostname.includes('aditeke.com');
   
   // Make sure to match the same options we used when setting the cookies
   const cookieOptions = {
     httpOnly: true,
-    secure: false,
-    sameSite: 'none',
-    path: '/'
+    secure: process.env.NODE_ENV === 'production' || isCustomDomain,
+    sameSite: isCustomDomain ? 'none' as const : 'lax' as const,
+    path: '/',
+    domain: isCustomDomain ? '.aditeke.com' : undefined
   };
   
   res.clearCookie('access_token', cookieOptions);

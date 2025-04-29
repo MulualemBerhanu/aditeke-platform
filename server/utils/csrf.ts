@@ -33,12 +33,16 @@ export function setCsrfToken(req: Request, res: Response, next: NextFunction) {
       csrfTokenStore.set(token, new Date().toISOString());
       
       // Set the token as a cookie
-      res.cookie(CSRF_COOKIE_NAME, token, {
+      const isCustomDomain = req.hostname.includes('aditeke.com');
+      const cookieOptions = {
         httpOnly: false, // Needs to be accessible from JavaScript
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-      });
+        secure: process.env.NODE_ENV === 'production' || isCustomDomain,
+        sameSite: isCustomDomain ? 'none' as const : 'lax' as const,
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        domain: isCustomDomain ? '.aditeke.com' : undefined
+      };
+      
+      res.cookie(CSRF_COOKIE_NAME, token, cookieOptions);
     }
     
     // Also add it to the response locals for template rendering
@@ -83,9 +87,11 @@ export function validateCsrfToken(req: Request, res: Response, next: NextFunctio
       return next();
     }
     
-    // On Replit, we'll be more lenient for testing
-    if (req.hostname.includes('replit.dev') || req.hostname.includes('replit.app')) {
-      console.log('CSRF validation relaxed for Replit environment');
+    // On Replit or custom domain, we'll be more lenient for testing
+    if (req.hostname.includes('replit.dev') || 
+        req.hostname.includes('replit.app') || 
+        req.hostname.includes('aditeke.com')) {
+      console.log('CSRF validation relaxed for custom domain or Replit environment');
       return next();
     }
     
