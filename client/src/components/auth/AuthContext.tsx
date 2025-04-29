@@ -126,11 +126,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Direct fetch with explicit content type to debug the issue
         console.log('Making fetch request to /api/login with credentials...');
         
-        // Determine whether we're in a deployed environment
+        // Determine whether we're in a deployed or custom domain environment
         const isDeployedEnv = 
           typeof window !== 'undefined' && (
             window.location.host.includes('.replit.app') || 
-            window.location.host.includes('.replit.dev')
+            window.location.host.includes('.replit.dev') ||
+            window.location.host.includes('aditeke.com')
           );
           
         console.log(`Login in ${isDeployedEnv ? 'deployed' : 'local'} environment...`);

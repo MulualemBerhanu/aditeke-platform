@@ -24,9 +24,17 @@ import {
 import { toast } from "@/hooks/use-toast";
 
 // Firebase configuration
+// Check if we're on the custom domain
+const isCustomDomain = typeof window !== 'undefined' && window.location.host.includes('aditeke.com');
+
+// Set appropriate auth domain
+const authDomain = isCustomDomain 
+  ? 'aditeke.com' 
+  : `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`;
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  authDomain: authDomain,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",

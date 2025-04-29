@@ -61,7 +61,8 @@ export async function apiRequest(
       // In production, use our cross-domain token auth approach
       const isDeployedEnv = isCrossDomain || 
                           window.location.host.includes('.replit.app') || 
-                          window.location.host.includes('.replit.dev');
+                          window.location.host.includes('.replit.dev') ||
+                          window.location.host.includes('aditeke.com');
       
       // Log the environment for debugging
       if (attempt === 0) {
@@ -186,7 +187,8 @@ export const getQueryFn: <T>(options: {
         // In production, use our cross-domain token auth approach
         const isDeployedEnv = isCrossDomain || 
                             window.location.host.includes('.replit.app') || 
-                            window.location.host.includes('.replit.dev');
+                            window.location.host.includes('.replit.dev') ||
+                            window.location.host.includes('aditeke.com');
         
         // Log the environment for debugging
         if (attempt === 0) {
