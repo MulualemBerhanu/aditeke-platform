@@ -1,14 +1,19 @@
 import { Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { COMPANY_STATS } from "@/lib/constants";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Calendar, Code, Lightbulb, Phone, Users } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Phone } from "lucide-react";
+import Lottie from 'lottie-react';
 import CustomCountUp from '@/components/common/CustomCountUp';
 import CodeAnimation from './CodeAnimation';
 import ParticleNetwork from './ParticleNetwork';
 import TechSphere from './TechSphere';
 import TechStackVisual from './TechStackVisual';
+
+// Import animation assets directly
+import buildMilestoneAnimation from '../../assets/animations/build-milestone.json';
+import customScalableAnimation from '../../assets/animations/custom-scalable.json';
+import trustedAnimation from '../../assets/animations/trusted.json';
 
 // Enhanced video background with animated particles
 const VideoBackground = () => {
@@ -348,32 +353,8 @@ const HeroSection = () => {
             </div>
             
             {/* Quick Action Icons */}
-            <div className="hidden md:flex items-center justify-start gap-6 mb-8">
-              <Link href="/contact#schedule">
-                <motion.div 
-                  className="flex items-center text-white/70 hover:text-white/90 transition-colors"
-                  whileHover={{ y: -3 }}
-                >
-                  <div className="p-2 rounded-full bg-blue-500/10 border border-blue-500/30 mr-2">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm">Schedule Call</span>
-                </motion.div>
-              </Link>
-              
+            <div className="flex items-center space-x-6 mb-6 justify-center lg:justify-start">
               <Link href="/portfolio">
-                <motion.div 
-                  className="flex items-center text-white/70 hover:text-white/90 transition-colors"
-                  whileHover={{ y: -3 }}
-                >
-                  <div className="p-2 rounded-full bg-blue-500/10 border border-blue-500/30 mr-2">
-                    <Code className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm">View Projects</span>
-                </motion.div>
-              </Link>
-              
-              <Link href="/contact#phone">
                 <motion.div 
                   className="flex items-center text-white/70 hover:text-white/90 transition-colors"
                   whileHover={{ y: -3 }}
@@ -432,38 +413,11 @@ const HeroSection = () => {
                   <TechStackVisual />
                 </div>
                 
-                {/* Backend Label with strategic positioning */}
-                <motion.div 
-                  className="absolute bottom-4 right-8 z-50"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.8 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="bg-gradient-to-r from-[#37B9BE] to-[#37B9BE]/80 text-white font-semibold px-5 py-2 rounded-md shadow-lg transform rotate-3 border border-[#37B9BE]/30 backdrop-blur-sm">
-                    Backend
+                {/* Animated particle system in the whiteboard */}
+                <div className="absolute inset-0 z-30 overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0 opacity-40">
+                    <ParticleNetwork />
                   </div>
-                  <motion.div 
-                    className="absolute inset-0 bg-[#37B9BE]/20 rounded-md blur-md -z-10"
-                    animate={{
-                      scale: [1, 1.05, 1],
-                      opacity: [0.5, 0.8, 0.5]
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  />
-                </motion.div>
-                
-                {/* Particle Network Overlay */}
-                <div className="absolute inset-0 opacity-50">
-                  <ParticleNetwork 
-                    particleCount={40} 
-                    connectionDistance={80} 
-                    particleColors={['#4e54c8', '#8f94fb', '#25aae1']} 
-                  />
                 </div>
               </div>
             </motion.div>
@@ -472,6 +426,143 @@ const HeroSection = () => {
             <div className="absolute inset-0 -z-10">
               <TechShapes />
             </div>
+          </motion.div>
+        </div>
+        
+        {/* Feature Cards */}
+        <div className="mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-10">
+            <h3 className="text-2xl font-semibold text-white mb-3">
+              Proven Track Record of Excellence
+            </h3>
+            <div className="w-20 h-1 bg-blue-500 mx-auto rounded-full"></div>
+          </div>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.2,
+                },
+              },
+            }}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* First Feature Card */}
+            <motion.div
+              className="relative rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 p-6 flex flex-col items-center text-center overflow-hidden group"
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.3,
+                    ease: "easeOut",
+                  },
+                },
+              }}
+              whileHover={{ 
+                scale: 1.02,
+                boxShadow: "0 0 20px rgba(99, 102, 241, 0.4)",
+                borderColor: "rgba(99, 102, 241, 0.6)" 
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 animate-pulse-slow pointer-events-none"></div>
+              
+              <div className="w-16 h-16 mb-4">
+                <Lottie
+                  animationData={buildMilestoneAnimation}
+                  loop={true}
+                />
+              </div>
+              
+              <h4 className="text-base font-semibold text-white mb-2">
+                🎯 We're here to build your first milestone
+              </h4>
+              
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Our team is committed to helping you reach your critical business milestones with precision and expertise.
+              </p>
+            </motion.div>
+
+            {/* Second Feature Card */}
+            <motion.div
+              className="relative rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 p-6 flex flex-col items-center text-center overflow-hidden group"
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.3,
+                    ease: "easeOut",
+                  },
+                },
+              }}
+              whileHover={{ 
+                scale: 1.02,
+                boxShadow: "0 0 20px rgba(99, 102, 241, 0.4)",
+                borderColor: "rgba(99, 102, 241, 0.6)" 
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 animate-pulse-slow pointer-events-none"></div>
+              
+              <div className="w-16 h-16 mb-4">
+                <Lottie
+                  animationData={customScalableAnimation}
+                  loop={true}
+                />
+              </div>
+              
+              <h4 className="text-base font-semibold text-white mb-2">
+                🛠️ 100% Custom — Scalable from Day 1
+              </h4>
+              
+              <p className="text-gray-300 text-sm leading-relaxed">
+                We build tailor-made solutions designed to grow seamlessly with your business needs from the very beginning.
+              </p>
+            </motion.div>
+
+            {/* Third Feature Card */}
+            <motion.div
+              className="relative rounded-lg backdrop-blur-sm bg-white/5 border border-white/10 p-6 flex flex-col items-center text-center overflow-hidden group"
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.3,
+                    ease: "easeOut",
+                  },
+                },
+              }}
+              whileHover={{ 
+                scale: 1.02,
+                boxShadow: "0 0 20px rgba(99, 102, 241, 0.4)",
+                borderColor: "rgba(99, 102, 241, 0.6)" 
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 animate-pulse-slow pointer-events-none"></div>
+              
+              <div className="w-16 h-16 mb-4">
+                <Lottie
+                  animationData={trustedAnimation}
+                  loop={true}
+                />
+              </div>
+              
+              <h4 className="text-base font-semibold text-white mb-2">
+                ❤️ Trusted by startups, growing with you
+              </h4>
+              
+              <p className="text-gray-300 text-sm leading-relaxed">
+                We provide reliable partnership and support as your business evolves and scales to new heights.
+              </p>
+            </motion.div>
           </motion.div>
         </div>
       </div>

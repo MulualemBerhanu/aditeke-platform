@@ -19,7 +19,6 @@ const Home = () => {
       </Helmet>
       
       <HeroSection />
-      <FeatureSection />
       <ServicesSection />
       <AboutSection />
       <TechStackShowcase />
