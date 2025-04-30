@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import Tilt from 'react-parallax-tilt';
 import Lottie from 'lottie-react';
 
 // Import animation JSON files for Lottie
-import buildMilestoneAnim from '@assets/animations/build-milestone.json';
-import customScalableAnim from '@assets/animations/custom-scalable.json';
-import trustedStartupsAnim from '@assets/animations/trusted.json';
+import buildMilestoneAnim from '../../assets/animations/build-milestone.json';
+import customScalableAnim from '../../assets/animations/custom-scalable.json';
+import trustedStartupsAnim from '../../assets/animations/trusted.json';
 
 const FeatureSection = () => {
   // Animation variants for staggered animation
@@ -51,13 +51,19 @@ const FeatureSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-b from-navy-900 to-navy-950 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 bg-gradient-to-b from-indigo-900 to-slate-900 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-indigo-600/10 blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Proven Track Record of Excellence
           </h2>
-          <div className="w-24 h-1 bg-primary-500 mx-auto rounded-full"></div>
+          <div className="w-24 h-1 bg-indigo-500 mx-auto rounded-full"></div>
         </div>
 
         <motion.div
@@ -88,7 +94,7 @@ const FeatureSection = () => {
                 }}
               >
                 {/* Animated pulse/glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/10 to-primary-500/0 animate-pulse-slow pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/10 to-indigo-500/0 animate-pulse-slow pointer-events-none"></div>
                 
                 {/* Lottie animation */}
                 <div className="w-24 h-24 mb-6">

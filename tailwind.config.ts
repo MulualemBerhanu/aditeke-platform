@@ -61,28 +61,54 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        navy: {
+          50: '#f0f1fe',
+          100: '#e2e4fb',
+          200: '#c5c9f8',
+          300: '#a7adf4',
+          400: '#8a92f1',
+          500: '#6c76ed',
+          600: '#565ebe',
+          700: '#41478e',
+          800: '#2b2f5f',
+          900: '#16182f',
+          950: '#0a0b18',
+          975: '#05060c',
+        },
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
+        "pulse-slow": {
+          '0%, 100%': { opacity: "0" },
+          '50%': { opacity: "0.4" },
+        },
+        "glow": {
+          '0%, 100%': { 
+            boxShadow: '0 0 15px 5px rgba(99, 102, 241, 0.2)',
+            borderColor: 'rgba(99, 102, 241, 0.4)'
+          },
+          '50%': { 
+            boxShadow: '0 0 25px 10px rgba(99, 102, 241, 0.4)',
+            borderColor: 'rgba(99, 102, 241, 0.8)'
+          },
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-slow": "pulse-slow 10s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "glow": "glow 10s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      fontFamily: {
+        'inter': ['Inter', 'sans-serif'],
+        'urbanist': ['Urbanist', 'sans-serif'],
       },
     },
   },
