@@ -112,19 +112,34 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
   const createClientMutation = useMutation({
     mutationFn: async (data: ClientFormValues) => {
       setSubmitting(true);
+      console.log("Submitting client data:", data);
       try {
-        const response = await apiRequest('POST', '/api/users', data);
+        // Use the new manager-specific endpoint for client creation
+        const response = await apiRequest('POST', '/api/clients', data);
+        
+        if (!response.ok) {
+          // Parse the error response
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to create client. Server returned an error.");
+        }
+        
         return await response.json();
+      } catch (error) {
+        console.error("Client creation error:", error);
+        throw error;
       } finally {
         setSubmitting(false);
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Client created successfully:", data);
       toast({
         title: "Success",
         description: "Client has been created successfully.",
       });
+      // Invalidate both users and client-specific queries
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/public/client-options'] });
       if (onSuccess) {
         onSuccess();
       }

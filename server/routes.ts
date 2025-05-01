@@ -654,6 +654,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Create a new user (protected with permission)
+  // Special endpoint for managers to create clients without requiring the 'manage users' permission
+  app.post("/api/clients", authenticateJWT, async (req, res) => {
+    try {
+      // Verify the user making the request is a manager or admin
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized - authentication required" });
+      }
+      
+      // Get the user's role
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Check if user is a manager or admin
+      const roleId = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
+      if (roleId !== 1000 && roleId !== 1002) {
+        // 1000 = manager, 1002 = admin
+        return res.status(403).json({ message: "Only managers and admins can create clients" });
+      }
+      
+      // Validate request
+      const parseResult = insertUserSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        const errors = parseResult.error.format();
+        return res.status(400).json({ errors });
+      }
+      
+      // Set the role ID to client role (1001)
+      const clientData = { 
+        ...parseResult.data,
+        roleId: 1001, // Force the role to be client
+        isActive: true
+      };
+      
+      console.log("Creating client account:", clientData.username);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(clientData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Create the client account
+      const newClient = await storage.createUser(clientData);
+      
+      // Remove password from response
+      const { password, ...safeClient } = newClient;
+      
+      return res.status(201).json(safeClient);
+    } catch (error) {
+      console.error("Error creating client:", error);
+      return res.status(500).json({ message: "Error creating client account" });
+    }
+  });
+  
+  // Original user creation endpoint that requires the manage users permission
   app.post("/api/users", requirePermission("users", "manage"), async (req, res) => {
     try {
       console.log("Received user creation request:", JSON.stringify(req.body));
