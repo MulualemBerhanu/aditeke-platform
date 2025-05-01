@@ -61,15 +61,13 @@ export default function SetNewPasswordPage() {
 
   // Watch password to calculate strength
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'password' || name === 'all') {
-        const password = value.password as string || '';
-        calculatePasswordStrength(password);
-      }
+    const subscription = form.watch((value) => {
+      const password = value.password as string || '';
+      calculatePasswordStrength(password);
     });
     
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form]);
 
   // Calculate password strength
   const calculatePasswordStrength = (password: string): void => {
