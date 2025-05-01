@@ -655,7 +655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Create a new user (protected with permission)
   // Completely public endpoint for managers to create clients - for development ease
-  app.post("/api/public/create-client", express.json(), async (req, res) => {
+  app.post("/api/public/create-client", async (req, res) => {
     try {
       // Log the raw request
       console.log("RECEIVED REQUEST:", {
