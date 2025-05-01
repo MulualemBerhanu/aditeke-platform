@@ -814,7 +814,7 @@ export default function ManagerDashboard() {
                     <Button 
                       size="sm" 
                       className="gap-1"
-                      onClick={() => window.location.href = '/manager/add-client'}
+                      onClick={() => setLocation('/manager/add-client')}
                     >
                       <UserPlus className="h-4 w-4" />
                       Add Client

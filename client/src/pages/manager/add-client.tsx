@@ -9,8 +9,12 @@ export default function AddClientPage() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
 
+  // Log the user data and role to help debug
+  console.log("🔐 User in add-client page:", user?.username, "Role ID:", user?.roleId);
+  
   // If no user or not the right role, redirect to login
-  if (!user || (user.roleId !== 1 && user.roleId !== 1000)) {
+  if (!user) {
+    console.log("⚠️ No user found, redirecting to login");
     navigate("/login");
     return null;
   }
