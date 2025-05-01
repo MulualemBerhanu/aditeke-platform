@@ -94,6 +94,30 @@ router.post('/users', async (req, res) => {
 
     // Send welcome email with temporary password
     try {
+      console.log(`Attempting to send welcome email to ${userData.email} for user ${userData.username}`);
+      
+      // First try with Nodemailer service (more reliable, no IP restrictions)
+      try {
+        console.log('Attempting to send welcome email with Nodemailer...');
+        
+        const emailResult = await sendNodemailerWelcomeEmail({
+          email: userData.email,
+          name: userData.name,
+          username: userData.username,
+          temporaryPassword: tempPassword
+        });
+        
+        if (emailResult) {
+          console.log('Welcome email sent successfully via Nodemailer');
+          return;  // Exit if nodemailer succeeds
+        }
+      } catch (nodemailerError) {
+        console.error('Nodemailer email failed, falling back to Brevo:', nodemailerError);
+      }
+      
+      // Fallback to Brevo API if Nodemailer fails
+      console.log('Falling back to Brevo API for welcome email...');
+      
       await sendWelcomeEmail({
         email: userData.email,
         name: userData.name,
@@ -101,9 +125,9 @@ router.post('/users', async (req, res) => {
         temporaryPassword: tempPassword
       });
       
-      console.log(`Welcome email sent to ${userData.email}`);
+      console.log(`Welcome email sent to ${userData.email} via Brevo API`);
     } catch (emailError) {
-      console.error('Error sending welcome email:', emailError);
+      console.error('Error sending welcome email with all methods:', emailError);
       // We still return success since the user was created,
       // but log the email error
     }

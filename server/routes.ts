@@ -10,6 +10,7 @@ import { verifyToken } from "./utils/jwt";
 import PDFDocument from "pdfkit";
 import authRoutes from "./routes/auth-routes";
 import userRoutes from "./routes/user-routes";
+import emailTestRoutes from "./routes/email-test-routes";
 import {
   insertUserSchema,
   insertContactMessageSchema,
@@ -28,6 +29,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register auth-related routes
   app.use('/api/auth', authRoutes);
   app.use('/api', userRoutes);
+  
+  // Register email test routes (only available in development)
+  if (process.env.NODE_ENV !== 'production') {
+    app.use('/api', emailTestRoutes);
+  }
   
   // API endpoints
   // ===============
