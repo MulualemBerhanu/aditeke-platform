@@ -853,15 +853,23 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
                       </div>
                       <Badge 
                         className={
-                          project.status === 'Completed' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                          project.status === 'In Progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                          project.status?.toLowerCase() === 'completed' 
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                          project.status?.toLowerCase() === 'in-progress' || project.status?.toLowerCase() === 'in progress'
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
                           'bg-amber-100 text-amber-800 hover:bg-amber-200'
                         }
                       >
-                        {project.status === 'Completed' && <CheckCircle className="h-3 w-3 mr-1" />}
-                        {project.status === 'In Progress' && <Clock className="h-3 w-3 mr-1" />}
-                        {project.status === 'On Hold' && <AlertCircle className="h-3 w-3 mr-1" />}
-                        {project.status || 'Unknown'}
+                        {(project.status?.toLowerCase() === 'completed') && 
+                          <CheckCircle className="h-3 w-3 mr-1" />}
+                        {(project.status?.toLowerCase() === 'in-progress' || project.status?.toLowerCase() === 'in progress') && 
+                          <Clock className="h-3 w-3 mr-1" />}
+                        {(project.status?.toLowerCase() === 'on-hold' || project.status?.toLowerCase() === 'on hold') && 
+                          <AlertCircle className="h-3 w-3 mr-1" />}
+                        {/* Use a formatted display of the status */}
+                        {project.status 
+                          ? project.status.charAt(0).toUpperCase() + project.status.slice(1).replace(/-/g, ' ')
+                          : 'Unknown'}
                       </Badge>
                     </div>
                   </CardHeader>
