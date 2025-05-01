@@ -136,8 +136,23 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
         
         console.log("Enhanced client data with manager info:", enhancedData);
         
-        // Use the completely public endpoint for client creation - development use only
-        const response = await apiRequest('POST', '/api/public/create-client', enhancedData);
+        // Explicitly print the request payload for debugging
+        const requestPayload = JSON.stringify(enhancedData);
+        console.log("Request payload as JSON string:", requestPayload);
+        
+        // Use the completely public endpoint for client creation - with debugging
+        const response = await fetch('/api/public/create-client', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.cookie
+              .split('; ')
+              .find(row => row.startsWith('csrf_token='))
+              ?.split('=')[1] || ''
+          },
+          body: requestPayload,
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           // Parse the error response

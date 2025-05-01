@@ -655,9 +655,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Create a new user (protected with permission)
   // Completely public endpoint for managers to create clients - for development ease
-  app.post("/api/public/create-client", async (req, res) => {
+  app.post("/api/public/create-client", express.json(), async (req, res) => {
     try {
-      // Log the raw request
+      // More intensive debugging of content type and raw body
+      console.log("RECEIVED CREATE CLIENT REQUEST - HEADERS:", req.headers);
+      console.log("RECEIVED CREATE CLIENT REQUEST - RAW BODY:", req.body);
       console.log("RECEIVED REQUEST:", {
         contentType: req.headers['content-type'],
         bodyKeys: Object.keys(req.body),

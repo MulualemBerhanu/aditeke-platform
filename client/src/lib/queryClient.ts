@@ -37,6 +37,11 @@ export async function apiRequest(
         "Expires": "0"
       };
       
+      // Log the request details for debugging
+      if (data) {
+        console.log(`API Request to ${url} with method ${method}:`, JSON.stringify(data))
+      }
+      
       // Add CSRF token for protection against CSRF attacks using our utility
       const headersWithCsrf = addCsrfHeader({ headers })?.headers as Headers;
       if (headersWithCsrf) {
