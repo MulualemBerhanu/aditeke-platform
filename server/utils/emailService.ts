@@ -2,7 +2,7 @@ import { ClientInvoice, User } from '../../shared/schema';
 import { generateInvoicePdf, generateReceiptPdf } from './pdfGenerator';
 
 // The verified sender email address (registered with Brevo)
-const VERIFIED_SENDER = 'mule2069@gmail.com';
+const VERIFIED_SENDER = 'berhanumule6@gmail.com';
 
 // Display names for different types of emails
 const NOTIFICATION_NAME = 'AdiTeke Notifications';
