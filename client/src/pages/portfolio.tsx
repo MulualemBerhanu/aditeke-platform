@@ -47,46 +47,79 @@ const PortfolioPage = () => {
         </div>
       </section>
 
-      {/* Portfolio Filter & Grid */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          {/* Portfolio Filter */}
+      {/* Portfolio Filter & Grid - Updated with dark background for glass-morphism */}
+      <section className="py-20 bg-gradient-to-b from-[#04102D] to-[#071336] relative overflow-hidden">
+        {/* Animated backdrop elements */}
+        <div className="absolute inset-0 overflow-hidden opacity-10">
+          {/* Grid pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#8b8b8b_1px,transparent_1px),linear-gradient(to_bottom,#8b8b8b_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+          
+          {/* Decorative circles/blobs */}
+          <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-blue-500/30 blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Portfolio Filter - Updated with glass-morphism styling */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {PORTFOLIO_CATEGORIES.map((category, index) => (
-              <motion.button
-                key={index}
-                className={`px-5 py-2 rounded-full font-medium ${
-                  activeFilter === category.value
-                    ? 'bg-primary text-white'
-                    : 'bg-light text-dark hover:bg-primary/10'
-                } transition-colors`}
-                onClick={() => handleFilterChange(category.value)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {category.label}
-              </motion.button>
-            ))}
+            <div className="p-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-xl flex flex-wrap justify-center">
+              {PORTFOLIO_CATEGORIES.map((category, index) => (
+                <motion.button
+                  key={index}
+                  className={`px-5 py-2 rounded-full font-medium ${
+                    activeFilter === category.value
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+                  } transition-all mx-1`}
+                  onClick={() => handleFilterChange(category.value)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {category.label}
+                </motion.button>
+              ))}
+            </div>
           </div>
           
           {/* Portfolio Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {isLoading ? (
-              // Show skeleton loaders while loading
+              // Enhanced skeleton loaders with glass-morphic styling
               Array(6).fill(null).map((_, index) => (
-                <div key={index} className="rounded-xl shadow-md overflow-hidden animate-pulse">
-                  <div className="bg-gray-300 h-64 w-full"></div>
-                  <div className="p-6">
-                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2 w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                <div key={index} className="relative overflow-hidden rounded-xl backdrop-blur-sm shadow-xl h-full bg-white/10 border border-white/20 animate-pulse">
+                  <div className="bg-white/5 h-64 w-full"></div>
+                  <div className="p-6 relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-white/30 backdrop-blur-sm -z-10"></div>
+                    <div className="h-6 bg-white/10 rounded-md w-3/4 mb-4"></div>
+                    <div className="h-4 bg-white/10 rounded-md mb-3 w-full"></div>
+                    <div className="h-4 bg-white/10 rounded-md w-2/3 mb-4"></div>
+                    <div className="flex gap-2 mb-4">
+                      <div className="h-6 w-16 bg-white/10 rounded-full"></div>
+                      <div className="h-6 w-16 bg-white/10 rounded-full"></div>
+                    </div>
+                    <div className="h-4 w-32 bg-white/10 rounded-md"></div>
                   </div>
                 </div>
               ))
             ) : error ? (
-              // Show error message
-              <div className="col-span-full text-center text-red-500">
-                <p>Failed to load projects. Please try again later.</p>
+              // Enhanced error message with glass-morphic styling
+              <div className="col-span-full text-center py-16">
+                <div className="bg-red-900/20 backdrop-blur-sm text-red-300 p-8 rounded-lg inline-flex flex-col items-center max-w-md mx-auto border border-red-500/20">
+                  <div className="text-red-400 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <p className="mb-4 text-lg">Failed to load projects. Please try again later.</p>
+                  <button 
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-md border border-white/10 transition-colors"
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry
+                  </button>
+                </div>
               </div>
             ) : (
               // Show filtered projects
@@ -94,45 +127,117 @@ const PortfolioPage = () => {
                 {filteredProjects?.map((project) => (
                   <motion.div 
                     key={project.id}
-                    className="bg-white rounded-xl shadow-md overflow-hidden"
+                    className="group relative"
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.3 }}
                     layout
+                    whileHover={{ 
+                      scale: 1.02,
+                      transition: { duration: 0.3 }
+                    }}
                   >
-                    <div className="relative overflow-hidden">
-                      <img 
-                        src={project.thumbnail} 
-                        alt={project.title} 
-                        className="w-full h-64 object-cover transition-transform hover:scale-110 duration-500"
-                      />
-                      <div className="absolute top-4 right-4">
-                        <span className="px-3 py-1 bg-primary/80 text-white text-xs rounded-full">
+                    <div className="relative overflow-hidden rounded-xl backdrop-blur-sm shadow-xl h-full bg-white/10 border border-white/20 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
+                      {/* Image container with enhanced hover effects */}
+                      <div className="relative h-64 overflow-hidden">
+                        {/* Status badge with glass effect */}
+                        <div className="absolute top-4 right-4 z-10 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-white shadow-sm border border-white/10 flex items-center">
                           {project.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                      <p className="text-gray-600 mb-4">{project.description}</p>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {project.category.split(' ').map((cat, index) => (
-                          <span 
-                            key={index}
-                            className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full"
+                        </div>
+
+                        {/* Project image */}
+                        <div className="relative w-full h-full">
+                          <img 
+                            src={project.thumbnail} 
+                            alt={project.title} 
+                            className="w-full h-full object-cover transform transition-all duration-700 group-hover:scale-110 group-hover:brightness-[0.85]"
+                            loading="lazy"
+                            onError={(e) => {
+                              // If image fails to load, display a colored background with project initials
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentNode as HTMLElement;
+                              if (parent) {
+                                const fallback = document.createElement('div');
+                                fallback.className = 'absolute inset-0 flex items-center justify-center bg-primary/80';
+                                const initials = document.createElement('span');
+                                initials.className = 'text-white text-[120px] font-bold leading-none';
+                                initials.textContent = project.title.split(' ').map(word => word[0]).join('');
+                                fallback.appendChild(initials);
+                                parent.appendChild(fallback);
+                              }
+                            }}
+                          />
+                        </div>
+                        
+                        {/* Gradient overlay that reveals on hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        {/* View button that reveals on hover */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                          <a 
+                            href={`/portfolio/${project.id}`}
+                            className="bg-white/90 backdrop-blur-sm text-primary px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 hover:bg-white transition-colors"
                           >
-                            {cat}
-                          </span>
-                        ))}
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <span>View Details</span>
+                          </a>
+                        </div>
                       </div>
-                      <a 
-                        href={`/portfolio/${project.id}`} 
-                        className="inline-flex items-center text-primary font-medium hover:text-accent transition-colors"
-                      >
-                        View Case Study
-                        <i className="fas fa-arrow-right ml-2"></i>
-                      </a>
+                      
+                      {/* Content area with glass effect */}
+                      <div className="p-6 relative">
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-white/40 backdrop-blur-sm -z-10"></div>
+                        
+                        {/* Title with gradient on hover */}
+                        <h3 className="text-xl font-bold mb-3 text-white group-hover:bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-blue-300 transition-all duration-500">
+                          {project.title}
+                        </h3>
+                        
+                        {/* Description with enhanced styling */}
+                        <p className="text-gray-300 mb-4 line-clamp-2 text-sm">
+                          {project.description}
+                        </p>
+                        
+                        {/* Category tags with glass effect */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {typeof project.category === 'string' ? (
+                            project.category.split(' ').map((cat: string, index: number) => (
+                              <span 
+                                key={index}
+                                className="px-3 py-1 bg-white/10 backdrop-blur-sm text-gray-200 text-xs rounded-full border border-white/10"
+                              >
+                                {cat}
+                              </span>
+                            ))
+                          ) : (
+                            Array.isArray(project.category) && project.category.map((cat: string, index: number) => (
+                              <span 
+                                key={index}
+                                className="px-3 py-1 bg-white/10 backdrop-blur-sm text-gray-200 text-xs rounded-full border border-white/10"
+                              >
+                                {cat}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                        
+                        {/* Link with animation */}
+                        <a 
+                          href={`/portfolio/${project.id}`} 
+                          className="inline-flex items-center text-blue-400 font-medium hover:text-blue-300 transition-colors group/link text-sm"
+                        >
+                          View Case Study
+                          <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                          </svg>
+                        </a>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
