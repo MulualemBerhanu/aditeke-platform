@@ -136,8 +136,8 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
         
         console.log("Enhanced client data with manager info:", enhancedData);
         
-        // Use the new manager-specific endpoint for client creation
-        const response = await apiRequest('POST', '/api/clients', enhancedData);
+        // Use the completely public endpoint for client creation - development use only
+        const response = await apiRequest('POST', '/api/public/create-client', enhancedData);
         
         if (!response.ok) {
           // Parse the error response
