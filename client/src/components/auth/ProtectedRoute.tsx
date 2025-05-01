@@ -275,9 +275,11 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     
     // Check path for security - this adds defense in depth
     const path = window.location.pathname;
+    console.log("Current path:", path);
     const isAdminPath = path.startsWith('/admin');
     const isManagerPath = path.startsWith('/manager');
     const isClientPath = path.startsWith('/client');
+    console.log("Path type:", { isAdminPath, isManagerPath, isClientPath });
     
     // Security logic checks both role name and ID when possible
     const hasAdminAccess = 
@@ -288,12 +290,15 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     const hasManagerAccess = 
       userRole?.toLowerCase() === 'manager' || 
       numericRoleId === roleIdMap.manager ||
-      roleId === 'YcKKrgriG70R2O9Qg4io'; // Include the Firebase doc ID
+      roleId === 'YcKKrgriG70R2O9Qg4io' || // Include the Firebase doc ID
+      numericRoleId === 1000; // Explicitly include 1000
     
     const hasClientAccess = 
       userRole?.toLowerCase() === 'client' || 
       numericRoleId === roleIdMap.client ||
       roleId === 'tkIVVYpWobVjoawaozmp'; // Include the Firebase doc ID
+      
+    console.log("Access check:", { hasAdminAccess, hasManagerAccess, hasClientAccess });
     
     // Apply security policy based on path and role
     let accessDenied = false;

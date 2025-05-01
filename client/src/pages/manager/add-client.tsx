@@ -12,12 +12,9 @@ export default function AddClientPage() {
   // Log the user data and role to help debug
   console.log("🔐 User in add-client page:", user?.username, "Role ID:", user?.roleId);
   
-  // If no user or not the right role, redirect to login
-  if (!user) {
-    console.log("⚠️ No user found, redirecting to login");
-    navigate("/login");
-    return null;
-  }
+  // We don't need to check for authentication here because the ProtectedRoute component 
+  // has already done that for us. The page will only render if the user is authenticated
+  // and has the correct role.
 
   return (
     <div className="container mx-auto py-8 px-4">
