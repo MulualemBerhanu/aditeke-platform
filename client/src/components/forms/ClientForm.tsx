@@ -57,8 +57,15 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
   const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
 
+  // Define role interface
+  interface Role {
+    id: number;
+    name: string;
+    description?: string;
+  }
+
   // Fetch available roles from public endpoint
-  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+  const { data: roles = [], isLoading: rolesLoading } = useQuery<Role[]>({
     queryKey: ['/api/public/roles'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/public/roles');
@@ -92,7 +99,7 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
   useEffect(() => {
     if (roles && roles.length > 0) {
       // Find client role by default, or use the first available role
-      const clientRole = roles.find(role => role.name.toLowerCase() === 'client');
+      const clientRole = roles.find((role: Role) => role.name.toLowerCase() === 'client');
       const defaultRoleId = clientRole ? clientRole.id : roles[0]?.id;
       
       if (defaultRoleId) {
@@ -296,7 +303,7 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
                         <span>Loading roles...</span>
                       </div>
                     ) : roles.length > 0 ? (
-                      roles.map((role) => (
+                      roles.map((role: Role) => (
                         <SelectItem key={role.id} value={role.id.toString()}>
                           {role.name}
                         </SelectItem>

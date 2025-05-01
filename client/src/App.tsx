@@ -36,6 +36,7 @@ import AdminSettings from "./pages/admin/settings";
 import ManagerDashboard from "./pages/manager/dashboard";
 import ManagerCreateProject from "./pages/manager/project/create";
 import ManagerEditProject from "./pages/manager/project/edit";
+import AddClientPage from "./pages/manager/add-client";
 
 // Client pages
 import ClientDashboard from "./pages/client/dashboard";
@@ -130,6 +131,11 @@ function Router() {
       <Route path="/manager/project/edit/:id">
         <ProtectedRoute requiredRole="manager">
           <ManagerEditProject />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/manager/add-client">
+        <ProtectedRoute requiredRole="manager">
+          <AddClientPage />
         </ProtectedRoute>
       </Route>
       
