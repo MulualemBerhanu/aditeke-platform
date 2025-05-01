@@ -25,6 +25,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
   
+  // Register auth-related routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api', userRoutes);
+  
   // API endpoints
   // ===============
 

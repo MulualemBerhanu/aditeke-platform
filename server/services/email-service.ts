@@ -4,25 +4,14 @@
  */
 
 import axios from 'axios';
+import * as dotenv from 'dotenv';
 
-// Set API key for authentication
-const apiKey = process.env.BREVO_API_KEY;
-if (!apiKey) {
-  console.warn('BREVO_API_KEY environment variable is not set! Email functionality will not work.');
-}
+dotenv.config();
 
-// Default sender information
+// Email template constants
 const DEFAULT_SENDER = {
-  email: 'support@aditeke.com',
-  name: 'AdiTeke Software Solutions'
-};
-
-// Company information for email templates
-const COMPANY_INFO = {
-  name: 'AdiTeke Software Solutions',
-  address: 'Portland, OR 97222',
-  phone: '+1 (641) 481-8560',
-  website: 'https://aditeke.com'
+  email: "support@aditeke.com",
+  name: "AdiTeke Software Solutions"
 };
 
 /**
@@ -34,110 +23,69 @@ export async function sendWelcomeEmail(params: {
   email: string;
   name: string;
   username: string;
-  tempPassword: string;
-  loginLink: string;
+  temporaryPassword: string;
 }): Promise<boolean> {
-  console.log(`Sending welcome email to ${params.email}...`);
-  
-  if (!apiKey) {
-    console.error('Cannot send email: BREVO_API_KEY is not set');
-    return false;
-  }
-  
-  try {
-    // Create welcome email template
-    const subject = 'Welcome to AdiTeke Software Solutions';
+  const { email, name, username, temporaryPassword } = params;
+
+  const subject = "Welcome to AdiTeke Software Solutions";
+  const textContent = `
+    Hello ${name},
     
-    // HTML email body with temporary password
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px;">
-        <div style="background-color: #6366F1; padding: 20px; border-radius: 5px 5px 0 0;">
-          <h1 style="color: white; margin: 0;">Welcome to AdiTeke Software Solutions</h1>
-        </div>
-        
-        <div style="padding: 20px;">
-          <p>Hello ${params.name},</p>
-          
-          <p>Welcome to AdiTeke Software Solutions! Your account has been created and you can now access your personal dashboard.</p>
-          
-          <p><strong>Your login credentials:</strong></p>
-          <ul>
-            <li><strong>Username:</strong> ${params.username}</li>
-            <li><strong>Temporary Password:</strong> ${params.tempPassword}</li>
-          </ul>
-          
-          <p>For security reasons, you'll be required to change your password when you first log in.</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${params.loginLink}" style="background-color: #6366F1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login to Your Account</a>
-          </div>
-          
-          <p>If you have any questions or need assistance, please contact our support team at support@aditeke.com or call us at +1 (641) 481-8560.</p>
-          
-          <p>Thank you for choosing AdiTeke Software Solutions!</p>
-          
-          <p>Best regards,<br>The AdiTeke Team</p>
-        </div>
-        
-        <div style="background-color: #f7f7f7; padding: 15px; border-radius: 0 0 5px 5px; font-size: 12px; color: #666;">
-          <p>${COMPANY_INFO.name} | ${COMPANY_INFO.address} | ${COMPANY_INFO.phone}</p>
-          <p>This is an automated message. Please do not reply to this email.</p>
-        </div>
+    Welcome to AdiTeke Software Solutions! Your account has been created successfully.
+    
+    Your login details:
+    Username: ${username}
+    Temporary Password: ${temporaryPassword}
+    
+    For security reasons, you will be required to change your password when you first log in.
+    
+    Please visit our website to log in: https://www.aditeke.com/login
+    
+    If you have any questions, please don't hesitate to contact our support team.
+    
+    Best regards,
+    AdiTeke Software Solutions Team
+  `;
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #4338CA; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0;">Welcome to AdiTeke Software Solutions</h1>
       </div>
-    `;
-    
-    // Plain text version for email clients that don't support HTML
-    const textContent = `
-Welcome to AdiTeke Software Solutions!
+      
+      <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
+        <p>Hello ${name},</p>
+        
+        <p>Welcome to AdiTeke Software Solutions! Your account has been created successfully.</p>
+        
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <p style="margin: 5px 0;"><strong>Your login details:</strong></p>
+          <p style="margin: 5px 0;">Username: <strong>${username}</strong></p>
+          <p style="margin: 5px 0;">Temporary Password: <strong>${temporaryPassword}</strong></p>
+        </div>
+        
+        <p><strong>For security reasons, you will be required to change your password when you first log in.</strong></p>
+        
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="https://www.aditeke.com/login" 
+             style="background-color: #4338CA; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Log In Now
+          </a>
+        </p>
+        
+        <p>If you have any questions, please don't hesitate to contact our support team.</p>
+        
+        <p>Best regards,<br>AdiTeke Software Solutions Team</p>
+      </div>
+      
+      <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+        <p>&copy; 2025 AdiTeke Software Solutions. All rights reserved.</p>
+        <p>Portland, OR 97222 | <a href="mailto:support@aditeke.com">support@aditeke.com</a> | +1 (641) 481-8560</p>
+      </div>
+    </div>
+  `;
 
-Hello ${params.name},
-
-Welcome to AdiTeke Software Solutions! Your account has been created and you can now access your personal dashboard.
-
-Your login credentials:
-- Username: ${params.username}
-- Temporary Password: ${params.tempPassword}
-
-For security reasons, you'll be required to change your password when you first log in.
-
-Login to your account at: ${params.loginLink}
-
-If you have any questions or need assistance, please contact our support team at support@aditeke.com or call us at +1 (641) 481-8560.
-
-Thank you for choosing AdiTeke Software Solutions!
-
-Best regards,
-The AdiTeke Team
-
-${COMPANY_INFO.name} | ${COMPANY_INFO.address} | ${COMPANY_INFO.phone}
-This is an automated message. Please do not reply to this email.
-    `;
-
-    // Send the email using Brevo API v3 directly
-    const response = await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
-      {
-        sender: DEFAULT_SENDER,
-        to: [{ email: params.email, name: params.name }],
-        subject,
-        htmlContent,
-        textContent
-      },
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'api-key': apiKey
-        }
-      }
-    );
-    
-    console.log(`Welcome email sent to ${params.email} - Response status: ${response.status}`);
-    return true;
-  } catch (error: any) {
-    console.error('Error sending welcome email:', error.response?.data || error.message);
-    return false;
-  }
+  return await sendEmail(email, name, subject, htmlContent, textContent);
 }
 
 /**
@@ -152,76 +100,100 @@ export async function sendPasswordResetEmail(params: {
   resetLink: string;
   expiryTime: number;
 }): Promise<boolean> {
-  console.log(`Sending password reset email to ${params.email}...`);
-  
-  if (!apiKey) {
-    console.error('Cannot send email: BREVO_API_KEY is not set');
-    return false;
-  }
-  
-  try {
-    // Create password reset email template
-    const subject = 'Password Reset Request - AdiTeke Software Solutions';
+  const { email, name, username, resetLink, expiryTime } = params;
+
+  const subject = "Password Reset - AdiTeke Software Solutions";
+  const textContent = `
+    Hello ${name},
     
-    // HTML email body with reset link
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px;">
-        <div style="background-color: #6366F1; padding: 20px; border-radius: 5px 5px 0 0;">
-          <h1 style="color: white; margin: 0;">Password Reset Request</h1>
-        </div>
-        
-        <div style="padding: 20px;">
-          <p>Hello ${params.name},</p>
-          
-          <p>We received a request to reset the password for your account (username: <strong>${params.username}</strong>). If you did not make this request, you can ignore this email.</p>
-          
-          <p>To reset your password, click the button below. This link will expire in ${params.expiryTime} hours.</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${params.resetLink}" style="background-color: #6366F1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Your Password</a>
-          </div>
-          
-          <p>If the button above does not work, copy and paste the following URL into your browser:</p>
-          <p style="word-break: break-all; background-color: #f7f7f7; padding: 10px; border-radius: 4px;">${params.resetLink}</p>
-          
-          <p>If you did not request a password reset, please contact our support team immediately at support@aditeke.com or call us at +1 (641) 481-8560.</p>
-          
-          <p>Best regards,<br>The AdiTeke Team</p>
-        </div>
-        
-        <div style="background-color: #f7f7f7; padding: 15px; border-radius: 0 0 5px 5px; font-size: 12px; color: #666;">
-          <p>${COMPANY_INFO.name} | ${COMPANY_INFO.address} | ${COMPANY_INFO.phone}</p>
-          <p>This is an automated message. Please do not reply to this email.</p>
-        </div>
+    We received a request to reset your password for your AdiTeke Software Solutions account.
+    
+    Username: ${username}
+    
+    To reset your password, please click on the link below or copy and paste it into your browser:
+    ${resetLink}
+    
+    This link will expire in ${expiryTime} hours.
+    
+    If you did not request a password reset, please ignore this email or contact our support team if you have concerns.
+    
+    Best regards,
+    AdiTeke Software Solutions Team
+  `;
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #4338CA; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0;">Password Reset</h1>
       </div>
-    `;
+      
+      <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
+        <p>Hello ${name},</p>
+        
+        <p>We received a request to reset your password for your AdiTeke Software Solutions account.</p>
+        
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <p style="margin: 5px 0;">Username: <strong>${username}</strong></p>
+        </div>
+        
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${resetLink}" 
+             style="background-color: #4338CA; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Reset Password
+          </a>
+        </p>
+        
+        <p style="font-size: 12px; color: #666;">
+          Or copy and paste this URL into your browser:<br>
+          <a href="${resetLink}" style="word-break: break-all;">${resetLink}</a>
+        </p>
+        
+        <p><strong>This link will expire in ${expiryTime} hours.</strong></p>
+        
+        <p>If you did not request a password reset, please ignore this email or contact our support team if you have concerns.</p>
+        
+        <p>Best regards,<br>AdiTeke Software Solutions Team</p>
+      </div>
+      
+      <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+        <p>&copy; 2025 AdiTeke Software Solutions. All rights reserved.</p>
+        <p>Portland, OR 97222 | <a href="mailto:support@aditeke.com">support@aditeke.com</a> | +1 (641) 481-8560</p>
+      </div>
+    </div>
+  `;
+
+  return await sendEmail(email, name, subject, htmlContent, textContent);
+}
+
+/**
+ * Generic email sending function using Brevo API
+ * @param email Recipient email
+ * @param name Recipient name
+ * @param subject Email subject
+ * @param htmlContent HTML content of the email
+ * @param textContent Plain text content of the email
+ * @returns True if the email was sent successfully
+ */
+async function sendEmail(
+  email: string,
+  name: string,
+  subject: string,
+  htmlContent: string,
+  textContent: string
+): Promise<boolean> {
+  try {
+    const apiKey = process.env.BREVO_API_KEY;
     
-    // Plain text version for email clients that don't support HTML
-    const textContent = `
-Password Reset Request - AdiTeke Software Solutions
-
-Hello ${params.name},
-
-We received a request to reset the password for your account (username: ${params.username}). If you did not make this request, you can ignore this email.
-
-To reset your password, please visit the following link (expires in ${params.expiryTime} hours):
-${params.resetLink}
-
-If you did not request a password reset, please contact our support team immediately at support@aditeke.com or call us at +1 (641) 481-8560.
-
-Best regards,
-The AdiTeke Team
-
-${COMPANY_INFO.name} | ${COMPANY_INFO.address} | ${COMPANY_INFO.phone}
-This is an automated message. Please do not reply to this email.
-    `;
-
-    // Send the email using Brevo API v3 directly
+    if (!apiKey) {
+      console.error('BREVO_API_KEY is not set in the environment variables');
+      return false;
+    }
+    
     const response = await axios.post(
       'https://api.brevo.com/v3/smtp/email',
       {
         sender: DEFAULT_SENDER,
-        to: [{ email: params.email, name: params.name }],
+        to: [{ email, name }],
         subject,
         htmlContent,
         textContent
@@ -235,10 +207,10 @@ This is an automated message. Please do not reply to this email.
       }
     );
     
-    console.log(`Password reset email sent to ${params.email} - Response status: ${response.status}`);
+    console.log(`Email sent successfully to ${email}, response status: ${response.status}`);
     return true;
   } catch (error: any) {
-    console.error('Error sending password reset email:', error.response?.data || error.message);
+    console.error('Error sending email:', error.response?.data || error.message);
     return false;
   }
 }

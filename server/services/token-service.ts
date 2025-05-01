@@ -5,18 +5,18 @@
 
 import { randomBytes } from 'crypto';
 import { db } from '../db';
+import { eq } from 'drizzle-orm';
 import { passwordResetTokens } from '@shared/schema';
-import { eq, and, lt, gt } from 'drizzle-orm';
 
-// Token validity period in milliseconds (24 hours)
-const TOKEN_VALIDITY_PERIOD = 24 * 60 * 60 * 1000;
+// Token validity period in hours
+const TOKEN_VALIDITY_HOURS = 24;
 
 /**
  * Get the token validity period in hours
  * @returns Token validity period in hours
  */
 export function getTokenValidityPeriod(): number {
-  return TOKEN_VALIDITY_PERIOD / (60 * 60 * 1000);
+  return TOKEN_VALIDITY_HOURS;
 }
 
 /**
@@ -25,25 +25,22 @@ export function getTokenValidityPeriod(): number {
  * @returns Generated token
  */
 export async function createPasswordResetToken(userId: number): Promise<string> {
-  try {
-    // Generate a secure random token
-    const token = randomBytes(32).toString('hex');
-    
-    // Set expiration time (24 hours from now)
-    const expiresAt = new Date(Date.now() + TOKEN_VALIDITY_PERIOD);
-    
-    // Store the token in the database
-    await db.insert(passwordResetTokens).values({
-      userId,
-      token,
-      expiresAt
-    });
-    
-    return token;
-  } catch (error) {
-    console.error('Error creating password reset token:', error);
-    throw new Error('Failed to create password reset token');
-  }
+  // Generate a secure random token
+  const token = randomBytes(32).toString('hex');
+  
+  // Calculate expiration time (current time + validity period)
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + TOKEN_VALIDITY_HOURS);
+  
+  // Store the token in database using raw SQL to avoid type issues
+  await db.execute(
+    `INSERT INTO "password_reset_tokens" ("token", "user_id", "expires_at", "created_at", "used")
+     VALUES ($1, $2, $3, $4, $5)`,
+    [token, userId, expiresAt.toISOString(), new Date().toISOString(), false]
+  );
+  
+  console.log(`Password reset token created for user ${userId}, expires at ${expiresAt.toISOString()}`);
+  return token;
 }
 
 /**
@@ -52,32 +49,29 @@ export async function createPasswordResetToken(userId: number): Promise<string> 
  * @returns User ID if token is valid, null otherwise
  */
 export async function verifyPasswordResetToken(token: string): Promise<number | null> {
-  try {
-    // Get current time
-    const now = new Date();
-    
-    // Find the token in the database
-    const [tokenRecord] = await db
-      .select()
-      .from(passwordResetTokens)
-      .where(
-        and(
-          eq(passwordResetTokens.token, token),
-          gt(passwordResetTokens.expiresAt, now)
-        )
-      );
-    
-    // If token is not found or expired, return null
-    if (!tokenRecord) {
-      return null;
-    }
-    
-    // Return the user ID associated with the token
-    return tokenRecord.userId;
-  } catch (error) {
-    console.error('Error verifying token:', error);
+  const now = new Date().toISOString();
+  
+  // Find the token in database using raw SQL
+  const { rows } = await db.execute(
+    `SELECT * FROM "password_reset_tokens" WHERE "token" = $1`,
+    [token]
+  );
+  
+  // Check if we got results
+  if (!rows || rows.length === 0) {
+    console.log('Token validation failed: not found');
     return null;
   }
+  
+  const resetToken = rows[0];
+  
+  // Check if token is not expired, and has not been used
+  if (resetToken.expires_at < now || resetToken.used) {
+    console.log(`Token validation failed: ${resetToken.used ? 'already used' : 'expired'}`);
+    return null;
+  }
+  
+  return resetToken.user_id;
 }
 
 /**
@@ -85,15 +79,15 @@ export async function verifyPasswordResetToken(token: string): Promise<number | 
  * @param token Token to invalidate
  */
 export async function invalidateToken(token: string): Promise<void> {
-  try {
-    // Delete the token from the database
-    await db
-      .delete(passwordResetTokens)
-      .where(eq(passwordResetTokens.token, token));
-  } catch (error) {
-    console.error('Error invalidating token:', error);
-    throw new Error('Failed to invalidate token');
-  }
+  // Using raw SQL to avoid type issues
+  await db.execute(
+    `UPDATE "password_reset_tokens" 
+     SET "used" = true, "updated_at" = $1
+     WHERE "token" = $2`,
+    [new Date().toISOString(), token]
+  );
+  
+  console.log(`Token ${token} has been marked as used`);
 }
 
 /**
@@ -101,15 +95,10 @@ export async function invalidateToken(token: string): Promise<void> {
  * This should be run periodically to remove unused tokens
  */
 export async function cleanupExpiredTokens(): Promise<void> {
-  try {
-    const now = new Date();
-    
-    // Delete all tokens that have expired
-    await db
-      .delete(passwordResetTokens)
-      .where(lt(passwordResetTokens.expiresAt, now));
-  } catch (error) {
-    console.error('Error cleaning up expired tokens:', error);
-    throw new Error('Failed to clean up expired tokens');
-  }
+  const now = new Date().toISOString();
+  
+  // Delete all expired tokens using raw SQL to avoid type issues
+  await db.execute(`DELETE FROM "password_reset_tokens" WHERE "expires_at" < $1`, [now]);
+  
+  console.log('Expired password reset tokens have been cleaned up');
 }

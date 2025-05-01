@@ -4,7 +4,7 @@
  */
 
 import { Router } from "express";
-import { generateSecurePassword, hashPassword } from '../services/password-service';
+import { generateTemporaryPassword, hashPassword } from '../services/password-service';
 import { sendWelcomeEmail } from '../services/email-service';
 import { db } from '../db';
 import { users } from '@shared/schema';
@@ -71,7 +71,7 @@ router.post('/users', async (req, res) => {
     }
 
     // Generate a secure temporary password
-    const tempPassword = generateSecurePassword();
+    const tempPassword = generateTemporaryPassword();
     const hashedPassword = await hashPassword(tempPassword);
 
     // Create the user with password reset required flag
@@ -97,8 +97,7 @@ router.post('/users', async (req, res) => {
         email: userData.email,
         name: userData.name,
         username: userData.username,
-        tempPassword,
-        loginLink
+        temporaryPassword: tempPassword
       });
       
       console.log(`Welcome email sent to ${userData.email}`);

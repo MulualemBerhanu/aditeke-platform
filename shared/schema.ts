@@ -389,13 +389,16 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   token: text("token").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at"),
   expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").notNull().default(false),
 });
 
 export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).pick({
   userId: true,
   token: true,
   expiresAt: true,
+  used: true,
 });
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
