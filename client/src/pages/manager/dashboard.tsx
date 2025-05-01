@@ -811,7 +811,11 @@ export default function ManagerDashboard() {
                       <Download className="h-4 w-4" />
                       Export
                     </Button>
-                    <Button size="sm" className="gap-1">
+                    <Button 
+                      size="sm" 
+                      className="gap-1"
+                      onClick={() => window.location.href = '/manager/add-client'}
+                    >
                       <UserPlus className="h-4 w-4" />
                       Add Client
                     </Button>
