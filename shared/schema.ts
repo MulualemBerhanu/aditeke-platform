@@ -60,6 +60,8 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at"),
   lastLogin: timestamp("last_login"),
   isActive: boolean("is_active").notNull().default(true),
+  // Password reset and security fields
+  passwordResetRequired: boolean("password_reset_required").default(false),
   // Added client-specific fields
   company: text("company"),
   phone: text("phone"),
@@ -79,6 +81,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   roleId: true,
   profilePicture: true,
   isActive: true,
+  passwordResetRequired: true,
   company: true,
   phone: true,
   website: true,
@@ -379,3 +382,21 @@ export type InsertClientDocument = z.infer<typeof insertClientDocumentSchema>;
 
 export type ClientInvoice = typeof clientInvoices.$inferSelect;
 export type InsertClientInvoice = z.infer<typeof insertClientInvoiceSchema>;
+
+// Password Reset Tokens schema
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  token: text("token").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).pick({
+  userId: true,
+  token: true,
+  expiresAt: true,
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
