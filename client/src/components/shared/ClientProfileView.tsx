@@ -339,9 +339,19 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     }
     
     const total = clientProjects.length;
-    const inProgress = clientProjects.filter(p => p.status === 'In Progress').length;
-    const completed = clientProjects.filter(p => p.status === 'Completed').length;
-    const onHold = clientProjects.filter(p => p.status === 'On Hold').length;
+    // Fix status case sensitivity issues by normalizing statuses for comparison
+    console.log('Project statuses:', clientProjects.map(p => p.status));
+    const inProgress = clientProjects.filter(p => 
+      p.status?.toLowerCase() === 'in-progress' || 
+      p.status?.toLowerCase() === 'in progress'
+    ).length;
+    const completed = clientProjects.filter(p => 
+      p.status?.toLowerCase() === 'completed'
+    ).length;
+    const onHold = clientProjects.filter(p => 
+      p.status?.toLowerCase() === 'on-hold' || 
+      p.status?.toLowerCase() === 'on hold'
+    ).length;
     
     return { total, inProgress, completed, onHold };
   }, [clientProjects]);
@@ -410,7 +420,10 @@ export default function ClientProfileView({ clientId, onClose }: ClientProfileVi
     if (!clientProjects || clientProjects.length === 0) return [];
     
     // Use the largest active project for payment phases
-    const activeProjects = clientProjects.filter(p => p.status === 'In Progress');
+    const activeProjects = clientProjects.filter(p => 
+      p.status?.toLowerCase() === 'in-progress' || 
+      p.status?.toLowerCase() === 'in progress'
+    );
     if (activeProjects.length === 0) return [];
     
     // Find project with highest budget or use first one
