@@ -3,8 +3,8 @@
  * Manages email communications for user onboarding and password management
  */
 
-import axios from 'axios';
 import * as dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -13,6 +13,11 @@ const DEFAULT_SENDER = {
   email: "support@aditeke.com",
   name: "AdiTeke Software Solutions"
 };
+
+// Display names for different types of emails
+const NOTIFICATION_NAME = "AdiTeke Notifications";
+const WELCOME_NAME = "AdiTeke Welcome";
+const PASSWORD_RESET_NAME = "AdiTeke Security";
 
 /**
  * Send a welcome email to a new user with their temporary password
@@ -189,28 +194,62 @@ async function sendEmail(
       return false;
     }
     
-    const response = await axios.post(
-      'https://api.brevo.com/v3/smtp/email',
-      {
-        sender: DEFAULT_SENDER,
+    // Customize sender name based on the type of email
+    let senderName = DEFAULT_SENDER.name;
+    
+    if (subject.toLowerCase().includes('welcome')) {
+      senderName = WELCOME_NAME;
+    } else if (subject.toLowerCase().includes('password reset')) {
+      senderName = PASSWORD_RESET_NAME;
+    } else if (subject.toLowerCase().includes('notification')) {
+      senderName = NOTIFICATION_NAME;
+    }
+    
+    const sender = {
+      email: DEFAULT_SENDER.email,
+      name: senderName
+    };
+    
+    console.log(`Sending email to ${email} with subject: ${subject}`);
+    console.log(`Using Brevo API key: ${apiKey.substring(0, 5)}...`);
+    
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': apiKey
+      },
+      body: JSON.stringify({
+        sender,
         to: [{ email, name }],
         subject,
         htmlContent,
-        textContent
-      },
-      {
+        textContent,
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'api-key': apiKey
+          'X-Mailer': 'AdiTeke-Mailer/1.0',
+          'X-Entity-Ref-ID': `aditeke-${Date.now()}`
         }
-      }
-    );
+      })
+    });
     
-    console.log(`Email sent successfully to ${email}, response status: ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData = errorText;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        // If not JSON, use the raw text
+      }
+      console.error('Error from Brevo API:', errorData);
+      throw new Error(`Brevo API error: ${response.status} - ${typeof errorData === 'string' ? errorData : JSON.stringify(errorData)}`);
+    }
+    
+    const result = await response.json();
+    console.log(`Email sent successfully to ${email}, response:`, result);
     return true;
   } catch (error: any) {
-    console.error('Error sending email:', error.response?.data || error.message);
+    console.error('Error sending email:', error.message || error);
     return false;
   }
 }

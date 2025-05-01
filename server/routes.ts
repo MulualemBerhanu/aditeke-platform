@@ -683,8 +683,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "CSRF token required" });
       }
       
-      // Emergency fix: directly use the request body for client creation
-      // Skip validation for now since we need to identify the issue
+      // Import required services
+      const { generateTemporaryPassword, hashPassword } = await import('./services/password-service');
+      const { sendWelcomeEmail } = await import('./services/email-service');
+      
       console.log("Attempting to create client with direct request body");
       
       // Direct approach - using the whole request body
@@ -694,24 +696,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Client data after removing manager metadata:", clientData);
       
       // Manual validation for required fields
-      if (!clientData.username || !clientData.password || !clientData.email || !clientData.name) {
+      if (!clientData.username || !clientData.email || !clientData.name) {
         console.error("Missing required fields in client creation request");
         return res.status(400).json({ 
           message: "Missing required fields", 
           errors: {
             username: !clientData.username ? "Username is required" : null,
-            password: !clientData.password ? "Password is required" : null,
             email: !clientData.email ? "Email is required" : null,
             name: !clientData.name ? "Name is required" : null
           }
         });
       }
       
-      // Set the role ID to client role (1001)
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(clientData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Generate a secure temporary password
+      const temporaryPassword = generateTemporaryPassword();
+      const hashedPassword = await hashPassword(temporaryPassword);
+      
+      console.log(`Generated temporary password for ${clientData.username} (not logged for security)`);
+      
+      // Set the role ID to client role (1001) and add password reset flag
       const processedClientData = { 
         ...clientData,
+        password: hashedPassword,
         roleId: 1001, // Force the role to be client
-        isActive: true
+        isActive: true,
+        passwordResetRequired: true,
+        createdAt: new Date()
       };
       
       console.log("Final client data for creation:", {
@@ -721,14 +737,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Creating client account:", clientData.username);
       
-      // Check if username already exists
-      const existingUser = await storage.getUserByUsername(clientData.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-      
       // Create the client account
       const newClient = await storage.createUser(processedClientData);
+      
+      // Send welcome email with temporary password
+      try {
+        const emailResult = await sendWelcomeEmail({
+          email: clientData.email,
+          name: clientData.name,
+          username: clientData.username,
+          temporaryPassword: temporaryPassword
+        });
+        
+        console.log(`Welcome email for ${clientData.username} sent successfully: ${emailResult}`);
+      } catch (emailError) {
+        console.error(`Error sending welcome email to ${clientData.email}:`, emailError);
+        // We still return success since the user was created,
+        // but log the email error
+      }
       
       // Remove password from response
       const { password, ...safeClient } = newClient;

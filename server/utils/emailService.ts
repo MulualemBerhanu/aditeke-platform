@@ -106,7 +106,9 @@ export async function sendEmail(params: {
     console.log('Using Brevo API key prefix:', brevoApiKey.substring(0, 5) + '...');
     
     // Make a direct fetch request to the Brevo API
-    const response = await fetch('https://api.sendinblue.com/v3/smtp/email', {
+    // Note: Brevo was formerly known as Sendinblue, both endpoints should work
+    // but we'll use the new Brevo endpoint for consistency
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
