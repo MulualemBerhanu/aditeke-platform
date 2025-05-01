@@ -742,6 +742,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send welcome email with temporary password
       try {
+        console.log(`Attempting to send welcome email to ${clientData.email} for user ${clientData.username}`);
+        
+        // Check if the BREVO_API_KEY is set
+        const brevoApiKey = process.env.BREVO_API_KEY;
+        if (!brevoApiKey) {
+          console.error('BREVO_API_KEY is not set in environment variables. Email will not be sent.');
+          throw new Error('Missing BREVO_API_KEY');
+        }
+        
+        console.log(`Using Brevo API key with prefix: ${brevoApiKey.substring(0, 5)}...`);
+        
+        // Make a direct call to sendWelcomeEmail
         const emailResult = await sendWelcomeEmail({
           email: clientData.email,
           name: clientData.name,
@@ -749,11 +761,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           temporaryPassword: temporaryPassword
         });
         
-        console.log(`Welcome email for ${clientData.username} sent successfully: ${emailResult}`);
+        // Log the result type to help with debugging
+        console.log(`Welcome email result type: ${typeof emailResult}`);
+        console.log(`Welcome email for ${clientData.username} sent successfully:`, emailResult);
       } catch (emailError) {
         console.error(`Error sending welcome email to ${clientData.email}:`, emailError);
-        // We still return success since the user was created,
-        // but log the email error
+        console.error('Email error details:', emailError.message || emailError);
+        console.error('Email error stack:', emailError.stack);
+        
+        // We still return success since the user was created, but log the error
+        // This ensures the user account is created even if email fails
       }
       
       // Remove password from response
@@ -2397,7 +2414,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isVip: null,
           isPriority: null,
           industry: null,
-          referralSource: null
+          referralSource: null,
+          passwordResetRequired: false
         };
       }
     }
@@ -2430,7 +2448,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isVip: null,
           isPriority: null,
           industry: null,
-          referralSource: null
+          referralSource: null,
+          passwordResetRequired: false
         };
       }
 
