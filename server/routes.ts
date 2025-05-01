@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
@@ -655,9 +655,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Create a new user (protected with permission)
   // Completely public endpoint for managers to create clients - for development ease
-  app.post("/api/public/create-client", async (req, res) => {
+  app.post("/api/public/create-client", express.json(), async (req, res) => {
     try {
-      console.log("Received public client creation request:", req.body);
+      // Log the raw request
+      console.log("RECEIVED REQUEST:", {
+        contentType: req.headers['content-type'],
+        bodyKeys: Object.keys(req.body),
+        rawBody: JSON.stringify(req.body),
+        bodyExists: !!req.body && Object.keys(req.body).length > 0,
+      });
       
       // Minimal CSRF protection for public endpoints
       const csrfToken = req.headers['x-csrf-token'] || 
@@ -669,20 +675,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "CSRF token required" });
       }
       
-      // In production, you would want additional security here
-      console.log("Processing public client creation with CSRF token:", csrfToken);
+      // Emergency fix: directly use the request body for client creation
+      // Skip validation for now since we need to identify the issue
+      console.log("Attempting to create client with direct request body");
       
-      // For development purposes only - hardcoded manager validation
-      // In production, this would need additional security
-      const sentManagerUsername = req.body.managerUsername || 'manager@aditeke.com';
-      const sentManagerRole = req.body.managerRole || 1000;
-      
-      console.log(`Client creation requested by manager: ${sentManagerUsername} (Role ID: ${sentManagerRole})`);
-      
-      // Proceed with client creation
-      
-      // Extract the actual client data (removing the manager metadata)
-      const { managerUsername, managerRole, ...clientData } = req.body;
+      // Direct approach - using the whole request body
+      let clientData = req.body;
       
       // Log the cleaned client data
       console.log("Client data after removing manager metadata:", clientData);
