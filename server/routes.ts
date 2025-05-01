@@ -674,26 +674,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // For development purposes only - hardcoded manager validation
       // In production, this would need additional security
-      const managerUsername = req.body.managerUsername || 'manager@aditeke.com';
-      const managerRole = req.body.managerRole || 1000;
+      const sentManagerUsername = req.body.managerUsername || 'manager@aditeke.com';
+      const sentManagerRole = req.body.managerRole || 1000;
       
-      console.log(`Client creation requested by manager: ${managerUsername} (Role ID: ${managerRole})`);
+      console.log(`Client creation requested by manager: ${sentManagerUsername} (Role ID: ${sentManagerRole})`);
       
       // Proceed with client creation
       
-      // Validate request
-      const parseResult = insertUserSchema.safeParse(req.body);
-      if (!parseResult.success) {
-        const errors = parseResult.error.format();
-        return res.status(400).json({ errors });
+      // Extract the actual client data (removing the manager metadata)
+      const { managerUsername, managerRole, ...clientData } = req.body;
+      
+      // Log the cleaned client data
+      console.log("Client data after removing manager metadata:", clientData);
+      
+      // Manual validation for required fields
+      if (!clientData.username || !clientData.password || !clientData.email || !clientData.name) {
+        console.error("Missing required fields in client creation request");
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          errors: {
+            username: !clientData.username ? "Username is required" : null,
+            password: !clientData.password ? "Password is required" : null,
+            email: !clientData.email ? "Email is required" : null,
+            name: !clientData.name ? "Name is required" : null
+          }
+        });
       }
       
       // Set the role ID to client role (1001)
-      const clientData = { 
-        ...parseResult.data,
+      const processedClientData = { 
+        ...clientData,
         roleId: 1001, // Force the role to be client
         isActive: true
       };
+      
+      console.log("Final client data for creation:", {
+        ...processedClientData,
+        password: "[REDACTED]"
+      });
       
       console.log("Creating client account:", clientData.username);
       
@@ -704,7 +722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create the client account
-      const newClient = await storage.createUser(clientData);
+      const newClient = await storage.createUser(processedClientData);
       
       // Remove password from response
       const { password, ...safeClient } = newClient;
