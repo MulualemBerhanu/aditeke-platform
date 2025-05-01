@@ -7,7 +7,9 @@
 import { sendEmail as sendWrappedEmail } from '../utils/emailWrapper';
 
 // Verified sender email (already set in emailService.ts)
-const VERIFIED_SENDER = 'berhanumule6@gmail.com';
+const VERIFIED_SENDER = 'mule2069@gmail.com';
+// Client-facing email (used in Reply-To headers)
+const CLIENT_EMAIL = 'berhanumule6@gmail.com';
 
 // Display names for different types of emails
 const WELCOME_NAME = "AdiTeke Welcome";
