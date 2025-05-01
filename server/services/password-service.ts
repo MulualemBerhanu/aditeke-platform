@@ -3,8 +3,8 @@
  * Handles password generation, verification, and security features
  */
 
-import { randomBytes, scrypt, timingSafeEqual } from 'crypto';
-import { promisify } from 'util';
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 
@@ -14,26 +14,26 @@ const scryptAsync = promisify(scrypt);
  * @returns Secure random password
  */
 export function generateSecurePassword(length = 12): string {
-  const uppercaseChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';  // Excluding confusing chars like I, O
-  const lowercaseChars = 'abcdefghijkmnopqrstuvwxyz';  // Excluding confusing chars like l
-  const numberChars = '23456789';  // Excluding confusing chars like 0, 1
-  const symbolChars = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+  const uppercaseChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // no I/O to avoid confusion
+  const lowercaseChars = 'abcdefghijkmnopqrstuvwxyz'; // no l to avoid confusion
+  const numberChars = '23456789'; // no 0/1 to avoid confusion with O/l
+  const symbolChars = '!@#$%^&*()-_=+[]{};:,.<>?';
   
   const allChars = uppercaseChars + lowercaseChars + numberChars + symbolChars;
   
   // Ensure at least one character from each type
-  let password = '';
-  password += uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length));
-  password += lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length));
-  password += numberChars.charAt(Math.floor(Math.random() * numberChars.length));
-  password += symbolChars.charAt(Math.floor(Math.random() * symbolChars.length));
+  let password = 
+    uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length)) +
+    lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length)) +
+    numberChars.charAt(Math.floor(Math.random() * numberChars.length)) +
+    symbolChars.charAt(Math.floor(Math.random() * symbolChars.length));
   
-  // Fill the rest with random characters
+  // Fill the rest randomly
   for (let i = 4; i < length; i++) {
     password += allChars.charAt(Math.floor(Math.random() * allChars.length));
   }
   
-  // Shuffle the password to mix the guaranteed characters
+  // Shuffle the password to randomize the order of character types
   return shuffleString(password);
 }
 
@@ -43,12 +43,12 @@ export function generateSecurePassword(length = 12): string {
  * @returns Shuffled string
  */
 function shuffleString(str: string): string {
-  const array = str.split('');
-  for (let i = array.length - 1; i > 0; i--) {
+  const arr = str.split('');
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  return array.join('');
+  return arr.join('');
 }
 
 /**
@@ -57,9 +57,9 @@ function shuffleString(str: string): string {
  * @returns Hashed password
  */
 export async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString('hex');
+  const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString('hex')}.${salt}`;
+  return `${buf.toString("hex")}.${salt}`;
 }
 
 /**
@@ -71,8 +71,8 @@ export async function hashPassword(password: string): Promise<string> {
 export async function comparePasswords(supplied: string, stored: string | undefined): Promise<boolean> {
   if (!stored) return false;
   
-  const [hashed, salt] = stored.split('.');
-  const hashedBuf = Buffer.from(hashed, 'hex');
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
@@ -83,7 +83,7 @@ export async function comparePasswords(supplied: string, stored: string | undefi
  * @returns True if password reset is required
  */
 export function isPasswordResetRequired(user: any): boolean {
-  return !!user.passwordResetRequired;
+  return !!user?.passwordResetRequired;
 }
 
 /**
@@ -93,27 +93,42 @@ export function isPasswordResetRequired(user: any): boolean {
  */
 export function validatePasswordStrength(password: string): { isValid: boolean; message?: string } {
   if (password.length < 8) {
-    return { isValid: false, message: 'Password must be at least 8 characters long' };
+    return {
+      isValid: false,
+      message: 'Password must be at least 8 characters long'
+    };
   }
   
   // Check for at least one uppercase letter
   if (!/[A-Z]/.test(password)) {
-    return { isValid: false, message: 'Password must include at least one uppercase letter' };
+    return {
+      isValid: false,
+      message: 'Password must contain at least one uppercase letter'
+    };
   }
   
   // Check for at least one lowercase letter
   if (!/[a-z]/.test(password)) {
-    return { isValid: false, message: 'Password must include at least one lowercase letter' };
+    return {
+      isValid: false,
+      message: 'Password must contain at least one lowercase letter'
+    };
   }
   
-  // Check for at least one number
-  if (!/[0-9]/.test(password)) {
-    return { isValid: false, message: 'Password must include at least one number' };
+  // Check for at least one digit
+  if (!/\d/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Password must contain at least one digit'
+    };
   }
   
   // Check for at least one special character
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return { isValid: false, message: 'Password must include at least one special character' };
+    return {
+      isValid: false, 
+      message: 'Password must contain at least one special character'
+    };
   }
   
   return { isValid: true };
