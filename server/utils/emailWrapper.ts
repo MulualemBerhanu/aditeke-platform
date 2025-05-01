@@ -16,6 +16,7 @@ interface EmailAttachment {
 export async function sendEmail(params: {
   to: string;
   from?: string;
+  replyTo?: string;
   subject: string;
   text?: string;
   html?: string;
