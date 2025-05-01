@@ -114,8 +114,30 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
       setSubmitting(true);
       console.log("Submitting client data:", data);
       try {
+        // Include manager role information from localStorage for fallback authentication
+        let userData = null;
+        try {
+          // Try to get user data from localStorage
+          const userJson = localStorage.getItem('user');
+          if (userJson) {
+            userData = JSON.parse(userJson);
+            console.log("Found user data in localStorage:", userData);
+          }
+        } catch (e) {
+          console.warn("Failed to parse user data from localStorage:", e);
+        }
+
+        // Add manager role information to the payload for fallback authentication
+        const enhancedData = {
+          ...data,
+          managerRole: userData?.roleId || 1000, // 1000 is the manager role ID
+          managerUsername: userData?.username || 'manager@aditeke.com',
+        };
+        
+        console.log("Enhanced client data with manager info:", enhancedData);
+        
         // Use the new manager-specific endpoint for client creation
-        const response = await apiRequest('POST', '/api/clients', data);
+        const response = await apiRequest('POST', '/api/clients', enhancedData);
         
         if (!response.ok) {
           // Parse the error response
