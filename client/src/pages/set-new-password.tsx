@@ -227,8 +227,7 @@ export default function SetNewPasswordPage() {
                       <div className="space-y-1 mt-1">
                         <Progress
                           value={passwordStrength}
-                          className="h-1 w-full"
-                          indicatorClassName={getStrengthColor(passwordStrength)}
+                          className={`h-1 w-full ${getStrengthColor(passwordStrength)}`}
                         />
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>Weak</span>

@@ -18,6 +18,9 @@ import Login from "./pages/login";
 import Auth from "./pages/auth";
 import DirectLogin from "./pages/direct-login";
 import Dashboard from "./pages/dashboard";
+import ForgotPassword from "./pages/forgot-password";
+import ResetPassword from "./pages/reset-password";
+import SetNewPassword from "./pages/set-new-password";
 // Security test page removed for production
 
 // Admin pages
@@ -57,6 +60,15 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/auth" component={Auth} />
       <Route path="/direct-login" component={DirectLogin} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
+      
+      {/* First-time password reset - requires authentication */}
+      <Route path="/set-new-password">
+        <ProtectedRoute>
+          <SetNewPassword />
+        </ProtectedRoute>
+      </Route>
       
       {/* Legacy dashboard - will redirect to the appropriate role-based dashboard */}
       <Route path="/dashboard">

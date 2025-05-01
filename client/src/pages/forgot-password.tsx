@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
+import { Loader2, Mail, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 // Form validation schema
@@ -31,11 +31,12 @@ export default function ForgotPasswordPage() {
     },
   });
 
+  // Submit form
   const onSubmit = async (values: ForgotPasswordFormValues) => {
     setIsSubmitting(true);
     
     try {
-      const response = await apiRequest('POST', '/api/auth/request-password-reset', {
+      const response = await apiRequest('POST', '/api/auth/forgot-password', {
         email: values.email,
       });
       
@@ -60,20 +61,20 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <Button 
-            variant="ghost" 
-            className="flex items-center mb-2 -ml-2 text-muted-foreground hover:text-foreground"
-            onClick={() => setLocation('/login')}
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Login
-          </Button>
-          <CardTitle className="text-2xl font-bold">Recover your password</CardTitle>
-          <CardDescription>
-            Enter your email address and we'll send you a link to reset your password
+          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">
+            {isSuccess ? 'Check Your Email' : 'Forgot Password'}
+          </CardTitle>
+          <CardDescription className="text-center">
+            {isSuccess 
+              ? 'We have sent you a password reset link'
+              : 'Enter your email to receive a password reset link'
+            }
           </CardDescription>
         </CardHeader>
         
@@ -81,14 +82,15 @@ export default function ForgotPasswordPage() {
           {isSuccess ? (
             <div className="space-y-4 text-center py-4">
               <div className="mx-auto bg-green-100 text-green-800 rounded-full p-3 w-fit">
-                <Mail className="h-6 w-6" />
+                <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-semibold">Check your email</h3>
+              <h3 className="text-xl font-semibold">Email Sent</h3>
               <p className="text-muted-foreground">
-                If an account exists with this email, we've sent password reset instructions to <strong>{form.getValues().email}</strong>
+                We've sent a password reset link to <span className="font-medium">{form.getValues().email}</span>. 
+                Please check your inbox and follow the instructions.
               </p>
-              <p className="text-sm text-muted-foreground mt-6">
-                Didn't receive the email? Check your spam folder or contact support.
+              <p className="text-sm text-muted-foreground mt-4">
+                If you don't see it in your inbox, please check your spam folder.
               </p>
             </div>
           ) : (
@@ -121,7 +123,7 @@ export default function ForgotPasswordPage() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
+                      Sending Reset Link...
                     </>
                   ) : (
                     'Send Reset Link'
@@ -132,10 +134,15 @@ export default function ForgotPasswordPage() {
           )}
         </CardContent>
         
-        <CardFooter className="flex flex-col items-center justify-center pt-0">
-          <p className="text-sm text-muted-foreground">
-            Remember your password? <a onClick={() => setLocation('/login')} className="text-primary hover:underline cursor-pointer">Sign in</a>
-          </p>
+        <CardFooter className="flex justify-center">
+          <Button 
+            variant="ghost" 
+            onClick={() => setLocation('/login')}
+            className="flex items-center text-sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Login
+          </Button>
         </CardFooter>
       </Card>
     </div>

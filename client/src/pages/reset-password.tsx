@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Loader2, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { Progress } from '@/components/ui/progress';
 
@@ -32,10 +32,26 @@ export default function ResetPasswordPage() {
   const [, setLocation] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
-  const [isVerifying, setIsVerifying] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [token, setToken] = useState<string | null>(null);
+  
+  // Get token from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    
+    if (!urlToken) {
+      toast({
+        title: 'Invalid Request',
+        description: 'No reset token was provided. Please request a new password reset link.',
+        variant: 'destructive',
+      });
+      setLocation('/forgot-password');
+      return;
+    }
+    
+    setToken(urlToken);
+  }, [setLocation]);
 
   // Initialize form
   const form = useForm<ResetPasswordFormValues>({
@@ -46,51 +62,15 @@ export default function ResetPasswordPage() {
     },
   });
 
-  // Extract token from URL on component mount
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const tokenParam = searchParams.get('token');
-    
-    if (!tokenParam) {
-      setIsVerifying(false);
-      setIsTokenValid(false);
-      return;
-    }
-    
-    setToken(tokenParam);
-    
-    // Verify token validity
-    const verifyToken = async () => {
-      try {
-        const response = await apiRequest('GET', `/api/auth/verify-reset-token?token=${tokenParam}`);
-        
-        if (response.ok) {
-          setIsTokenValid(true);
-        } else {
-          setIsTokenValid(false);
-        }
-      } catch (error) {
-        console.error('Error verifying token:', error);
-        setIsTokenValid(false);
-      } finally {
-        setIsVerifying(false);
-      }
-    };
-    
-    verifyToken();
-  }, []);
-
   // Watch password to calculate strength
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'password' || name === 'all') {
-        const password = value.password as string || '';
-        calculatePasswordStrength(password);
-      }
+    const subscription = form.watch((value) => {
+      const password = value.password as string || '';
+      calculatePasswordStrength(password);
     });
     
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form]);
 
   // Calculate password strength
   const calculatePasswordStrength = (password: string): void => {
@@ -129,7 +109,7 @@ export default function ResetPasswordPage() {
     try {
       const response = await apiRequest('POST', '/api/auth/reset-password', {
         token,
-        password: values.password,
+        password: values.password
       });
       
       if (!response.ok) {
@@ -152,66 +132,21 @@ export default function ResetPasswordPage() {
     }
   };
 
-  // Rendering logic for different states
-  if (isVerifying) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Verifying your request</CardTitle>
-            <CardDescription>
-              Please wait while we verify your password reset link
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-            <p className="text-center text-muted-foreground">This may take a moment...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isTokenValid === false) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-red-600">Invalid or Expired Link</CardTitle>
-            <CardDescription>
-              The password reset link is invalid or has expired
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <ShieldAlert className="h-16 w-16 text-red-500 mb-4" />
-            <p className="text-center text-muted-foreground mb-6">
-              For security reasons, password reset links are only valid for a limited time.
-            </p>
-            <Button onClick={() => setLocation('/forgot-password')}>
-              Request a new link
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (!token && !isSuccess) {
+    return null; // Will redirect in useEffect
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <Button 
-            variant="ghost" 
-            className="flex items-center mb-2 -ml-2 text-muted-foreground hover:text-foreground"
-            onClick={() => setLocation('/login')}
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Login
-          </Button>
-          <CardTitle className="text-2xl font-bold">{isSuccess ? 'Password Reset Complete' : 'Reset your password'}</CardTitle>
-          <CardDescription>
+          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <Lock className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">
+            {isSuccess ? 'Password Reset Complete' : 'Reset Your Password'}
+          </CardTitle>
+          <CardDescription className="text-center">
             {isSuccess 
               ? 'Your password has been successfully reset'
               : 'Create a new strong password for your account'
@@ -225,9 +160,9 @@ export default function ResetPasswordPage() {
               <div className="mx-auto bg-green-100 text-green-800 rounded-full p-3 w-fit">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-semibold">Password reset successful</h3>
+              <h3 className="text-xl font-semibold">Password Updated</h3>
               <p className="text-muted-foreground">
-                Your password has been reset successfully. You can now use your new password to log in.
+                Your password has been successfully reset. You can now log in with your new password.
               </p>
               <Button 
                 className="mt-4" 
@@ -258,8 +193,7 @@ export default function ResetPasswordPage() {
                       <div className="space-y-1 mt-1">
                         <Progress
                           value={passwordStrength}
-                          className="h-1 w-full"
-                          indicatorClassName={getStrengthColor(passwordStrength)}
+                          className={`h-1 w-full ${getStrengthColor(passwordStrength)}`}
                         />
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>Weak</span>
@@ -319,6 +253,19 @@ export default function ResetPasswordPage() {
             </Form>
           )}
         </CardContent>
+        
+        {!isSuccess && (
+          <CardFooter className="flex justify-center">
+            <Button 
+              variant="ghost" 
+              onClick={() => setLocation('/forgot-password')}
+              className="flex items-center text-sm"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Forgot Password
+            </Button>
+          </CardFooter>
+        )}
       </Card>
     </div>
   );
