@@ -6,6 +6,7 @@
 import { Router } from "express";
 import { generateTemporaryPassword, hashPassword } from '../services/password-service';
 import { sendWelcomeEmail } from '../services/email-service';
+import { sendWelcomeEmail as sendNodemailerWelcomeEmail } from '../utils/nodemailerService';
 import { db } from '../db';
 import { users } from '@shared/schema';
 import { eq } from 'drizzle-orm';

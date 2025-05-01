@@ -744,6 +744,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         console.log(`Attempting to send welcome email to ${clientData.email} for user ${clientData.username}`);
         
+        // First try with Nodemailer service (more reliable, no IP restrictions)
+        try {
+          const { sendWelcomeEmail: sendNodemailerWelcome } = await import('./utils/nodemailerService');
+          console.log('Attempting to send welcome email with Nodemailer...');
+          
+          const emailResult = await sendNodemailerWelcome({
+            email: clientData.email,
+            name: clientData.name,
+            username: clientData.username,
+            temporaryPassword: temporaryPassword
+          });
+          
+          if (emailResult) {
+            console.log('Welcome email sent successfully via Nodemailer');
+            return true;
+          }
+        } catch (nodemailerError) {
+          console.error('Nodemailer email failed, falling back to Brevo:', nodemailerError);
+        }
+        
+        // Fallback to Brevo API if Nodemailer fails
         // Check if the BREVO_API_KEY is set
         const brevoApiKey = process.env.BREVO_API_KEY;
         if (!brevoApiKey) {
@@ -751,9 +772,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           throw new Error('Missing BREVO_API_KEY');
         }
         
-        console.log(`Using Brevo API key with prefix: ${brevoApiKey.substring(0, 5)}...`);
+        console.log(`Falling back to Brevo API with key prefix: ${brevoApiKey.substring(0, 5)}...`);
         
-        // Make a direct call to sendWelcomeEmail
+        // Make a direct call to sendWelcomeEmail with Brevo
         const emailResult = await sendWelcomeEmail({
           email: clientData.email,
           name: clientData.name,
