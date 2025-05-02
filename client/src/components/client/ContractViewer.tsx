@@ -69,6 +69,14 @@ export default function ContractViewer({ contractId, onBack }: ContractViewerPro
   // Sign contract mutation
   const signMutation = useMutation({
     mutationFn: async ({ signature }: { signature: string }) => {
+      // Make sure we get a CSRF token for the secure contract signing request
+      try {
+        // Fetch a CSRF token first
+        await fetch('/api/public/csrf-test');
+      } catch (err) {
+        console.warn('Failed to prefetch CSRF token, but continuing with contract signing attempt:', err);
+      }
+      
       // Get the CSRF token from cookies if available
       let csrfToken = null;
       const cookies = document.cookie.split(';');
