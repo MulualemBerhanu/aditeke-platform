@@ -277,53 +277,18 @@ export default function LoginPage() {
       }
       
       // If in a deployed environment, set additional flags to help with login tracking
-      // But ensure we're not already in a redirect loop
-      const currentTimeMs = Date.now();
-      const lastLoginTime = parseInt(localStorage.getItem('loginTimestamp') || '0');
-      const loginCounter = parseInt(localStorage.getItem('loginRedirectCount') || '0');
-      
-      // Check if we're in a potential redirect loop (multiple redirects within 10 seconds)
-      const possibleRedirectLoop = (currentTimeMs - lastLoginTime < 10000) && loginCounter > 2;
-      
       if (isDeployedEnv) {
-        localStorage.setItem('loginTimestamp', currentTimeMs.toString());
+        localStorage.setItem('loginTimestamp', Date.now().toString());
         localStorage.setItem('loginStatus', 'success');
-        
-        // Only update target redirect if we're not in a loop
-        if (!possibleRedirectLoop) {
-          localStorage.setItem('targetRedirect', redirectUrl);
-          localStorage.setItem('loginRedirectCount', (loginCounter + 1).toString());
-        } else {
-          console.warn('Detected possible redirect loop - forcing fallback to fixed dashboard URL');
-          // Force redirect to the basic dashboard which will determine the right place to go
-          redirectUrl = '/dashboard';
-          localStorage.setItem('loginRedirectCount', '0'); // Reset counter
-        }
+        localStorage.setItem('targetRedirect', redirectUrl);
       }
       
       // Force a small delay to give time for localStorage to update
       setTimeout(() => {
         // Skip React routing entirely and use direct browser navigation
         // This ensures we completely reload the page and avoid any React state issues
-        console.log('Redirecting to:', redirectUrl);
-        
-        // Use direct assign instead of href and force a reload to ensure 
-        // all cached data is refreshed
-        window.location.assign(redirectUrl);
-        
-        // Add a second fallback for production environments
-        setTimeout(() => {
-          console.log('Fallback redirect triggered');
-          window.location.replace(redirectUrl);
-          
-          // Final extreme fallback - force reload the page after a longer delay
-          // This resets everything and should break any loop
-          setTimeout(() => {
-            console.log('Force reload fallback triggered');
-            window.location.reload();
-          }, 2000);
-        }, 1500);
-      }, 800); // Initial delay for localStorage update
+        window.location.href = redirectUrl;
+      }, 800); // Slightly longer delay for deployed environments
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion
