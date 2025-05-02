@@ -371,3 +371,93 @@ export async function sendCustomEmail(params: {
     throw error;
   }
 }
+
+/**
+ * Send a verification email using direct Brevo API
+ */
+export async function sendVerificationEmail(params: {
+  email: string;
+  name: string;
+  username: string;
+  verificationLink: string;
+  expiryTime?: number; // in hours
+}) {
+  try {
+    const { email, name, username, verificationLink, expiryTime = 48 } = params;
+
+    console.log(`Preparing verification email for ${username} (${email}) using direct Brevo API`);
+
+    const subject = "Verify Your Email - AdiTeke Software Solutions";
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #0040A1; padding: 20px; text-align: center;">
+          <h1 style="color: white; margin: 0;">Email Verification</h1>
+        </div>
+        
+        <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
+          <p>Hello ${name},</p>
+          
+          <p>Thank you for registering with AdiTeke Software Solutions. To complete your registration, we need to verify your email address.</p>
+          
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 5px 0;">Username: <strong>${username}</strong></p>
+          </div>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" 
+               style="background-color: #0040A1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Verify My Email
+            </a>
+          </p>
+          
+          <p style="font-size: 12px; color: #666;">
+            Or copy and paste this URL into your browser:<br>
+            <a href="${verificationLink}" style="word-break: break-all;">${verificationLink}</a>
+          </p>
+          
+          <p><strong>This link will expire in ${expiryTime} hours.</strong></p>
+          
+          <p>If you did not request this verification, please ignore this email or contact our support team if you have concerns.</p>
+          
+          <p>Best regards,<br>AdiTeke Software Solutions Team</p>
+        </div>
+        
+        <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+          <p>&copy; 2025 AdiTeke Software Solutions. All rights reserved.</p>
+          <p>Portland, OR 97222 | <a href="mailto:support@aditeke.com">support@aditeke.com</a> | +1 (641) 481-8560</p>
+        </div>
+      </div>
+    `;
+
+    // Plain text version
+    const textContent = `
+      Hello ${name},
+      
+      Thank you for registering with AdiTeke Software Solutions. To complete your registration, we need to verify your email address.
+      
+      Username: ${username}
+      
+      To verify your email address, please click on the link below or copy and paste it into your browser:
+      ${verificationLink}
+      
+      This link will expire in ${expiryTime} hours.
+      
+      If you did not request this verification, please ignore this email or contact our support team if you have concerns.
+      
+      Best regards,
+      AdiTeke Software Solutions Team
+    `;
+
+    // Send using direct Brevo API
+    return await sendDirectBrevoEmail({
+      to: email,
+      subject: subject,
+      html: htmlContent,
+      text: textContent,
+      senderName: 'AdiTeke Verification'
+    });
+  } catch (error) {
+    console.error('Error sending verification email via direct Brevo:', error);
+    throw error;
+  }
+}

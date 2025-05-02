@@ -3654,6 +3654,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Test endpoint for verification emails
+  app.get('/api/public/test-verification-email', async (req, res) => {
+    try {
+      console.log('Testing verification email functionality');
+      
+      // Import necessary modules
+      const crypto = await import('crypto');
+      const { db } = await import('./db');
+      const { users } = await import('@shared/schema');
+      const { sql } = await import('drizzle-orm');
+      const { desc } = await import('drizzle-orm');
+      
+      // We'll use a recently created test user if available
+      const recentTestUsers = await db.select().from(users).where(sql`username LIKE ${'test_user_%'}`).orderBy(desc(users.createdAt)).limit(1);
+      
+      if (recentTestUsers.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'No test users found - please create a test user first'
+        });
+      }
+      
+      const testUser = recentTestUsers[0];
+      
+      // Use the direct verification email implementation
+      const { sendVerificationEmail } = await import('./utils/directBrevoService');
+      
+      // Generate a mock verification token
+      const verificationToken = crypto.randomUUID().replace(/-/g, '');
+      const verificationLink = `https://www.aditeke.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(testUser.email)}`;
+      
+      console.log(`Testing verification email for user ${testUser.username} (${testUser.email})`);
+      
+      const result = await sendVerificationEmail({
+        email: testUser.email,
+        name: testUser.name || testUser.username,
+        username: testUser.username,
+        verificationLink: verificationLink,
+        expiryTime: 48
+      });
+      
+      console.log('Verification email sent successfully:', result);
+      
+      return res.json({
+        success: true,
+        message: 'Verification email sent successfully',
+        user: {
+          id: testUser.id,
+          username: testUser.username,
+          email: testUser.email
+        },
+        verificationLink: verificationLink,
+        result
+      });
+    } catch (error: any) {
+      console.error('Error testing verification email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email',
+        error: error.message
+      });
+    }
+  });
+  
   // Direct email test endpoint that bypasses the wrapper
   app.get('/api/public/direct-email-test', async (req, res) => {
     try {
