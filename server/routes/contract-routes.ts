@@ -131,7 +131,8 @@ router.post("/contracts/:id/sign", async (req, res) => {
     });
 
     const { signature } = signatureSchema.parse(req.body);
-
+    console.log('Valid signature received:', signature);
+    
     // Update the contract
     const [updatedContract] = await db.update(clientContracts)
       .set({
