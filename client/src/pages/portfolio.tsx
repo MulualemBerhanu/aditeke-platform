@@ -561,6 +561,15 @@ const PortfolioPage = () => {
                                   ? "https://genesisgrouphome.com" 
                                   : "http://MulualemBerhanu.com";
                                 window.open(url, '_blank', 'noopener,noreferrer');
+                              } else {
+                                // For projects under implementation, show a toast message
+                                e.preventDefault();
+                                toast({
+                                  title: "Project Under Implementation",
+                                  description: "This project is currently under implementation. When completed, we will link the actual URL for you to visit.",
+                                  variant: "default",
+                                  duration: 5000,
+                                });
                               }
                             }}
                           >
