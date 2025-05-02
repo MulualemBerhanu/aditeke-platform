@@ -15,6 +15,8 @@ import {
   RefreshCw,
   Users
 } from 'lucide-react';
+import SamrawitImage from '@/assets/team/samrawit-kassa.jpg';
+import MulualemImage from '@/assets/team/mulualem.jpeg';
 
 const AboutPage = () => {
   return (
@@ -154,7 +156,7 @@ const AboutPage = () => {
             >
               <div className="w-full h-96">
                 <img
-                  src="/assets/team/mulualem.jpeg"
+                  src={MulualemImage}
                   alt="Mulualem Berhanu"
                   className="w-full h-full object-cover object-center"
                 />
@@ -183,7 +185,7 @@ const AboutPage = () => {
             >
               <div className="w-full h-96">
                 <img
-                  src="/assets/team/ceo.jpg"
+                  src={SamrawitImage}
                   alt="Samrawit Kassa"
                   className="w-full h-full object-cover object-center"
                 />
