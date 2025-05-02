@@ -228,67 +228,147 @@ export default function LoginPage() {
         }
       }
       
-      // Use a simpler, more consistent approach: just use the dashboard path
-      // This will handle all redirection logic in one place
-      let redirectUrl = '/dashboard';
-      
-      // Convert roleId to a numeric value for consistency
-      let numericRoleId = null;
-      if (typeof userData.roleId === 'string') {
-        const parsedId = parseInt(userData.roleId);
-        if (!isNaN(parsedId)) {
-          numericRoleId = parsedId;
+      // Import the utility function to determine the correct dashboard URL
+      import('@/lib/roleUtils').then(({ getDashboardPath }) => {
+        // Get the appropriate dashboard path based on user data
+        const redirectUrl = getDashboardPath(userData);
+        
+        console.log("Determined dashboard path:", redirectUrl, "for user:", userData.username);
+        
+        // Store the redirect URL for fallback mechanisms
+        localStorage.setItem('targetRedirect', redirectUrl);
+        
+        // Force a refresh for manager roles to help resolve state issues
+        if (redirectUrl.includes('/manager/')) {
+          localStorage.setItem('forceRefresh', 'true');
         }
-      } else if (typeof userData.roleId === 'number') {
-        numericRoleId = userData.roleId;
-      }
-      
-      // Direct dashboard redirect based on roleId
-      if (numericRoleId === 1002) {
-        redirectUrl = '/admin/dashboard';
-      } else if (numericRoleId === 1000) {
-        redirectUrl = '/manager/dashboard';
-        // Force a refresh to help get around any state issues
-        localStorage.setItem('forceRefresh', 'true');
-      } else if (numericRoleId === 1001) {
-        redirectUrl = '/client/dashboard';
-      } else {
-        // Fallback to username pattern if roleId is not recognized
-        const username = userData.username.toLowerCase();
-        if (username.includes('admin')) {
+        
+        return redirectUrl;
+      }).catch(err => {
+        console.error("Failed to load roleUtils:", err);
+        
+        // Fallback determination of dashboard path if import fails
+        let redirectUrl = '/dashboard';
+        
+        // Determine redirect based on roleId number
+        let numericRoleId = null;
+        if (typeof userData.roleId === 'string') {
+          const parsedId = parseInt(userData.roleId);
+          if (!isNaN(parsedId)) {
+            numericRoleId = parsedId;
+          }
+        } else if (typeof userData.roleId === 'number') {
+          numericRoleId = userData.roleId;
+        }
+        
+        // Direct dashboard redirect based on roleId
+        if (numericRoleId === 1002) {
           redirectUrl = '/admin/dashboard';
-        } else if (username.includes('manager')) {
+        } else if (numericRoleId === 1000) {
           redirectUrl = '/manager/dashboard';
-        } else if (username.includes('client')) {
+          localStorage.setItem('forceRefresh', 'true');
+        } else if (numericRoleId === 1001) {
           redirectUrl = '/client/dashboard';
         } else {
-          // Final fallback to using the selected role from UI
-          let roleGuess = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
-          
-          // Map role names
-          if (roleGuess === 'admin') {
+          // Fallback to username pattern
+          const username = userData.username.toLowerCase();
+          if (username.includes('admin')) {
             redirectUrl = '/admin/dashboard';
-          } else if (roleGuess === 'manager') {
+          } else if (username.includes('manager')) {
             redirectUrl = '/manager/dashboard';
-          } else if (roleGuess === 'client') {
+          } else if (username.includes('client')) {
             redirectUrl = '/client/dashboard';
           }
         }
+        
+        return redirectUrl;
+      }).then(redirectUrl => {
+        // Store the final URL
+        localStorage.setItem('targetRedirect', redirectUrl);
+      });
+      
+      // Determine the appropriate dashboard path based on user data
+      let defaultRedirectUrl = '/dashboard';
+      
+      // Direct dashboard redirect based on roleId
+      const numericRoleId = typeof userData.roleId === 'string' 
+        ? parseInt(userData.roleId) 
+        : (typeof userData.roleId === 'number' ? userData.roleId : null);
+        
+      if (numericRoleId === 1002) {
+        defaultRedirectUrl = '/admin/dashboard';
+      } else if (numericRoleId === 1000) {
+        defaultRedirectUrl = '/manager/dashboard';
+      } else if (numericRoleId === 1001) {
+        defaultRedirectUrl = '/client/dashboard';
+      } else {
+        // Fallback to username pattern
+        const username = userData.username.toLowerCase();
+        if (username.includes('admin')) {
+          defaultRedirectUrl = '/admin/dashboard';
+        } else if (username.includes('manager')) {
+          defaultRedirectUrl = '/manager/dashboard';
+        } else if (username.includes('client')) {
+          defaultRedirectUrl = '/client/dashboard';
+        }
       }
       
-      // If in a deployed environment, set additional flags to help with login tracking
+      // Store this URL for our fallback mechanism
+      localStorage.setItem('targetRedirect', defaultRedirectUrl);
+      
+      // Set additional tracking information for deployed environments
       if (isDeployedEnv) {
         localStorage.setItem('loginTimestamp', Date.now().toString());
         localStorage.setItem('loginStatus', 'success');
-        localStorage.setItem('targetRedirect', redirectUrl);
+        localStorage.setItem('roleId', userData.roleId?.toString() || '');
+        localStorage.setItem('username', userData.username);
+        
+        // PRODUCTION ENVIRONMENT: Use the most reliable approach
+        console.log("💫 PRODUCTION: Redirecting to", defaultRedirectUrl);
+        
+        // In production, set the URL and then force a full page reload
+        // This is the most reliable way to handle redirects in production
+        try {
+          // Set the destination in storage
+          sessionStorage.setItem('pendingRedirect', defaultRedirectUrl);
+          localStorage.setItem('pendingRedirect', defaultRedirectUrl);
+          
+          // Force a small delay
+          setTimeout(() => {
+            try {
+              // Try the most direct approach first
+              window.location.href = defaultRedirectUrl;
+              
+              // As a fallback, also try replace to avoid history issues
+              setTimeout(() => window.location.replace(defaultRedirectUrl), 100);
+            } catch (e) {
+              console.error("Direct redirect failed, using fallback", e);
+              document.location.href = defaultRedirectUrl;
+            }
+          }, 800);
+        } catch (error) {
+          console.error("Production redirect error:", error);
+          alert("Navigation error. Please try again or contact support if this continues.");
+        }
+      } else {
+        // DEVELOPMENT ENVIRONMENT: Can use the utility function
+        try {
+          // Import is acceptable for development
+          (async () => {
+            try {
+              const { performRedirect } = await import('@/lib/roleUtils');
+              console.log("🚀 DEV: Using roleUtils to redirect to:", defaultRedirectUrl);
+              performRedirect(defaultRedirectUrl, false);
+            } catch (err) {
+              console.error("Failed to load roleUtils, using basic redirect:", err);
+              window.location.href = defaultRedirectUrl;
+            }
+          })();
+        } catch (error) {
+          console.error("Development redirect error:", error);
+          window.location.href = defaultRedirectUrl;
+        }
       }
-      
-      // Force a small delay to give time for localStorage to update
-      setTimeout(() => {
-        // Skip React routing entirely and use direct browser navigation
-        // This ensures we completely reload the page and avoid any React state issues
-        window.location.href = redirectUrl;
-      }, 800); // Slightly longer delay for deployed environments
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion

@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -179,6 +180,86 @@ function App() {
   const isManagerRoute = pathname.startsWith('/manager');
   const isClientRoute = pathname.startsWith('/client');
   const isDashboardRoute = isAdminRoute || isManagerRoute || isClientRoute;
+  
+  // Production environment special handling:
+  // Check for root URL redirection needs based on authenticated user's role
+  React.useEffect(() => {
+    // Only run on production and only for the root path
+    const isProduction = window.location.hostname !== 'localhost';
+    const isRootPath = pathname === '/';
+    
+    if (isProduction && isRootPath) {
+      console.log("💫 Production environment root path detection");
+      
+      // Check for login credentials in storage
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+      const userDataStr = localStorage.getItem('currentUser');
+      const pendingRedirect = localStorage.getItem('pendingRedirect');
+      
+      if (isAuthenticated && userDataStr) {
+        try {
+          // Parse stored user data
+          const userData = JSON.parse(userDataStr);
+          
+          // Determine redirect based on role
+          let redirectUrl = '/dashboard';
+          
+          // First try numeric roleId
+          const roleId = typeof userData.roleId === 'string' 
+            ? parseInt(userData.roleId) 
+            : (typeof userData.roleId === 'number' ? userData.roleId : null);
+            
+          if (roleId === 1002) {
+            redirectUrl = '/admin/dashboard';
+          } else if (roleId === 1000) {
+            redirectUrl = '/manager/dashboard';
+          } else if (roleId === 1001) {
+            redirectUrl = '/client/dashboard';
+          } else if (userData.username) {
+            // Fallback to username check
+            const username = userData.username.toLowerCase();
+            if (username.includes('admin')) {
+              redirectUrl = '/admin/dashboard';
+            } else if (username.includes('manager')) {
+              redirectUrl = '/manager/dashboard';
+            } else if (username.includes('client')) {
+              redirectUrl = '/client/dashboard';
+            }
+          }
+          
+          console.log("🧭 Production root redirect:", redirectUrl);
+          
+          // Store the destination
+          sessionStorage.setItem('pendingRedirect', redirectUrl);
+          
+          // Perform the redirect using the most reliable method for production
+          setTimeout(() => {
+            try {
+              window.location.href = redirectUrl;
+            } catch (e) {
+              console.error("Direct navigation failed:", e);
+              window.location.replace(redirectUrl);
+            }
+          }, 50);
+        } catch (error) {
+          console.error("Error processing stored user data:", error);
+        }
+      } else if (pendingRedirect) {
+        // If we have a pending redirect, use it
+        console.log("Using stored pending redirect:", pendingRedirect);
+        localStorage.removeItem('pendingRedirect');
+        
+        setTimeout(() => {
+          try {
+            window.location.href = pendingRedirect;
+          } catch (e) {
+            console.error("Pending redirect failed:", e);
+            window.location.replace(pendingRedirect);
+          }
+        }, 50);
+      }
+    }
+  }, [pathname]);
   
   // Standard application setup with Firebase initialization
   return (
