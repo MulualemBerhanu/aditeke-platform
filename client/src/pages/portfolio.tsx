@@ -97,8 +97,8 @@ const PortfolioPage = () => {
                       🏆
                     </div>
                     <div>
-                      <p className="text-4xl font-bold text-gray-900">200+</p>
-                      <p className="text-gray-600">Completed Projects</p>
+                      <p className="text-4xl font-bold text-gray-900">25+</p>
+                      <p className="text-gray-600">Industries Served</p>
                     </div>
                   </div>
                 </motion.div>
