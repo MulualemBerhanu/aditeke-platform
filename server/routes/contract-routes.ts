@@ -99,6 +99,8 @@ router.get("/contracts/:id", async (req, res) => {
  */
 router.post("/contracts/:id/sign", async (req, res) => {
   console.log('Contract signing request body:', JSON.stringify(req.body));
+  console.log('Request body keys:', Object.keys(req.body));
+  console.log('Request body signature field:', req.body.signature);
   // Check authentication
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: "Unauthorized" });
