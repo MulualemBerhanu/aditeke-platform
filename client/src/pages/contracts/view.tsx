@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useLocation } from 'wouter';
-import { ClientLayout } from '@/components/layouts/client-layout';
+import ClientLayout from '@/components/client/ClientLayout';
 import { useAuth } from '@/components/auth/AuthContext';
 import ContractViewer from '@/components/client/ContractViewer';
 import { Button } from '@/components/ui/button';

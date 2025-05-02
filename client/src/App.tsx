@@ -159,6 +159,12 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/contracts/view/:id">
+        <ProtectedRoute requiredRole="client">
+          <ContractViewPage />
+        </ProtectedRoute>
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );

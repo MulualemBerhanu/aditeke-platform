@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthContext';
+import { Button } from '@/components/ui/button';
 import { 
-  Button, 
   Card, 
   CardContent, 
   CardDescription, 
   CardFooter, 
   CardHeader, 
   CardTitle 
-} from '@/components/ui';
+} from '@/components/ui/card';
 import { ClipboardSignature, Download, FileText, ArrowLeft, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ClientContract } from '@shared/schema';
-import { queryClient } from '@/lib/react-query';
+import { queryClient } from '@/lib/queryClient';
 
 interface ContractViewerProps {
   contractId: number;
