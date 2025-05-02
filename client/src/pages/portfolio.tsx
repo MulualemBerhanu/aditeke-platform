@@ -471,6 +471,7 @@ const PortfolioPage = () => {
                         {/* View button that reveals on hover */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                           <a 
+                            className="flex items-center gap-2 bg-white text-primary font-medium py-2 px-4 rounded-lg shadow-lg hover:bg-primary hover:text-white transition-all duration-300 transform hover:scale-105"
                             href={project.title === "Genesis Group Home Website" 
                               ? "https://genesisgrouphome.com" 
                               : project.title === "Mulualem Berhanu Portfolio" 
