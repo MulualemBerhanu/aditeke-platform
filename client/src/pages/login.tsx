@@ -277,16 +277,35 @@ export default function LoginPage() {
       }
       
       // If in a deployed environment, set additional flags to help with login tracking
+      // But ensure we're not already in a redirect loop
+      const currentTimeMs = Date.now();
+      const lastLoginTime = parseInt(localStorage.getItem('loginTimestamp') || '0');
+      const loginCounter = parseInt(localStorage.getItem('loginRedirectCount') || '0');
+      
+      // Check if we're in a potential redirect loop (multiple redirects within 10 seconds)
+      const possibleRedirectLoop = (currentTimeMs - lastLoginTime < 10000) && loginCounter > 2;
+      
       if (isDeployedEnv) {
-        localStorage.setItem('loginTimestamp', Date.now().toString());
+        localStorage.setItem('loginTimestamp', currentTimeMs.toString());
         localStorage.setItem('loginStatus', 'success');
-        localStorage.setItem('targetRedirect', redirectUrl);
+        
+        // Only update target redirect if we're not in a loop
+        if (!possibleRedirectLoop) {
+          localStorage.setItem('targetRedirect', redirectUrl);
+          localStorage.setItem('loginRedirectCount', (loginCounter + 1).toString());
+        } else {
+          console.warn('Detected possible redirect loop - forcing fallback to fixed dashboard URL');
+          // Force redirect to the basic dashboard which will determine the right place to go
+          redirectUrl = '/dashboard';
+          localStorage.setItem('loginRedirectCount', '0'); // Reset counter
+        }
       }
       
       // Force a small delay to give time for localStorage to update
       setTimeout(() => {
         // Skip React routing entirely and use direct browser navigation
         // This ensures we completely reload the page and avoid any React state issues
+        console.log('Redirecting to:', redirectUrl);
         window.location.href = redirectUrl;
       }, 800); // Slightly longer delay for deployed environments
       
