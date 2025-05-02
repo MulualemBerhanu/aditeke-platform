@@ -59,21 +59,20 @@ const PortfolioSection = () => {
       {/* Decorative patterns and elements */}
       <div className="absolute inset-0 -z-10">
         {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#8b8b8b_1px,transparent_1px),linear-gradient(to_bottom,#8b8b8b_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+        <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(to_right,#5a9eff_1px,transparent_1px),linear-gradient(to_bottom,#5a9eff_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
         
         {/* Circle decorations */}
-        <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-primary/5 blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-blue-400/5 blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-purple-600/20 blur-3xl"></div>
         
         {/* Tech-themed floating elements */}
         {['database', 'code', 'server', 'layout'].map((item, i) => (
           <motion.div
             key={i}
-            className="absolute"
+            className="absolute text-blue-300/30"
             style={{
               top: `${15 + i * 20}%`,
               left: `${80 - i * 15}%`,
-              opacity: 0.07,
             }}
             animate={{
               y: [0, -15, 0],
@@ -126,7 +125,7 @@ const PortfolioSection = () => {
             </p>
             
             {/* Subtle decorative glow */}
-            <div className="absolute left-1/4 right-1/4 -bottom-4 h-0.5 rounded-full bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+            <div className="absolute left-1/4 right-1/4 -bottom-4 h-0.5 rounded-full bg-gradient-to-r from-transparent via-blue-400/50 to-transparent"></div>
           </div>
         </motion.div>
         
@@ -212,26 +211,26 @@ const PortfolioSection = () => {
           {isLoading ? (
             // Enhanced skeleton loaders with glass-morphic styling
             Array(6).fill(null).map((_, index) => (
-              <div key={index} className="rounded-xl overflow-hidden shadow-lg animate-pulse bg-white/40 backdrop-blur-sm border border-white/40">
-                <div className="bg-gray-200/80 h-64 w-full"></div>
+              <div key={index} className="rounded-xl overflow-hidden shadow-lg animate-pulse bg-white/10 backdrop-blur-sm border border-white/10">
+                <div className="bg-white/5 h-64 w-full"></div>
                 <div className="p-6">
-                  <div className="h-5 w-2/3 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
+                  <div className="h-5 w-2/3 bg-white/10 rounded mb-4"></div>
+                  <div className="h-4 w-full bg-white/5 rounded mb-2"></div>
+                  <div className="h-4 w-3/4 bg-white/5 rounded"></div>
                 </div>
               </div>
             ))
           ) : error ? (
             // Enhanced error message with retry button
             <div className="col-span-full text-center py-16">
-              <div className="bg-red-50 text-red-600 p-6 rounded-lg inline-flex flex-col items-center max-w-md mx-auto">
-                <div className="text-red-500 mb-4">
+              <div className="bg-red-950/30 text-red-300 border border-red-500/30 p-6 rounded-lg inline-flex flex-col items-center max-w-md mx-auto backdrop-blur-sm">
+                <div className="text-red-400 mb-4">
                   <ExternalLink size={32} />
                 </div>
                 <p className="mb-4">Failed to load projects. Please try again later.</p>
                 <Button 
                   variant="outline" 
-                  className="bg-white border-red-200 text-red-600 hover:bg-red-50"
+                  className="bg-red-950/50 border-red-500/30 text-red-300 hover:bg-red-900/50"
                   onClick={() => window.location.reload()}
                 >
                   Retry
@@ -455,15 +454,15 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
         
         {/* Content area with glass effect */}
         <div className="p-6 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-white/70 backdrop-blur-sm -z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-white/10 backdrop-blur-sm -z-10"></div>
           
           {/* Title with gradient on hover */}
-          <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text group-hover:text-transparent transition-all duration-500">
+          <h3 className="text-xl font-bold mb-3 text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-300 group-hover:to-purple-300 group-hover:bg-clip-text transition-all duration-500">
             {title}
           </h3>
           
           {/* Description with enhanced styling */}
-          <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
+          <p className="text-blue-100/70 mb-4 line-clamp-2 text-sm">
             {description}
           </p>
           
@@ -473,7 +472,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
             target={isExternalLink ? "_blank" : undefined}
             rel={isExternalLink ? "noopener noreferrer" : undefined}
             onClick={handleExternalLink}
-            className="inline-flex items-center text-primary font-medium hover:text-primary-dark transition-colors group/link text-sm"
+            className="inline-flex items-center text-blue-300 font-medium hover:text-blue-200 transition-colors group/link text-sm"
           >
             {isExternalLink ? "Visit Website" : "View Case Study"}
             <ArrowRight className="ml-2 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" />
