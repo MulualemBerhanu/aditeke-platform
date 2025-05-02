@@ -183,7 +183,7 @@ const AboutPage = () => {
             >
               <div className="w-full h-96">
                 <img
-                  src="/assets/team/samrawit-kassa-new.jpg"
+                  src="/assets/team/ceo.jpg"
                   alt="Samrawit Kassa"
                   className="w-full h-full object-cover object-center"
                 />
