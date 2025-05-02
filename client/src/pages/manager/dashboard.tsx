@@ -48,6 +48,7 @@ export default function ManagerDashboard() {
   const [selectedClientId, setSelectedClientId] = React.useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
   const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = React.useState(false);
+  const [clientToDelete, setClientToDelete] = React.useState<{ id: string | number, name: string } | null>(null);
   
   // Check for force refresh flag
   useEffect(() => {
@@ -264,6 +265,72 @@ export default function ManagerDashboard() {
     staleTime: 60000 // Data remains fresh for 1 minute
   });
   
+  // Mutation to delete a client
+  const deleteClientMutation = useMutation({
+    mutationFn: async (clientId: string | number) => {
+      try {
+        console.log(`Deleting client ${clientId} via API endpoint`);
+        
+        // Add authorization headers
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Add localStorage authentication token if available
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+          console.log("⚠️ Using localStorage authentication for client deletion");
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        // Make API call to delete the client
+        const response = await fetch(`/api/users/${clientId}`, {
+          method: 'DELETE',
+          headers
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage;
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || 'Failed to delete client';
+          } catch {
+            errorMessage = errorText || 'Failed to delete client';
+          }
+          throw new Error(errorMessage);
+        }
+        
+        return { success: true, clientId };
+      } catch (error) {
+        console.error("Error deleting client:", error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Client deleted successfully",
+        description: "The client has been removed from the system.",
+      });
+      
+      // Close delete dialog if open
+      setClientToDelete(null);
+      
+      // Refresh client list
+      refetchClients();
+      
+      // Refresh projects list as they might reference the deleted client
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to delete client",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   // Mutation to assign a project to a client - using real API endpoint
   const assignProjectMutation = useMutation({
     mutationFn: async ({ projectId, clientId }: { projectId: number, clientId: number }) => {
@@ -1013,6 +1080,18 @@ export default function ManagerDashboard() {
                                       <Eye className="h-3.5 w-3.5 mr-1" />
                                       View
                                     </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-8 px-3 text-destructive border-destructive hover:bg-destructive/10"
+                                      onClick={() => setClientToDelete({
+                                        id: client.id,
+                                        name: client.name || client.username || 'Unknown Client'
+                                      })}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                      Delete
+                                    </Button>
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -1033,11 +1112,6 @@ export default function ManagerDashboard() {
                                         <DropdownMenuItem>
                                           <Plus className="h-4 w-4 mr-2" />
                                           Add Project
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive">
-                                          <Trash2 className="h-4 w-4 mr-2" />
-                                          Delete
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
@@ -1101,6 +1175,50 @@ export default function ManagerDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Delete Client Confirmation Dialog */}
+      {clientToDelete && (
+        <Dialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Client</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <span className="font-medium">{clientToDelete.name}</span>?
+                This action cannot be undone and will remove all client data from the system.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setClientToDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (clientToDelete) {
+                    deleteClientMutation.mutate(clientToDelete.id);
+                  }
+                }}
+                disabled={deleteClientMutation.isPending}
+              >
+                {deleteClientMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Client
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </ManagerLayout>
   );
 }
