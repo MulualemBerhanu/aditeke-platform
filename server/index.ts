@@ -14,10 +14,11 @@ app.use((req, res, next) => {
   const origin = req.headers.origin || '';
   
   // List of allowed origins including custom domain
+  // Primary domain listed first without www prefix
   const allowedOrigins = [
     'https://aditeke.com',
-    'https://www.aditeke.com',
     'http://aditeke.com',
+    'https://www.aditeke.com',
     'http://www.aditeke.com',
     'http://localhost:3000',
     'http://localhost:5000',

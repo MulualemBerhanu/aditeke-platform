@@ -4,6 +4,8 @@
 
 This document provides details about the email functionality in the AdiTeke Software Solutions platform. The application uses Brevo (formerly Sendinblue) as the primary email service provider, with a well-structured architecture to ensure reliable email delivery.
 
+**Note:** All email links in the system use the domain format `https://aditeke.com` (without 'www' prefix) to ensure consistent link handling across email clients.
+
 ## Email Service Architecture
 
 The email system is built with multiple layers:
