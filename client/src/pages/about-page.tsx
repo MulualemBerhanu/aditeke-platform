@@ -152,7 +152,7 @@ const AboutPage = () => {
               transition={{ duration: 0.5 }}
               whileHover={{ y: -5, boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
             >
-              <div className="w-full h-80">
+              <div className="w-full h-96">
                 <img
                   src="/assets/team/mulualem.jpeg"
                   alt="Mulualem Berhanu"
@@ -181,11 +181,11 @@ const AboutPage = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               whileHover={{ y: -5, boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
             >
-              <div className="w-full h-80">
+              <div className="w-full h-96">
                 <img
                   src="/assets/team/samrawit-kassa.jpg"
                   alt="Samrawit Kassa"
-                  className="w-full h-full object-cover object-[center_35%]"
+                  className="w-full h-full object-cover object-[center_45%] scale-105"
                 />
               </div>
               
