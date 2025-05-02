@@ -357,7 +357,7 @@ const PortfolioPage = () => {
               </div>
             ) : (
               // Show filtered projects with enhanced cards
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="sync">
                 {filteredProjects?.map((project, index) => (
                   <motion.div 
                     key={project.id}
@@ -515,9 +515,15 @@ const PortfolioPage = () => {
         </div>
       </section>
 
-      {/* Case Study Preview Section */}
-      <section className="py-20 bg-light">
-        <div className="container mx-auto px-4">
+      {/* Enhanced Case Study Preview Section */}
+      <section className="py-24 bg-gray-50 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.01)_1px,transparent_1px)] bg-[size:60px_60px] opacity-30"></div>
+        <div className="absolute left-0 top-0 w-full h-72 bg-gradient-to-b from-white via-transparent to-transparent"></div>
+        <div className="absolute -left-32 bottom-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl opacity-70"></div>
+        <div className="absolute -right-32 top-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl opacity-70"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
@@ -525,9 +531,19 @@ const PortfolioPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Case Study</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Explore how we helped a leading company transform their business with our custom software solution.
+            <div className="inline-block mb-4">
+              <div className="flex items-center justify-center">
+                <div className="h-px w-8 bg-primary/30"></div>
+                <div className="mx-3 text-primary text-lg">📊</div>
+                <div className="h-px w-8 bg-primary/30"></div>
+              </div>
+            </div>
+            
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
+              Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Case Study</span>
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
+              Discover how we helped a leading company transform their digital presence and business operations with our innovative software solution.
             </p>
           </motion.div>
           
@@ -539,41 +555,100 @@ const PortfolioPage = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="bg-white p-8 rounded-xl shadow-md">
-                <span className="px-4 py-1 bg-primary/10 text-primary text-sm rounded-full mb-4 inline-block">E-commerce</span>
-                <h3 className="text-2xl font-bold mb-4">FashionRetail Inc. E-commerce Platform</h3>
+              <div className="bg-white p-10 rounded-2xl shadow-lg border border-gray-100">
+                <div className="flex justify-between items-start mb-6">
+                  <span className="px-4 py-1.5 bg-primary/10 text-primary text-sm font-medium rounded-full inline-block">
+                    E-commerce Solution
+                  </span>
+                  <span className="text-sm text-gray-500">December 2023</span>
+                </div>
                 
-                <div className="space-y-4 mb-6">
+                <h3 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900">FashionRetail Inc. E-commerce Platform</h3>
+                
+                <div className="space-y-5 mb-8">
                   <div>
-                    <h4 className="font-bold text-gray-800">The Challenge:</h4>
-                    <p className="text-gray-600">
-                      FashionRetail needed a modern e-commerce platform that could handle their extensive product catalog and provide a seamless shopping experience for their customers.
+                    <div className="flex items-center mb-2">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                      </div>
+                      <h4 className="font-bold text-gray-800 text-lg">The Challenge</h4>
+                    </div>
+                    <p className="text-gray-600 pl-11 leading-relaxed">
+                      FashionRetail needed a modern e-commerce platform that could handle their extensive product catalog and provide a seamless shopping experience for their customers across all devices.
                     </p>
                   </div>
                   
                   <div>
-                    <h4 className="font-bold text-gray-800">Our Solution:</h4>
-                    <p className="text-gray-600">
-                      We developed a custom e-commerce platform with advanced search functionality, personalized recommendations, and a streamlined checkout process.
+                    <div className="flex items-center mb-2">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                          <path d="M2 17l10 5 10-5"></path>
+                          <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                      </div>
+                      <h4 className="font-bold text-gray-800 text-lg">Our Solution</h4>
+                    </div>
+                    <p className="text-gray-600 pl-11 leading-relaxed">
+                      We developed a custom e-commerce platform with advanced search functionality, personalized recommendations, and a streamlined checkout process. The solution included a robust admin dashboard for inventory management and real-time sales analytics.
                     </p>
                   </div>
                   
                   <div>
-                    <h4 className="font-bold text-gray-800">The Results:</h4>
-                    <ul className="list-disc pl-5 text-gray-600">
-                      <li>75% increase in online sales within three months</li>
-                      <li>50% reduction in cart abandonment rate</li>
-                      <li>35% improvement in customer engagement metrics</li>
+                    <div className="flex items-center mb-2">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                      </div>
+                      <h4 className="font-bold text-gray-800 text-lg">The Results</h4>
+                    </div>
+                    <ul className="text-gray-600 pl-11 space-y-2">
+                      <li className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        75% increase in online sales within three months
+                      </li>
+                      <li className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        50% reduction in cart abandonment rate
+                      </li>
+                      <li className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        35% improvement in customer engagement metrics
+                      </li>
                     </ul>
                   </div>
                 </div>
                 
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">React.js</span>
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">Node.js</span>
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">PostgreSQL</span>
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">Stripe</span>
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">AWS</span>
+                </div>
+                
                 <a 
-                  href="/case-studies/fashionretail" 
-                  className="inline-flex items-center text-primary font-medium hover:text-accent transition-colors"
+                  href="/case-studies/fashionretail"
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-md"
                 >
                   Read Full Case Study
-                  <i className="fas fa-arrow-right ml-2"></i>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
                 </a>
               </div>
             </motion.div>
@@ -586,22 +661,249 @@ const PortfolioPage = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary to-secondary/50 opacity-20 rounded-xl blur-lg transform scale-105"></div>
+                {/* Main Case Study Image */}
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+                  <img 
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
+                    alt="E-commerce Case Study" 
+                    className="w-full h-[500px] object-cover"
+                    onError={(e) => {
+                      // If image fails to load, display a gradient background
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentNode as HTMLElement;
+                      if (parent) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'absolute inset-0 bg-gradient-to-r from-primary to-blue-600 flex items-center justify-center';
+                        const text = document.createElement('div');
+                        text.className = 'text-white text-3xl font-bold';
+                        text.textContent = 'FashionRetail Inc. Case Study';
+                        fallback.appendChild(text);
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                  />
+                  
+                  {/* Overlay with KPIs */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex items-end">
+                    <div className="p-8 w-full">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold text-lg">Client Success Story</div>
+                          <div className="text-gray-300">Completed in 4 months</div>
+                        </div>
+                      </div>
+                      
+                      {/* Result Metrics */}
+                      <div className="grid grid-cols-3 gap-6">
+                        <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+                          <div className="text-white text-3xl font-bold">75%</div>
+                          <div className="text-gray-300 text-sm">Increase in Sales</div>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+                          <div className="text-white text-3xl font-bold">50%</div>
+                          <div className="text-gray-300 text-sm">Reduced Cart Abandonment</div>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20">
+                          <div className="text-white text-3xl font-bold">4.8</div>
+                          <div className="text-gray-300 text-sm">Customer Rating</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Floating UI Preview Cards */}
+                <motion.div 
+                  className="absolute -right-5 -top-10 w-36 h-36 bg-white rounded-2xl shadow-xl border border-gray-200 p-3 z-10"
+                  animate={{ 
+                    y: [0, -8, 0],
+                    rotate: [0, 2, 0]
+                  }}
+                  transition={{ 
+                    duration: 5,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                >
+                  <div className="h-1/2 mb-2 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-lg"></div>
+                  <div className="h-2 bg-gray-200 rounded-full mb-2"></div>
+                  <div className="h-2 bg-gray-200 rounded-full w-2/3"></div>
+                </motion.div>
+                
+                <motion.div 
+                  className="absolute -left-8 -bottom-8 w-48 h-48 bg-white rounded-2xl shadow-xl border border-gray-200 p-4 z-10"
+                  animate={{ 
+                    y: [0, 8, 0],
+                    rotate: [0, -1, 0]
+                  }}
+                  transition={{ 
+                    duration: 6,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                >
+                  <div className="flex items-center mb-3">
+                    <div className="w-8 h-8 bg-primary/20 rounded-full mr-2"></div>
+                    <div>
+                      <div className="h-2 bg-gray-200 rounded-full w-16 mb-1"></div>
+                      <div className="h-2 bg-gray-200 rounded-full w-10"></div>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full mb-2"></div>
+                  <div className="h-2 bg-gray-200 rounded-full mb-2"></div>
+                  <div className="h-2 bg-gray-200 rounded-full w-3/4 mb-4"></div>
+                  <div className="h-8 bg-primary/20 rounded-lg"></div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Testimonial Section */}
+      <section className="py-24 bg-gradient-to-br from-primary/5 via-primary/10 to-blue-600/5 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 -left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        {/* Decorative quote marks */}
+        <div className="absolute top-16 left-20 text-9xl text-primary/10 font-serif">❝</div>
+        <div className="absolute bottom-16 right-20 text-9xl text-primary/10 font-serif rotate-180">❝</div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div 
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-block mb-4">
+              <div className="flex items-center justify-center">
+                <div className="h-px w-8 bg-primary/30"></div>
+                <div className="mx-3 text-primary text-lg">💬</div>
+                <div className="h-px w-8 bg-primary/30"></div>
+              </div>
+            </div>
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
+              Client <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Testimonials</span>
+            </h2>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Column - Client Image */}
+            <motion.div
+              className="lg:col-span-4 hidden lg:block"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="relative">
+                <div className="relative w-full h-[500px] rounded-2xl overflow-hidden border-8 border-white shadow-2xl">
+                  <img 
+                    src="https://randomuser.me/api/portraits/women/12.jpg" 
+                    alt="Sarah Johnson" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // If image fails to load, display a colored background with initials
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentNode as HTMLElement;
+                      if (parent) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'absolute inset-0 bg-gradient-to-br from-primary/80 to-blue-600/80 flex items-center justify-center';
+                        const initials = document.createElement('span');
+                        initials.className = 'text-white text-[120px] font-bold leading-none';
+                        initials.textContent = 'SJ';
+                        fallback.appendChild(initials);
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                  />
+                </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-primary/10 rounded-full -z-10"></div>
+                <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-500/10 rounded-full -z-10"></div>
+                
+                {/* Company logo */}
+                <div className="absolute -bottom-6 right-10 bg-white p-4 rounded-lg shadow-xl">
+                  <div className="text-xl font-bold text-gray-800">FashionRetail</div>
+                  <div className="text-sm text-gray-500">E-commerce Leader</div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Right Column - Testimonial */}
+            <motion.div
+              className="lg:col-span-8 bg-white rounded-2xl p-8 md:p-12 shadow-xl border border-gray-100 relative"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              {/* Mobile client image */}
+              <div className="flex items-center mb-8 lg:hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
-                  alt="E-commerce platform case study" 
-                  className="relative rounded-xl shadow-lg w-full"
+                  src="https://randomuser.me/api/portraits/women/12.jpg" 
+                  alt="Sarah Johnson" 
+                  className="w-16 h-16 rounded-full object-cover mr-4 border-4 border-white shadow-lg"
                 />
+                <div>
+                  <div className="font-bold text-lg">Sarah Johnson</div>
+                  <div className="text-gray-500">CEO, FashionRetail Inc.</div>
+                </div>
               </div>
               
-              <div className="mt-8 grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-lg p-4 shadow">
-                  <div className="text-3xl font-bold text-primary">75%</div>
-                  <div className="text-gray-600">Increase in Sales</div>
+              {/* Quote Mark */}
+              <div className="absolute top-8 right-10 text-7xl text-primary/10 font-serif">❝</div>
+              
+              {/* Testimonial Text */}
+              <div className="relative">
+                <h3 className="text-2xl md:text-3xl font-medium leading-relaxed mb-8 md:mb-12 text-gray-800">
+                  <span className="text-primary font-bold">AdiTeke</span> transformed our business with their innovative platform. The solution <span className="italic">increased our online sales by 75%</span> within the first three months of launch.
+                </h3>
+                
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  We were struggling with an outdated e-commerce system that couldn't handle our growing product catalog. AdiTeke's team took the time to understand our unique challenges and built a custom solution that exceeded our expectations. Their expertise in both design and development resulted in a platform that's not only powerful and scalable but also incredibly user-friendly.
+                </p>
+                
+                {/* Rating Stars */}
+                <div className="flex items-center gap-1 mb-2">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <svg key={star} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
                 </div>
-                <div className="bg-white rounded-lg p-4 shadow">
-                  <div className="text-3xl font-bold text-primary">50%</div>
-                  <div className="text-gray-600">Reduced Abandonment</div>
+                
+                {/* Hidden on mobile, shown on desktop */}
+                <div className="hidden lg:block">
+                  <div className="flex items-center mt-8">
+                    <div className="mr-4">
+                      <div className="font-bold text-lg">Sarah Johnson</div>
+                      <div className="text-gray-500">CEO, FashionRetail Inc.</div>
+                    </div>
+                    <div className="flex-grow border-t border-gray-200"></div>
+                    <div className="ml-4">
+                      <svg width="120" className="h-12 w-auto" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="120" height="40" rx="4" fill="#f3f4f6"/>
+                        <text x="10" y="25" fontFamily="Arial" fontSize="14" fill="#4f46e5">FashionRetail</text>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -609,64 +911,150 @@ const PortfolioPage = () => {
         </div>
       </section>
 
-      {/* Testimonial Section */}
-      <section className="py-16 gradient-bg hero-pattern text-white">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="max-w-3xl mx-auto text-center"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="text-4xl mb-6">❝</div>
-            <blockquote className="text-xl md:text-2xl mb-6">
-              <span className="font-bold">Adi<span className="text-blue-400">Teke</span></span> transformed our business with their custom e-commerce platform. The solution increased our online sales by 75% within the first three months. Their team was professional, responsive, and delivered exactly what we needed.
-            </blockquote>
-            <div className="flex items-center justify-center">
-              <img 
-                src="https://randomuser.me/api/portraits/women/12.jpg" 
-                alt="Sarah Johnson" 
-                className="w-12 h-12 rounded-full object-cover mr-4"
-              />
-              <div className="text-left">
-                <div className="font-bold">Sarah Johnson</div>
-                <div className="text-white/80">CEO, FashionRetail Inc.</div>
-              </div>
-            </div>
-          </motion.div>
+      {/* Enhanced CTA Section */}
+      <section className="py-24 relative overflow-hidden bg-gradient-to-br from-primary to-blue-700">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_2px,transparent_2px),linear-gradient(to_right,rgba(255,255,255,0.03)_2px,transparent_2px)] bg-[size:40px_40px]"></div>
+          <div className="absolute top-0 left-0 w-full h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 opacity-50"></div>
+          <div className="absolute bottom-0 right-0 w-full h-96 bg-blue-900/10 rounded-full blur-3xl translate-y-1/2 opacity-50"></div>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="text-center max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Your Project?</h2>
-            <p className="text-xl text-gray-700 mb-8">
-              Let's work together to create a software solution that transforms your business.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a 
-                href="/contact" 
-                className="px-8 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary/90 transition-colors text-center"
-              >
-                Get a Free Consultation
-              </a>
-              <a 
-                href="/services" 
-                className="px-8 py-3 bg-light text-primary font-medium rounded-md hover:bg-light/90 transition-colors text-center"
-              >
-                Explore Our Services
-              </a>
-            </div>
-          </motion.div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            {/* Left content */}
+            <motion.div 
+              className="lg:col-span-7"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="text-white max-w-2xl">
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                  Ready to Transform Your <span className="underline decoration-wavy decoration-white/30 underline-offset-8">Digital Presence</span>?
+                </h2>
+                <p className="text-xl md:text-2xl text-white/80 leading-relaxed mb-10">
+                  Let's collaborate to create innovative software solutions that drive real business growth and delight your customers.
+                </p>
+                
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <p className="text-white/90">Tailored solutions built for your specific business needs</p>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <p className="text-white/90">Expert team with proven track record of success</p>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <p className="text-white/90">Ongoing support and maintenance to ensure long-term success</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-5 mt-10">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                    <a 
+                      href="/contact" 
+                      className="inline-flex items-center px-8 py-4 bg-white text-primary font-medium rounded-lg hover:bg-gray-100 transition-colors shadow-lg text-lg"
+                    >
+                      Get a Free Consultation
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </a>
+                  </motion.div>
+                  
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                    <a 
+                      href="/services" 
+                      className="inline-flex items-center px-8 py-4 bg-transparent text-white border border-white/30 font-medium rounded-lg hover:bg-white/10 transition-colors text-lg"
+                    >
+                      Explore Our Services
+                    </a>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Right form/contact card */}
+            <motion.div 
+              className="lg:col-span-5"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500">
+                <h3 className="text-2xl font-bold mb-6 text-gray-800">Request Information</h3>
+                
+                <div className="space-y-5">
+                  <div className="flex items-center p-4 bg-primary/5 rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-800">Call Us</div>
+                      <a href="tel:+16414818560" className="text-primary hover:underline">+1 (641) 481-8560</a>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center p-4 bg-primary/5 rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-800">Email Us</div>
+                      <a href="mailto:support@aditeke.com" className="text-primary hover:underline">support@aditeke.com</a>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center p-4 bg-primary/5 rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-800">Visit Us</div>
+                      <p className="text-gray-600">Portland, OR 97222</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-8 text-center">
+                  <a 
+                    href="/contact" 
+                    className="inline-block w-full py-4 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors shadow-md"
+                  >
+                    Schedule a Meeting
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
     </>
