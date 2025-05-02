@@ -100,34 +100,40 @@ export async function sendWelcomeEmail(params: {
 
     console.log(`Preparing welcome email for ${username} (${email}) using direct Brevo API`);
 
-    const subject = "Welcome to AdiTeke Software Solutions";
+    // Use a more specific subject line that's less likely to trigger spam filters
+    const subject = "Your AdiTeke Account Information";
+    
+    // Get the actual application URL base
+    const appUrl = process.env.APP_URL || "https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev";
+    const loginUrl = `${appUrl}/login`;
+    
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #0040A1; padding: 20px; text-align: center;">
-          <h1 style="color: white; margin: 0;">Welcome to AdiTeke Software Solutions</h1>
+          <h1 style="color: white; margin: 0;">Your AdiTeke Account</h1>
         </div>
         
         <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
           <p>Hello ${name},</p>
           
-          <p>Welcome to AdiTeke Software Solutions! Your account has been created successfully.</p>
+          <p>Thank you for joining AdiTeke Software Solutions. Your account has been created successfully.</p>
           
           <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p style="margin: 5px 0;"><strong>Your login details:</strong></p>
+            <p style="margin: 5px 0;"><strong>Your login information:</strong></p>
             <p style="margin: 5px 0;">Username: <strong>${username}</strong></p>
-            <p style="margin: 5px 0;">Temporary Password: <strong>${temporaryPassword}</strong></p>
+            <p style="margin: 5px 0;">Initial Password: <strong>${temporaryPassword}</strong></p>
           </div>
           
-          <p><strong>For security reasons, you will be required to change your password when you first log in.</strong></p>
+          <p><strong>Important:</strong> You will need to set a new password when you first log in.</p>
           
           <p style="text-align: center; margin: 30px 0;">
-            <a href="https://www.aditeke.com/login" 
+            <a href="${loginUrl}" 
                style="background-color: #0040A1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-              Log In Now
+              Access Your Account
             </a>
           </p>
           
-          <p>If you have any questions, please don't hesitate to contact our support team.</p>
+          <p>If you have any questions about your account, please contact our support team at support@aditeke.com.</p>
           
           <p>Best regards,<br>AdiTeke Software Solutions Team</p>
         </div>
@@ -143,17 +149,17 @@ export async function sendWelcomeEmail(params: {
     const textContent = `
       Hello ${name},
       
-      Welcome to AdiTeke Software Solutions! Your account has been created successfully.
+      Thank you for joining AdiTeke Software Solutions. Your account has been created successfully.
       
-      Your login details:
+      Your login information:
       Username: ${username}
-      Temporary Password: ${temporaryPassword}
+      Initial Password: ${temporaryPassword}
       
-      For security reasons, you will be required to change your password when you first log in.
+      Important: You will need to set a new password when you first log in.
       
-      Please visit our website to log in: https://www.aditeke.com/login
+      Access your account here: ${loginUrl}
       
-      If you have any questions, please don't hesitate to contact our support team.
+      If you have any questions about your account, please contact our support team at support@aditeke.com.
       
       Best regards,
       AdiTeke Software Solutions Team
