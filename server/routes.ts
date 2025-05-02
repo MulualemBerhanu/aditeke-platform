@@ -20,8 +20,12 @@ import {
   insertServiceSchema,
   insertProjectSchema,
   insertBlogPostSchema,
-  insertJobSchema
+  insertJobSchema,
+  clientDocuments,
+  clientContracts
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication

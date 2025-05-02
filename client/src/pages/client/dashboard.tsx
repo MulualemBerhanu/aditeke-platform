@@ -160,6 +160,46 @@ export default function ClientDashboard() {
     enabled: !!userData?.id && isClient
   });
   
+  // Fetch client's documents
+  const { data: documents = [], isLoading: isLoadingDocuments } = useQuery({
+    queryKey: ['/api/public/client-documents', userData?.id],
+    queryFn: async () => {
+      if (!userData?.id) {
+        return [];
+      }
+      
+      try {
+        const res = await fetch(`/api/public/client-documents/${userData.id}`);
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching client documents:", error);
+        return [];
+      }
+    },
+    enabled: !!userData?.id && isClient
+  });
+  
+  // Fetch client's contracts
+  const { data: contracts = [], isLoading: isLoadingContracts } = useQuery({
+    queryKey: ['/api/public/client-contracts', userData?.id],
+    queryFn: async () => {
+      if (!userData?.id) {
+        return [];
+      }
+      
+      try {
+        const res = await fetch(`/api/public/client-contracts/${userData.id}`);
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching client contracts:", error);
+        return [];
+      }
+    },
+    enabled: !!userData?.id && isClient
+  });
+  
   // Calculate project statistics
   const projectStats = React.useMemo(() => {
     if (!projects) return { active: 0, completed: 0 };
@@ -525,54 +565,232 @@ export default function ClientDashboard() {
           </TabsContent>
 
           <TabsContent value="documents">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Documents</CardTitle>
-                <CardDescription>Access and download project-related documents</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="border rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">E-commerce Website Project Plan</h3>
-                        <p className="text-sm text-muted-foreground">PDF document • 2.4 MB • Uploaded on Mar 12, 2025</p>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
+            <div className="space-y-6">
+              {/* Contract Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contracts & Agreements</CardTitle>
+                  <CardDescription>View and sign legal agreements</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingContracts ? (
+                    <div className="flex justify-center items-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="ml-2">Loading contracts...</span>
                     </div>
-                  </div>
+                  ) : contracts.length > 0 ? (
+                    <div className="space-y-4">
+                      {contracts.map((contract) => (
+                        <div key={contract.id} className="border rounded-lg p-4">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <div>
+                              <div className="flex items-center">
+                                <h3 className="font-medium">{contract.title}</h3>
+                                <Badge className={
+                                    contract.status === 'signed' ? 'bg-green-500 ml-2' : 
+                                    contract.status === 'pending' ? 'bg-amber-500 ml-2' :
+                                    contract.status === 'rejected' ? 'bg-red-500 ml-2' :
+                                    'bg-blue-500 ml-2'
+                                  }
+                                >
+                                  {contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {contract.createdAt ? formatDate(contract.createdAt) : 'Unknown date'}
+                                {contract.version && ` • Version ${contract.version}`}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  const token = localStorage.getItem('token');
+                                  window.open(`/api/contracts/${contract.id}/pdf?token=${token}`, '_blank');
+                                }}
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download
+                              </Button>
+                              
+                              {contract.status === 'pending' && (
+                                <Button 
+                                  size="sm"
+                                  onClick={() => window.location.href = `/contracts/view/${contract.id}`}
+                                >
+                                  Sign Contract
+                                </Button>
+                              )}
+                              
+                              {contract.status === 'signed' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => window.location.href = `/contracts/view/${contract.id}`}
+                                >
+                                  View Details
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-muted-foreground">No contracts are available at this time.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Documents Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Documents</CardTitle>
+                  <CardDescription>Access and download project-related documents</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingDocuments ? (
+                    <div className="flex justify-center items-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="ml-2">Loading documents...</span>
+                    </div>
+                  ) : documents.length > 0 ? (
+                    <div className="space-y-4">
+                      {documents.map((document) => (
+                        <div key={document.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="font-medium">{document.filename}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {document.fileType} • {(document.fileSize / (1024 * 1024)).toFixed(1)} MB • 
+                                Uploaded on {formatDate(document.uploadedAt)}
+                              </p>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                const token = localStorage.getItem('token');
+                                window.open(`/api/client-documents/download/${document.id}?token=${token}`, '_blank');
+                              }}
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              Download
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-medium">E-commerce Website Project Plan</h3>
+                            <p className="text-sm text-muted-foreground">PDF document • 2.4 MB • Uploaded on Mar 12, 2025</p>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                          </Button>
+                        </div>
+                      </div>
 
-                  <div className="border rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">Mobile App Wireframes</h3>
-                        <p className="text-sm text-muted-foreground">ZIP archive • 8.7 MB • Uploaded on Apr 05, 2025</p>
+                      <div className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-medium">Mobile App Wireframes</h3>
+                            <p className="text-sm text-muted-foreground">ZIP archive • 8.7 MB • Uploaded on Apr 05, 2025</p>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                          </Button>
+                        </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
                     </div>
-                  </div>
-
-                  <div className="border rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">Service Agreement</h3>
-                        <p className="text-sm text-muted-foreground">PDF document • 1.2 MB • Uploaded on Mar 10, 2025</p>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Invoices Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoices</CardTitle>
+                  <CardDescription>View and download your invoices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingInvoices ? (
+                    <div className="flex justify-center items-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="ml-2">Loading invoices...</span>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  ) : invoices.length > 0 ? (
+                    <div className="space-y-4">
+                      {invoices.map((invoice) => (
+                        <div key={invoice.id} className="border rounded-lg p-4">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                            <div>
+                              <div className="flex items-center">
+                                <h3 className="font-medium">Invoice #{invoice.invoiceNumber}</h3>
+                                <Badge className={
+                                    invoice.status === 'paid' ? 'bg-green-500 ml-2' : 
+                                    invoice.status === 'pending' ? 'bg-amber-500 ml-2' :
+                                    invoice.status === 'overdue' ? 'bg-red-500 ml-2' :
+                                    'bg-blue-500 ml-2'
+                                  }
+                                >
+                                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Amount: ${parseFloat(invoice.amount).toFixed(2)} • 
+                                Due date: {formatDate(invoice.dueDate)}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  const token = localStorage.getItem('token');
+                                  window.open(`/api/invoice/${invoice.id}/download?token=${token}`, '_blank');
+                                }}
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Invoice
+                              </Button>
+                              
+                              {invoice.status === 'paid' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="text-green-600 border-green-200 hover:border-green-400"
+                                  onClick={() => {
+                                    const token = localStorage.getItem('token');
+                                    window.open(`/api/receipt/${invoice.id}/download?token=${token}`, '_blank');
+                                  }}
+                                >
+                                  <Receipt className="h-4 w-4 mr-1" />
+                                  Receipt
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-muted-foreground">No invoices are available at this time.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="account">
