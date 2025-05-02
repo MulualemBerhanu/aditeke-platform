@@ -45,16 +45,37 @@ export default function ClientDashboard() {
     }
   };
 
+  // Track initialization attempts
+  const [initAttempts, setInitAttempts] = React.useState(0);
+  
   // Redirect if not logged in or not a client - check both API and localStorage
   React.useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
     const isLocalStorageAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     
+    // Track initialization attempts to prevent infinite loops
+    if (initAttempts > 5) {
+      console.error("⚠️ Too many dashboard initialization attempts, stopping redirects");
+      return;
+    }
+    
     if (!user && !storedUser && !isLocalStorageAuthenticated) {
       console.log("⚠️ No authentication found, redirecting to login");
-      window.location.href = '/login';  // Use direct navigation for more reliable redirect
+      if (initAttempts < 5) {
+        // Use different redirect methods based on attempt number for better compatibility
+        setInitAttempts(prev => prev + 1);
+        
+        if (initAttempts === 0) {
+          setLocation('/login');
+        } else if (initAttempts === 1) {
+          window.location.href = '/login';
+        } else if (initAttempts >= 2) {
+          window.location.replace('/login');
+        }
+      }
+      return;
     } else if (!user && (storedUser || isLocalStorageAuthenticated)) {
-      console.log("⚠️ Using localStorage authentication");
+      console.log("⚠️ Using localStorage authentication as fallback");
       // Continue with localStorage auth
     }
     
@@ -63,7 +84,7 @@ export default function ClientDashboard() {
     if (userData) {
       // Get roleId - either directly or convert from string if needed
       const roleIdNum = typeof userData.roleId === 'string' ? parseInt(userData.roleId) : userData.roleId;
-      const username = userData.username.toLowerCase();
+      const username = userData.username?.toLowerCase() || '';
       
       console.log("🔍 DEBUG - Role check:", { username, roleId: roleIdNum });
 
@@ -91,7 +112,7 @@ export default function ClientDashboard() {
       // If we reach here, user is confirmed client - either by username or roleId
       console.log("✓ Confirmed client access - either by username or roleId:", roleIdNum);
     }
-  }, [user, setLocation]);
+  }, [user, setLocation, initAttempts]);
 
   // Load user data from localStorage if not available in context
   const userData = user || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!) : null);

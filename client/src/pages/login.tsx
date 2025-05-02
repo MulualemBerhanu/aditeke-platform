@@ -306,8 +306,24 @@ export default function LoginPage() {
         // Skip React routing entirely and use direct browser navigation
         // This ensures we completely reload the page and avoid any React state issues
         console.log('Redirecting to:', redirectUrl);
-        window.location.href = redirectUrl;
-      }, 800); // Slightly longer delay for deployed environments
+        
+        // Use direct assign instead of href and force a reload to ensure 
+        // all cached data is refreshed
+        window.location.assign(redirectUrl);
+        
+        // Add a second fallback for production environments
+        setTimeout(() => {
+          console.log('Fallback redirect triggered');
+          window.location.replace(redirectUrl);
+          
+          // Final extreme fallback - force reload the page after a longer delay
+          // This resets everything and should break any loop
+          setTimeout(() => {
+            console.log('Force reload fallback triggered');
+            window.location.reload();
+          }, 2000);
+        }, 1500);
+      }, 800); // Initial delay for localStorage update
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion
