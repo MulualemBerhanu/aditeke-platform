@@ -3331,6 +3331,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Test endpoint to verify welcome email using direct implementation
+  app.get('/api/public/test-welcome-email', async (req, res) => {
+    try {
+      console.log('Attempting to test welcome email using direct implementation');
+      
+      // Import the direct implementation
+      const { sendWelcomeEmail } = await import('./utils/directBrevoService');
+      
+      // Test data
+      const testData = {
+        email: 'berhanumulualemadisu@gmail.com', // Admin email for testing
+        name: 'Test User',
+        username: 'test_welcome_direct',
+        temporaryPassword: 'TestPwd123!'
+      };
+      
+      // Send the test email
+      const result = await sendWelcomeEmail(testData);
+      
+      return res.json({
+        success: true,
+        message: 'Welcome email test sent successfully',
+        method: 'direct Brevo implementation',
+        result
+      });
+    } catch (error: any) {
+      console.error('Error testing welcome email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send test welcome email',
+        error: error.message
+      });
+    }
+  });
+  
   // Direct email test endpoint that bypasses the wrapper
   app.get('/api/public/direct-email-test', async (req, res) => {
     try {
