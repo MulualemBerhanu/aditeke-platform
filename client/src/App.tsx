@@ -43,6 +43,7 @@ import AddClientPage from "./pages/manager/add-client";
 
 // Client pages
 import ClientDashboard from "./pages/client/dashboard";
+import ContractViewPage from "./pages/contracts/view";
 
 import { AuthProvider } from "./components/auth/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
