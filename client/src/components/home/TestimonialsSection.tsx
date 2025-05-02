@@ -1,404 +1,464 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView, useAnimation } from 'framer-motion';
 import { Testimonial } from '@shared/schema';
-import { ChevronLeft, ChevronRight, Quote, Star, StarHalf } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Quote, Star, StarHalf, MessageCircle, Users, Award, Heart, ArrowRight } from 'lucide-react';
 
 const TestimonialsSection = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [autoplayEnabled, setAutoplayEnabled] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { once: false, amount: 0.2 });
+  const controls = useAnimation();
   
   const { data: testimonials, isLoading, error } = useQuery<Testimonial[]>({
     queryKey: ['/api/testimonials'],
   });
 
-  // Determine how many testimonials to show per slide based on screen width
-  const getTestimonialsPerSlide = () => {
-    if (screenWidth >= 1024) return 3; // Large screens
-    if (screenWidth >= 768) return 2;  // Medium screens
-    return 1; // Small screens
-  };
-
-  const testimonialsPerSlide = getTestimonialsPerSlide();
-  const totalSlides = testimonials ? Math.ceil(testimonials.length / testimonialsPerSlide) : 0;
-  
-  // Handle window resize
+  // Set up animations when section comes into view
   useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (isInView) {
+      controls.start('visible');
+    }
+  }, [isInView, controls]);
 
-  // Auto-advance slides every 5 seconds
+  // Auto-advance testimonials every 6 seconds if autoplay is enabled
   useEffect(() => {
-    if (totalSlides <= 1) return;
+    if (!testimonials || !autoplayEnabled) return;
     
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % totalSlides);
-    }, 5000);
+      setActiveIndex((prev) => (prev + 1) % testimonials.length);
+    }, 6000);
     
     return () => clearInterval(interval);
-  }, [totalSlides]);
+  }, [testimonials, autoplayEnabled]);
 
-  const nextSlide = () => {
-    if (totalSlides <= 1) return;
-    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  // Pause autoplay when user interacts with controls
+  const handleNavigation = (index: number) => {
+    setAutoplayEnabled(false); // Pause autoplay
+    setActiveIndex(index);
+    
+    // Resume autoplay after 10 seconds of inactivity
+    const timeout = setTimeout(() => {
+      setAutoplayEnabled(true);
+    }, 10000);
+    
+    return () => clearTimeout(timeout);
   };
 
-  const prevSlide = () => {
-    if (totalSlides <= 1) return;
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  // Animated variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1
+      }
+    }
   };
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  };
+  
+  // Stats to display
+  const stats = [
+    { icon: <Users className="h-5 w-5" />, value: "50+", label: "Happy Clients" },
+    { icon: <Award className="h-5 w-5" />, value: "100%", label: "Satisfaction" },
+    { icon: <MessageCircle className="h-5 w-5" />, value: "24/7", label: "Support" },
+    { icon: <Heart className="h-5 w-5" />, value: "98%", label: "Client Retention" },
+  ];
 
   return (
-    <section className="py-28 relative overflow-hidden">
-      {/* Advanced gradient background with texture */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 via-white/80 to-blue-50/90 -z-20"></div>
-      
-      {/* Animated background pattern */}
-      <div className="absolute inset-0 opacity-10 -z-10">
-        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.2)_0%,transparent_40%)]"></div>
-        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_70%_60%,rgba(59,130,246,0.2)_0%,transparent_40%)]"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:34px_34px]"></div>
+    <section 
+      ref={containerRef}
+      className="py-24 md:py-32 relative overflow-hidden bg-gradient-to-b from-[#04102d] via-[#071336] to-[#04102d]"
+    >
+      {/* Animated 3D grid background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(120,119,198,0.3)_1.6px,transparent_1.6px),linear-gradient(to_right,rgba(120,119,198,0.3)_1.6px,transparent_1.6px)] bg-[size:30px_30px] [perspective:1000px] [transform:rotateX(50deg)]"></div>
+        
+        {/* Radial gradient overlays */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(99,102,241,0.2)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(192,132,252,0.2)_0%,transparent_50%)]"></div>
       </div>
       
-      {/* Floating decorative orbs */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full bg-primary-light/10"
-          style={{
-            width: `${40 + i * 20}px`,
-            height: `${40 + i * 20}px`,
-            left: `${8 + i * 15}%`,
-            top: `${20 + (i % 4) * 15}%`,
-            filter: 'blur(5px)',
-            opacity: 0.5
-          }}
-          animate={{
-            y: [0, -10, 0],
-            x: [0, i % 2 === 0 ? 10 : -10, 0],
-          }}
-          transition={{
-            duration: 5 + i,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      ))}
+      {/* Floating decorative elements */}
+      <motion.div 
+        className="absolute top-20 left-10 w-80 h-80 rounded-full bg-blue-500/10 blur-[80px] opacity-70"
+        animate={{ 
+          scale: [1, 1.2, 1],
+          opacity: [0.5, 0.7, 0.5]
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+      <motion.div 
+        className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-purple-500/10 blur-[100px] opacity-70"
+        animate={{ 
+          scale: [1.2, 1, 1.2],
+          opacity: [0.7, 0.5, 0.7]
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
       
       <div className="container mx-auto px-4 relative z-10">
+        {/* Header Section with Animated Elements */}
         <motion.div 
-          className="text-center mb-16 relative"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          variants={containerVariants}
+          initial="hidden"
+          animate={controls}
+          className="text-center mb-16 mx-auto max-w-4xl"
         >
-          {/* Decorative elements */}
-          <motion.div 
-            className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-40 h-1.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent"
-            initial={{ scaleX: 0, opacity: 0 }}
-            whileInView={{ scaleX: 1, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          />
-          
-          {/* Enhanced title with gradient text */}
-          <div className="relative inline-block mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-primary/90">
-              What Our Clients Say
-            </h2>
-            
-            {/* Accent dot with animation */}
-            <motion.span 
-              className="absolute -right-4 top-0 text-primary"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >.</motion.span>
-            
-            {/* Subtle glow effect */}
-            <div className="absolute -inset-3 bg-primary/5 rounded-lg blur-xl opacity-50 -z-10"></div>
-          </div>
-          
-          {/* Enhanced description with backdrop */}
-          <div className="relative">
-            <p className="text-gray-700 leading-relaxed text-lg px-6 py-4 rounded-lg bg-white/50 backdrop-blur-sm border border-white/60 shadow-sm max-w-2xl mx-auto">
-              Don't just take our word for it. Here's what our clients have to say about working with AdiTeke.
-            </p>
-            
-            {/* Accent line animation */}
-            <motion.div 
-              className="absolute -bottom-2 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-              initial={{ scaleX: 0, opacity: 0 }}
-              whileInView={{ scaleX: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.5 }}
-            />
-          </div>
-          
-          {/* Quote icon for visual reinforcement */}
-          <motion.div 
-            className="w-16 h-16 mx-auto mt-8 text-primary/20"
-            initial={{ scale: 0, rotate: -45 }}
-            whileInView={{ scale: 1, rotate: 0 }}
-            viewport={{ once: true }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 100, 
-              damping: 10,
-              delay: 0.6
-            }}
+          {/* Animated accent line */}
+          <motion.div
+            variants={itemVariants}
+            className="flex items-center justify-center gap-3 mb-3"
           >
-            <Quote size={64} strokeWidth={1.5} />
+            <span className="h-px w-6 bg-blue-400/70"></span>
+            <span className="text-blue-300 uppercase tracking-wider text-sm font-medium">Testimonials</span>
+            <span className="h-px w-6 bg-blue-400/70"></span>
+          </motion.div>
+          
+          {/* Main title with dual-colored gradient */}
+          <motion.h2 
+            variants={itemVariants}
+            className="text-4xl md:text-5xl font-bold mb-6 text-white"
+          >
+            What Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Clients Say</span>
+          </motion.h2>
+          
+          {/* Subtitle with glass effect */}
+          <motion.p 
+            variants={itemVariants}
+            className="text-blue-100/80 text-lg leading-relaxed max-w-2xl mx-auto backdrop-blur-sm rounded-lg p-4 bg-white/5 border border-white/10 shadow-xl"
+          >
+            Don't just take our word for it. Here's what our clients have to say about working with AdiTeke.
+          </motion.p>
+          
+          {/* Stats Section */}
+          <motion.div 
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 mx-auto max-w-4xl"
+          >
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col items-center justify-center group hover:bg-white/10 transition-all duration-300"
+                whileHover={{ y: -5, scale: 1.02 }}
+              >
+                <div className="p-2 mb-3 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 text-blue-300 group-hover:text-blue-200 transition-colors">
+                  {stat.icon}
+                </div>
+                <motion.span 
+                  className="text-2xl font-bold text-white"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
+                >
+                  {stat.value}
+                </motion.span>
+                <span className="text-sm text-blue-200/70">{stat.label}</span>
+              </motion.div>
+            ))}
           </motion.div>
         </motion.div>
         
-        <div className="relative testimonial-slider">
-          {/* Testimonial slides container */}
-          <div className="overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={currentSlide}
-                className="flex"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                style={{ 
-                  transform: `translateX(-${currentSlide * 100}%)`,
-                  transition: 'transform 0.5s ease'
-                }}
-              >
+        {/* Featured Testimonial Card */}
+        <div className="relative max-w-6xl mx-auto">
+          {/* Large Quote Icon */}
+          <motion.div 
+            className="absolute -top-12 left-8 text-blue-500/10 z-0"
+            initial={{ opacity: 0, scale: 0, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+          >
+            <Quote size={120} strokeWidth={1} />
+          </motion.div>
+          
+          {/* Testimonials Container */}
+          <div className="relative overflow-hidden rounded-2xl shadow-2xl backdrop-blur-sm bg-gradient-to-br from-white/10 via-white/5 to-transparent border border-white/20">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3)_0%,transparent_50%)] opacity-60"></div>
+            
+            {/* Testimonial Cards */}
+            <div className="relative py-12 px-6 md:px-12">
+              <AnimatePresence mode="wait">
                 {isLoading ? (
-                  // Show skeleton loaders while loading
-                  Array(testimonialsPerSlide).fill(null).map((_, index) => (
-                    <div key={index} className={`w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-4`}>
-                      <div className="bg-white p-8 rounded-xl shadow-md animate-pulse">
-                        <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
-                        <div className="h-4 bg-gray-200 rounded mb-2 w-full"></div>
-                        <div className="h-4 bg-gray-200 rounded mb-2 w-full"></div>
-                        <div className="h-4 bg-gray-200 rounded mb-6 w-3/4"></div>
-                        <div className="flex items-center">
-                          <div className="w-12 h-12 rounded-full bg-gray-200 mr-4"></div>
-                          <div>
-                            <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                            <div className="h-3 bg-gray-200 rounded w-32"></div>
-                          </div>
+                  // Skeleton loader
+                  <motion.div 
+                    key="skeleton"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                  >
+                    <div className="h-52 bg-white/5 animate-pulse rounded-lg"></div>
+                    <div>
+                      <div className="h-6 bg-white/5 animate-pulse rounded-full w-2/3 mb-4"></div>
+                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-full mb-3"></div>
+                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-full mb-3"></div>
+                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-2/3 mb-6"></div>
+                      <div className="flex items-center mt-8">
+                        <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse mr-4"></div>
+                        <div>
+                          <div className="h-4 bg-white/5 animate-pulse rounded-full w-32 mb-2"></div>
+                          <div className="h-3 bg-white/5 animate-pulse rounded-full w-24"></div>
                         </div>
                       </div>
                     </div>
-                  ))
+                  </motion.div>
                 ) : error ? (
-                  // Show error message
-                  <div className="w-full px-4 text-center text-red-500">
-                    <p>Failed to load testimonials. Please try again later.</p>
-                  </div>
-                ) : (
-                  // Show testimonials
-                  testimonials?.slice(
-                    currentSlide * testimonialsPerSlide,
-                    (currentSlide + 1) * testimonialsPerSlide
-                  ).map((testimonial) => (
-                    <div key={testimonial.id} className={`w-full md:w-1/${testimonialsPerSlide === 2 ? '2' : '1'} lg:w-1/${testimonialsPerSlide} flex-shrink-0 px-4`}>
-                      <TestimonialCard testimonial={testimonial} />
+                  // Error state
+                  <motion.div 
+                    key="error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-20"
+                  >
+                    <div className="bg-red-500/10 text-red-200 p-6 rounded-lg inline-flex flex-col items-center mx-auto backdrop-blur-sm border border-red-500/20">
+                      <MessageCircle className="h-12 w-12 mb-4 text-red-300/50" />
+                      <p className="text-lg mb-4">Failed to load testimonials. Please try again later.</p>
+                      <button 
+                        className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 rounded-lg transition-colors"
+                        onClick={() => window.location.reload()}
+                      >
+                        Retry
+                      </button>
                     </div>
-                  ))
+                  </motion.div>
+                ) : testimonials && testimonials.length > 0 ? (
+                  // Featured testimonial in 2-column layout on larger screens
+                  <motion.div
+                    key={`testimonial-${activeIndex}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+                  >
+                    {/* Left Column: Person Image & Info */}
+                    <div className="relative flex flex-col items-center md:items-end">
+                      {/* Stylized testimonial image */}
+                      <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 w-64 h-64 shadow-2xl mb-6">
+                        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/20 to-purple-600/30 z-10"></div>
+                        {testimonials[activeIndex].profilePicture ? (
+                          <img 
+                            src={testimonials[activeIndex].profilePicture} 
+                            alt={`${testimonials[activeIndex].clientName}'s portrait`}
+                            className="object-cover w-full h-full"
+                            width="256"
+                            height="256"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-600/40 to-purple-600/40 flex items-center justify-center text-white text-6xl font-bold">
+                            {testimonials[activeIndex].clientName.charAt(0)}
+                          </div>
+                        )}
+                        <motion.div 
+                          className="absolute inset-0 bg-gradient-to-b from-blue-500/30 to-purple-500/30 scale-110 blur-md -z-10"
+                          animate={{ 
+                            opacity: [0.4, 0.6, 0.4],
+                            scale: [1.05, 1.1, 1.05]
+                          }}
+                          transition={{ 
+                            duration: 5, 
+                            repeat: Infinity,
+                            ease: "easeInOut" 
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Rating stars with glow effect */}
+                      <div className="bg-white/10 backdrop-blur-sm px-6 py-2 rounded-full border border-white/20 flex items-center shadow-lg">
+                        <RenderStars rating={testimonials[activeIndex].rating} />
+                        <span className="ml-2 text-blue-200">{testimonials[activeIndex].rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Right Column: Testimonial Text & Info */}
+                    <div className="flex flex-col justify-center">
+                      <p className="text-blue-100 text-lg md:text-xl leading-relaxed mb-8 italic">
+                        "{testimonials[activeIndex].testimonial}"
+                      </p>
+                      
+                      {/* Animated divider */}
+                      <motion.div 
+                        className="h-0.5 bg-gradient-to-r from-blue-500/50 to-purple-500/50 mb-6 w-16"
+                        initial={{ width: 0 }}
+                        animate={{ width: 64 }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
+                      />
+                      
+                      {/* Client info */}
+                      <div>
+                        <h4 className="text-white text-xl font-bold">{testimonials[activeIndex].clientName}</h4>
+                        <p className="text-blue-300 mb-4">{testimonials[activeIndex].company}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  // Empty state
+                  <div className="py-12 text-center text-blue-200">
+                    <p>No testimonials available.</p>
+                  </div>
                 )}
-              </motion.div>
-            </AnimatePresence>
+              </AnimatePresence>
+            </div>
           </div>
           
-          {/* Enhanced slider controls with glass effect */}
-          {totalSlides > 1 && (
-            <>
-              <motion.button 
-                className="absolute top-1/2 left-4 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border border-white/40 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all z-20"
-                onClick={prevSlide}
-                whileHover={{ scale: 1.1, boxShadow: "0 0 20px rgba(59, 130, 246, 0.3)" }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft className="h-5 w-5" />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-              </motion.button>
-              
-              <motion.button 
-                className="absolute top-1/2 right-4 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border border-white/40 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all z-20"
-                onClick={nextSlide}
-                whileHover={{ scale: 1.1, boxShadow: "0 0 20px rgba(59, 130, 246, 0.3)" }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                aria-label="Next testimonial"
-              >
-                <ChevronRight className="h-5 w-5" />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-              </motion.button>
-            </>
+          {/* Testimonial navigation dots & controls */}
+          {testimonials && testimonials.length > 1 && (
+            <div className="absolute -bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
+              <div className="backdrop-blur-md bg-white/10 rounded-full px-4 py-2 flex items-center gap-2 border border-white/10 shadow-lg">
+                <motion.button
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                  onClick={() => handleNavigation((activeIndex - 1 + testimonials.length) % testimonials.length)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </motion.button>
+                
+                {testimonials.map((_, index) => (
+                  <motion.button
+                    key={index}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      activeIndex === index 
+                        ? 'bg-blue-400 scale-125 shadow-glow' 
+                        : 'bg-white/30 hover:bg-white/50'
+                    }`}
+                    onClick={() => handleNavigation(index)}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      boxShadow: activeIndex === index 
+                        ? '0 0 10px rgba(96, 165, 250, 0.7)' 
+                        : 'none'
+                    }}
+                  />
+                ))}
+                
+                <motion.button
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                  onClick={() => handleNavigation((activeIndex + 1) % testimonials.length)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </motion.button>
+              </div>
+            </div>
           )}
         </div>
         
-        <div className="flex justify-center mt-12">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Link 
-              href="/testimonials"
-              className="inline-flex items-center px-6 py-3 rounded-md backdrop-blur-sm bg-white/70 border border-primary/20 shadow-md text-primary font-medium hover:bg-primary/10 hover:border-primary/40 transition-all group"
+        {/* "View All Testimonials" link with hover effect */}
+        <motion.div 
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Link href="/testimonials">
+            <motion.div
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/90 to-purple-600/90 text-white font-medium shadow-lg shadow-blue-900/30 group overflow-hidden relative"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <span className="mr-2">View all testimonials</span>
+              {/* Animated shine effect */}
+              <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
+              
+              <span>View all testimonials</span>
               <motion.div
-                className="w-5 h-5 flex items-center justify-center"
-                animate={{ x: [0, 3, 0] }}
-                transition={{ 
-                  duration: 1.5, 
+                className="relative"
+                animate={{ x: [0, 5, 0] }}
+                transition={{
+                  duration: 1.5,
                   repeat: Infinity,
                   repeatType: "loop",
-                  ease: "easeInOut",
-                  times: [0, 0.6, 1]
+                  ease: "easeInOut"
                 }}
               >
-                →
+                <ArrowRight className="h-5 w-5" />
               </motion.div>
-              
-              {/* Animated underline */}
-              <motion.div 
-                className="absolute bottom-0 left-3 right-3 h-0.5 bg-gradient-to-r from-primary/40 to-primary/80 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300"
-              />
-            </Link>
-          </motion.div>
-        </div>
+            </motion.div>
+          </Link>
+        </motion.div>
       </div>
     </section>
   );
 };
 
-interface TestimonialCardProps {
-  testimonial: Testimonial;
-}
-
-const TestimonialCard = ({ testimonial }: TestimonialCardProps) => {
-  // Enhanced function to render stars with Lucide icons
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-    
-    // Add full stars with Lucide icons
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <motion.div 
-          key={`full-${i}`}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: i * 0.1, duration: 0.3 }}
-        >
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-0.5" />
-        </motion.div>
-      );
-    }
-    
-    // Add half star if needed with Lucide icon
-    if (hasHalfStar) {
-      stars.push(
-        <motion.div 
-          key="half"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: fullStars * 0.1, duration: 0.3 }}
-        >
-          <StarHalf className="h-4 w-4 fill-amber-400 text-amber-400 mr-0.5" />
-        </motion.div>
-      );
-    }
-    
-    return stars;
-  };
-
+// Helper component to render stars with animation
+const RenderStars = ({ rating }: { rating: number }) => {
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 !== 0;
+  
   return (
-    <motion.div 
-      className="relative overflow-hidden backdrop-blur-sm bg-white/60 rounded-xl p-8 shadow-lg border border-white/40 h-full flex flex-col group"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
-      whileHover={{ 
-        y: -8,
-        boxShadow: "0 25px 50px -12px rgba(59, 130, 246, 0.25)",
-        borderColor: "rgba(59, 130, 246, 0.3)"
-      }}
-    >
-      {/* Glossy background effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/70 to-white/50 opacity-90 group-hover:opacity-100 transition-all duration-300" />
+    <div className="flex">
+      {[...Array(fullStars)].map((_, i) => (
+        <motion.div 
+          key={`star-${i}`}
+          initial={{ scale: 0, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: i * 0.1, duration: 0.3 }}
+          className="relative"
+        >
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-0.5" />
+          <motion.div 
+            className="absolute inset-0 bg-yellow-400 blur-sm opacity-50 scale-150 rounded-full -z-10"
+            animate={{ 
+              opacity: [0.3, 0.6, 0.3],
+              scale: [1.3, 1.5, 1.3] 
+            }}
+            transition={{ 
+              duration: 2 + i,
+              repeat: Infinity,
+              repeatType: "reverse" 
+            }}
+          />
+        </motion.div>
+      ))}
       
-      {/* Quote mark in the background */}
-      <div className="absolute top-4 right-4 text-gray-100 opacity-30 group-hover:opacity-50 transition-opacity">
-        <Quote size={80} strokeWidth={1} />
-      </div>
-      
-      {/* Rating stars */}
-      <div className="flex items-center mb-6 relative z-10">
-        <div className="flex">
-          {renderStars(testimonial.rating)}
-        </div>
-        <div className="ml-2 text-gray-500 text-sm">{testimonial.rating.toFixed(1)}</div>
-      </div>
-      
-      {/* Testimonial text with enhanced styling */}
-      <p className="text-gray-600 mb-6 flex-grow relative z-10 italic">
-        "{testimonial.testimonial}"
-      </p>
-      
-      {/* Divider line */}
-      <motion.div 
-        className="h-px w-1/4 bg-gradient-to-r from-primary/30 to-transparent mb-4"
-        initial={{ width: 0 }}
-        whileInView={{ width: "25%" }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      />
-      
-      {/* Client info with enhanced styling */}
-      <div className="flex items-center relative z-10">
-        {testimonial.profilePicture ? (
-          <div className="relative mr-4">
-            <img 
-              src={testimonial.profilePicture} 
-              alt={`${testimonial.clientName}'s portrait`} 
-              className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
-              width="48"
-              height="48"
-            />
-            <div className="absolute -inset-1 bg-primary/10 rounded-full blur-md opacity-0 group-hover:opacity-70 transition-opacity duration-300 -z-10"></div>
-          </div>
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4 border-2 border-white shadow-md">
-            {testimonial.clientName.charAt(0).toUpperCase()}
-          </div>
-        )}
-        <div>
-          <h4 className="font-bold text-gray-800">{testimonial.clientName}</h4>
-          <p className="text-primary/80 text-sm">{testimonial.company}</p>
-        </div>
-      </div>
-      
-      {/* Subtle corner accent */}
-      <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-primary/5 to-transparent rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-    </motion.div>
+      {hasHalfStar && (
+        <motion.div 
+          initial={{ scale: 0, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: fullStars * 0.1, duration: 0.3 }}
+          className="relative"
+        >
+          <StarHalf className="h-5 w-5 fill-yellow-400 text-yellow-400 mr-0.5" />
+          <motion.div 
+            className="absolute inset-0 bg-yellow-400 blur-sm opacity-50 scale-150 rounded-full -z-10"
+            animate={{ 
+              opacity: [0.3, 0.6, 0.3],
+              scale: [1.3, 1.5, 1.3] 
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              repeatType: "reverse" 
+            }}
+          />
+        </motion.div>
+      )}
+    </div>
   );
 };
 
