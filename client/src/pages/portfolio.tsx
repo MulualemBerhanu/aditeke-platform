@@ -794,7 +794,7 @@ const PortfolioPage = () => {
             >
               <div className="text-white max-w-2xl">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                  Ready to Transform Your <span className="underline decoration-wavy decoration-white/30 underline-offset-8">Digital Presence</span>?
+                  Ready to Transform Your Digital Presence?
                 </h2>
                 <p className="text-xl md:text-2xl text-white/80 leading-relaxed mb-10">
                   Let's collaborate to create innovative software solutions that drive real business growth and delight your customers.
