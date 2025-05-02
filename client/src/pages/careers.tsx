@@ -446,70 +446,7 @@ const CareersPage = () => {
         </div>
       )}
 
-      {/* Testimonial Section */}
-      <section className="py-16 gradient-bg hero-pattern text-white">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            className="text-center max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-10">What Our Team Says</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
-                <div className="text-amber-400 flex mb-4">
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                </div>
-                <p className="mb-4">
-                  "Working at AdiTeke has been incredible for my career growth. The team is supportive, the projects are challenging, and there's always an opportunity to learn something new."
-                </p>
-                <div className="flex items-center">
-                  <img 
-                    src="https://randomuser.me/api/portraits/women/32.jpg" 
-                    alt="Employee portrait" 
-                    className="w-10 h-10 rounded-full object-cover mr-3"
-                  />
-                  <div>
-                    <div className="font-bold">Sophia Chen</div>
-                    <div className="text-white/80 text-sm">Senior Developer, 3 years</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
-                <div className="text-amber-400 flex mb-4">
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                  <i className="fas fa-star"></i>
-                </div>
-                <p className="mb-4">
-                  "The culture at <span className="font-bold">Adi<span className="text-blue-400">Teke</span></span> is what sets it apart. The work-life balance is excellent, and management truly cares about your professional development and personal well-being."
-                </p>
-                <div className="flex items-center">
-                  <img 
-                    src="https://randomuser.me/api/portraits/men/54.jpg" 
-                    alt="Employee portrait" 
-                    className="w-10 h-10 rounded-full object-cover mr-3"
-                  />
-                  <div>
-                    <div className="font-bold">Marcus Johnson</div>
-                    <div className="text-white/80 text-sm">Project Manager, 2 years</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+
     </>
   );
 };
