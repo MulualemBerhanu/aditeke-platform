@@ -228,41 +228,67 @@ export default function LoginPage() {
         }
       }
       
-      // Determine the appropriate dashboard path
-      let defaultRedirectUrl = '/dashboard';
+      // Use a simpler, more consistent approach: just use the dashboard path
+      // This will handle all redirection logic in one place
+      let redirectUrl = '/dashboard';
       
-      // Simple role-based redirect logic
-      const numericRoleId = typeof userData.roleId === 'string' 
-        ? parseInt(userData.roleId) 
-        : (typeof userData.roleId === 'number' ? userData.roleId : null);
-        
+      // Convert roleId to a numeric value for consistency
+      let numericRoleId = null;
+      if (typeof userData.roleId === 'string') {
+        const parsedId = parseInt(userData.roleId);
+        if (!isNaN(parsedId)) {
+          numericRoleId = parsedId;
+        }
+      } else if (typeof userData.roleId === 'number') {
+        numericRoleId = userData.roleId;
+      }
+      
+      // Direct dashboard redirect based on roleId
       if (numericRoleId === 1002) {
-        defaultRedirectUrl = '/admin/dashboard';
+        redirectUrl = '/admin/dashboard';
       } else if (numericRoleId === 1000) {
-        defaultRedirectUrl = '/manager/dashboard';
+        redirectUrl = '/manager/dashboard';
+        // Force a refresh to help get around any state issues
+        localStorage.setItem('forceRefresh', 'true');
       } else if (numericRoleId === 1001) {
-        defaultRedirectUrl = '/client/dashboard';
+        redirectUrl = '/client/dashboard';
       } else {
-        // Username fallback
+        // Fallback to username pattern if roleId is not recognized
         const username = userData.username.toLowerCase();
         if (username.includes('admin')) {
-          defaultRedirectUrl = '/admin/dashboard';
+          redirectUrl = '/admin/dashboard';
         } else if (username.includes('manager')) {
-          defaultRedirectUrl = '/manager/dashboard';
+          redirectUrl = '/manager/dashboard';
         } else if (username.includes('client')) {
-          defaultRedirectUrl = '/client/dashboard';
+          redirectUrl = '/client/dashboard';
+        } else {
+          // Final fallback to using the selected role from UI
+          let roleGuess = selectedRole ? selectedRole.name.toLowerCase() : 'admin';
+          
+          // Map role names
+          if (roleGuess === 'admin') {
+            redirectUrl = '/admin/dashboard';
+          } else if (roleGuess === 'manager') {
+            redirectUrl = '/manager/dashboard';
+          } else if (roleGuess === 'client') {
+            redirectUrl = '/client/dashboard';
+          }
         }
       }
       
-      // Save all authentication data
-      localStorage.setItem('targetRedirect', defaultRedirectUrl);
-      localStorage.setItem('loginTimestamp', Date.now().toString());
-      localStorage.setItem('loginStatus', 'success');
+      // If in a deployed environment, set additional flags to help with login tracking
+      if (isDeployedEnv) {
+        localStorage.setItem('loginTimestamp', Date.now().toString());
+        localStorage.setItem('loginStatus', 'success');
+        localStorage.setItem('targetRedirect', redirectUrl);
+      }
       
-      console.log("Login successful, redirecting to", defaultRedirectUrl);
-      
-      // Perform the redirect
-      window.location.href = defaultRedirectUrl;
+      // Force a small delay to give time for localStorage to update
+      setTimeout(() => {
+        // Skip React routing entirely and use direct browser navigation
+        // This ensures we completely reload the page and avoid any React state issues
+        window.location.href = redirectUrl;
+      }, 800); // Slightly longer delay for deployed environments
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion

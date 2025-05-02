@@ -2,64 +2,38 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/components/auth/AuthContext';
 import { Loader2 } from 'lucide-react';
-import { getDashboardPath, performRedirect } from '@/lib/roleUtils';
 
 // This is a simple redirect component to send users to their role-based dashboard
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const [_, setLocation] = useLocation();
-  const isDeployedEnv = window.location.hostname !== 'localhost';
 
   useEffect(() => {
-    // If the user isn't loaded yet, wait
-    if (isLoading) return;
-    
-    // Check for a fallback URL first (from failed redirects)
-    const fallbackRedirect = sessionStorage.getItem('pendingRedirect') || 
-                            localStorage.getItem('fallbackRedirect');
-    
-    if (fallbackRedirect) {
-      console.log("Found fallback redirect:", fallbackRedirect);
-      sessionStorage.removeItem('pendingRedirect');
-      localStorage.removeItem('fallbackRedirect');
-      
-      // Use forceful redirection for better reliability
-      performRedirect(fallbackRedirect, isDeployedEnv);
-      return;
-    }
-    
-    // Process based on authentication status
-    if (user) {
+    if (!isLoading && user) {
       // Log user role information for debugging
-      console.log("User data for dashboard redirect:", {
-        id: user.id,
-        username: user.username,
-        roleId: user.roleId,
-        type: typeof user.roleId
-      });
+      console.log("User data roleId:", user.roleId, "type:", typeof user.roleId);
       
-      // Get the appropriate dashboard path and redirect
-      const dashboardPath = getDashboardPath(user);
-      console.log("🧭 Redirecting to dashboard:", dashboardPath);
+      // Get numeric roleId - either directly or convert from string if needed
+      const roleIdNum = typeof user.roleId === 'string' ? parseInt(user.roleId) : user.roleId;
       
-      // In deployed environments, use the more forceful redirect
-      if (isDeployedEnv) {
-        performRedirect(dashboardPath, true);
+      // Check for role by numeric ID
+      if (roleIdNum === 1002) {
+        console.log("Using role ID for redirection:", roleIdNum, "-> URL:", "/admin/dashboard");
+        setLocation('/admin/dashboard');
+      } else if (roleIdNum === 1000) {
+        console.log("Using role ID for redirection:", roleIdNum, "-> URL:", "/manager/dashboard");
+        setLocation('/manager/dashboard');
+      } else if (roleIdNum === 1001) {
+        console.log("Using role ID for redirection:", roleIdNum, "-> URL:", "/client/dashboard");
+        setLocation('/client/dashboard');
       } else {
-        // In development, wouter navigation is fine
-        setLocation(dashboardPath);
+        // If role is not recognized, redirect to home
+        console.log("Role not recognized:", roleIdNum, "redirecting to home");
+        setLocation('/');
       }
-    } else {
+    } else if (!isLoading && !user) {
       // If not logged in, redirect to login
-      console.log("No user found, redirecting to login");
-      
-      // In deployed environments, use the more forceful redirect
-      if (isDeployedEnv) {
-        performRedirect('/login', true);
-      } else {
-        // In development, wouter navigation is fine
-        setLocation('/login');
-      }
+      setLocation('/login');
     }
   }, [user, isLoading, setLocation]);
 
