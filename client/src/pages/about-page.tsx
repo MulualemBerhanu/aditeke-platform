@@ -185,7 +185,7 @@ const AboutPage = () => {
                 <img
                   src="/assets/team/samrawit-kassa.jpg"
                   alt="Samrawit Kassa"
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover object-[center_30%]"
                 />
               </div>
               
