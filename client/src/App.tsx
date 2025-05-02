@@ -7,6 +7,7 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import Chatbot from "./components/layout/Chatbot";
 import FirebaseInit from "./components/firebase/FirebaseInit";
+import AdvancedScrollToTop from "./components/utils/AdvancedScrollToTop";
 import Home from "./pages/home";
 import AboutPage from "./pages/about-page";
 import Services from "./pages/services";
@@ -186,6 +187,9 @@ function App() {
       <FirebaseInit>
         <AuthProvider>
           <div className="font-sans text-dark bg-light">
+            {/* Advanced ScrollToTop component - will handle scrolling to top on route changes, including back/forward navigation */}
+            <AdvancedScrollToTop />
+            
             {/* Only show navbar on non-dashboard routes */}
             {!isDashboardRoute && <Navbar />}
             
