@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { UserCog, Building2, UsersRound, LogIn, Mail, Key } from 'lucide-react';
+import { UserCog, Building2, UsersRound, LogIn, Mail, Key, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -73,6 +73,7 @@ export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [authMethod, setAuthMethod] = useState<'password' | 'google'>('password');
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Initialize form
   const form = useForm<LoginFormValues>({
@@ -496,7 +497,24 @@ export default function LoginPage() {
                           </a>
                         </div>
                         <FormControl>
-                          <Input type="password" placeholder="Enter your password" {...field} />
+                          <div className="relative">
+                            <Input 
+                              type={showPassword ? "text" : "password"} 
+                              placeholder="Enter your password" 
+                              {...field} 
+                            />
+                            <button 
+                              type="button"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
