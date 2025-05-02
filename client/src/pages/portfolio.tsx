@@ -93,12 +93,15 @@ const PortfolioPage = () => {
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
                   <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl mr-4">
-                      🏆
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
                     </div>
                     <div>
-                      <p className="text-4xl font-bold text-gray-900">25+</p>
-                      <p className="text-gray-600">Industries Served</p>
+                      <p className="text-4xl font-bold text-gray-900">24/7</p>
+                      <p className="text-gray-600">Customer Support</p>
                     </div>
                   </div>
                 </motion.div>
