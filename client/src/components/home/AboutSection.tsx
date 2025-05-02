@@ -256,10 +256,14 @@ const AboutSection = () => {
                 
                 <div className="space-y-4 text-gray-600 mb-8">
                   <p>
-                    AdiTeke Software Solutions has grown from a small team of passionate developers to a global technology partner for businesses across industries.
+                    Every line of code we write has a purpose — to empower, innovate, and transform.
                   </p>
                   <p>
-                    We combine technical expertise with industry knowledge to deliver custom software solutions that drive innovation, efficiency, and growth for our clients.
+                    AdiTeke Software Solutions was born from a belief that meaningful technology should be accessible to every business — not just the giants. We started small, driven by bold ideas and a passion for impact. Today, we're a growing team of digital problem solvers, creating human-centered software that fuels real progress.
+                  </p>
+                  <p>
+                    From helping startups launch their first MVP to scaling enterprise-grade solutions, our mission remains the same:
+                    Build with clarity. Ship with excellence. Grow with our clients.
                   </p>
                 </div>
                 
