@@ -69,16 +69,31 @@ export default function ContractViewer({ contractId, onBack }: ContractViewerPro
   // Sign contract mutation
   const signMutation = useMutation({
     mutationFn: async ({ signature }: { signature: string }) => {
+      // Get the CSRF token from cookies if available
+      let csrfToken = null;
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrf_token') {
+          csrfToken = decodeURIComponent(value);
+          break;
+        }
+      }
+      
+      console.log('CSRF token for contract signing:', csrfToken ? 'Found' : 'Not found');
+      
       const res = await fetch(`/api/contracts/${contractId}/sign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
         },
         body: JSON.stringify({ 
           signature, 
           signedById: user?.id
-        })
+        }),
+        credentials: 'include'
       });
       
       if (!res.ok) {

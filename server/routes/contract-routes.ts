@@ -126,21 +126,27 @@ router.post("/contracts/:id/sign", async (req, res) => {
       return res.status(403).json({ error: "Forbidden: Only the contract owner can sign" });
     }
 
-    // Validate request body
+    // Validate request body - accept either 'signature' or 'signatureData' field
     const signatureSchema = z.object({
-      signature: z.string().min(1), // Text signature
+      signature: z.string().min(1).optional(), // Client-side field name
+      signatureData: z.string().min(1).optional(), // Server-side field name
       signedById: z.number().optional()
+    }).refine(data => data.signature || data.signatureData, {
+      message: "Either 'signature' or 'signatureData' must be provided"
     });
 
-    const { signature } = signatureSchema.parse(req.body);
-    console.log('Valid signature received:', signature);
+    const validData = signatureSchema.parse(req.body);
+    
+    // Use whichever field is provided
+    const signatureValue = validData.signatureData || validData.signature;
+    console.log('Valid signature received:', signatureValue);
     
     // Update the contract
     const [updatedContract] = await db.update(clientContracts)
       .set({
         status: "signed",
         signedAt: new Date(),
-        signatureData: signature,
+        signatureData: signatureValue,
         ipAddress: req.ip || "Unknown",
         updatedAt: new Date(),
       })
