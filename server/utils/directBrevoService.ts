@@ -105,7 +105,8 @@ export async function sendWelcomeEmail(params: {
     
     // Get the actual application URL base
     const appUrl = process.env.APP_URL || "https://1680dd5d-e200-4075-999c-4bb98c1256ad-00-2wd76s7tuuzje.kirk.replit.dev";
-    const loginUrl = `${appUrl}/login`;
+    // Use aditeke.com domain (without www) for production URLs
+    const loginUrl = `https://aditeke.com/login`;
     
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -303,7 +304,7 @@ export async function sendCustomEmail(params: {
     const updateType = templateData.updateType || 'Update';
     const updateDetails = templateData.updateDetails || 'There has been an update to your project.';
     const actionRequired = templateData.actionRequired || '';
-    const loginLink = templateData.loginLink || 'https://www.aditeke.com/login';
+    const loginLink = templateData.loginLink || 'https://aditeke.com/login';
 
     // Generate HTML from template data
     const htmlContent = `

@@ -3488,7 +3488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const testUser = recentTestUsers[0];
       
       // Create a mock reset link
-      const resetLink = `https://www.aditeke.com/reset-password?token=${resetToken}&email=${encodeURIComponent(testUser.email)}`;
+      const resetLink = `https://aditeke.com/reset-password?token=${resetToken}&email=${encodeURIComponent(testUser.email)}`;
       
       console.log(`Testing password reset email for user ${testUser.username} (${testUser.email})`);
       
@@ -3565,7 +3565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updateDetails: 'The project status has been updated to "In Progress"',
           actionRequired: 'Please review the latest changes',
           timestamp,
-          loginLink: 'https://www.aditeke.com/login'
+          loginLink: 'https://aditeke.com/login'
         }
       };
       
@@ -3683,7 +3683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate a mock verification token
       const verificationToken = crypto.randomUUID().replace(/-/g, '');
-      const verificationLink = `https://www.aditeke.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(testUser.email)}`;
+      const verificationLink = `https://aditeke.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(testUser.email)}`;
       
       console.log(`Testing verification email for user ${testUser.username} (${testUser.email})`);
       

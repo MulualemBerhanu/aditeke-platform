@@ -40,7 +40,10 @@ router.post('/request-password-reset', async (req: Request, res: Response) => {
     const token = await createPasswordResetToken(user.id);
     
     // Create reset link with token
-    const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${token}`;
+    // Use aditeke.com domain for production or use the request host for development
+    const resetLink = process.env.NODE_ENV === 'production' 
+      ? `https://aditeke.com/reset-password?token=${token}` 
+      : `${req.protocol}://${req.get('host')}/reset-password?token=${token}`;
     
     // Get token validity period in hours
     const expiryTime = getTokenValidityPeriod();
