@@ -178,4 +178,67 @@ router.get('/user-info', async (req, res) => {
   }
 });
 
+/**
+ * Delete a user by ID
+ * Only accessible to administrators and managers
+ */
+router.delete('/users/:id', async (req, res) => {
+  // Check if user is authenticated and has proper permission
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // For now, allow managers and admins to delete users
+  const userRole = req.user?.roleId;
+  if (userRole !== 1000 && userRole !== 1002) { // 1000 = manager, 1002 = admin
+    return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+  }
+
+  try {
+    const userId = parseInt(req.params.id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    // Get the user to be deleted to ensure they exist
+    const [userToDelete] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId));
+    
+    if (!userToDelete) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Don't allow deletion of managers or admins through this endpoint
+    if (userToDelete.roleId === 1000 || userToDelete.roleId === 1002) {
+      return res.status(403).json({ 
+        error: 'Forbidden: Cannot delete manager or admin users through this endpoint' 
+      });
+    }
+
+    // Delete the user
+    const [deletedUser] = await db
+      .delete(users)
+      .where(eq(users.id, userId))
+      .returning({ id: users.id });
+
+    if (!deletedUser) {
+      return res.status(500).json({ error: 'Failed to delete user' });
+    }
+
+    // Log the successful deletion
+    console.log(`User ${userId} deleted by ${req.user.username} (${req.user.id})`);
+
+    return res.status(200).json({ 
+      message: 'User deleted successfully',
+      userId: deletedUser.id
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 export default router;
