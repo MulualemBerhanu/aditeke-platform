@@ -580,8 +580,7 @@ const AboutPage = () => {
                   whileTap={{ scale: 0.98 }}
                 >
                   <Button 
-                    variant="outline"
-                    className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-medium w-full sm:w-auto"
+                    className="bg-white/15 text-white hover:bg-white/30 border border-white/50 px-8 py-6 text-lg font-medium w-full sm:w-auto"
                   >
                     Explore Our Services
                   </Button>
