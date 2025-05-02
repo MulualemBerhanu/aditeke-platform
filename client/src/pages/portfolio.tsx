@@ -468,14 +468,29 @@ const PortfolioPage = () => {
                         {/* View button that reveals on hover */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                           <a 
-                            href={`/portfolio/${project.id}`}
+                            href={project.title === "Genesis Group Home Website" 
+                              ? "https://genesisgrouphome.com" 
+                              : project.title === "Mulualem Berhanu Portfolio" 
+                                ? "http://MulualemBerhanu.com" 
+                                : `/portfolio/${project.id}`}
+                            target={project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "_blank" : undefined}
+                            rel={project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "noopener noreferrer" : undefined}
                             className="bg-white text-primary px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 hover:bg-white/90 transition-colors border border-white/20"
+                            onClick={(e) => {
+                              if (project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio") {
+                                e.preventDefault();
+                                let url = project.title === "Genesis Group Home Website" 
+                                  ? "https://genesisgrouphome.com" 
+                                  : "http://MulualemBerhanu.com";
+                                window.open(url, '_blank', 'noopener,noreferrer');
+                              }
+                            }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                               <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <span>View Project</span>
+                            <span>{project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "Visit Website" : "View Project"}</span>
                           </a>
                         </div>
                       </div>
@@ -520,10 +535,25 @@ const PortfolioPage = () => {
                         {/* Link with enhanced animation */}
                         <div className="flex justify-between items-center">
                           <a 
-                            href={`/portfolio/${project.id}`} 
+                            href={project.title === "Genesis Group Home Website" 
+                              ? "https://genesisgrouphome.com" 
+                              : project.title === "Mulualem Berhanu Portfolio" 
+                                ? "http://MulualemBerhanu.com" 
+                                : `/portfolio/${project.id}`}
+                            target={project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "_blank" : undefined}
+                            rel={project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "noopener noreferrer" : undefined}
                             className="inline-flex items-center text-blue-300 font-medium hover:text-blue-200 transition-colors group/link text-sm"
+                            onClick={(e) => {
+                              if (project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio") {
+                                e.preventDefault();
+                                let url = project.title === "Genesis Group Home Website" 
+                                  ? "https://genesisgrouphome.com" 
+                                  : "http://MulualemBerhanu.com";
+                                window.open(url, '_blank', 'noopener,noreferrer');
+                              }
+                            }}
                           >
-                            View Case Study
+                            {project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "Visit Website" : "View Case Study"}
                             <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <line x1="5" y1="12" x2="19" y2="12"></line>
                               <polyline points="12 5 19 12 12 19"></polyline>
