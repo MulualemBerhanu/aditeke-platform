@@ -50,10 +50,10 @@ const PortfolioSection = () => {
   });
 
   return (
-    <section id="portfolio" className="py-28 relative overflow-hidden">
+    <section id="portfolio" className="py-28 relative overflow-hidden bg-gradient-to-b from-[#04102D] to-[#071336]">
       {/* High-end gradient background */}
       <div className="absolute inset-0 -z-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/90 via-white to-primary/5"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#04102D] to-[#071336]"></div>
       </div>
       
       {/* Decorative patterns and elements */}
@@ -110,18 +110,18 @@ const PortfolioSection = () => {
             transition={{ duration: 0.8, delay: 0.1 }}
           >
             <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/50"></div>
-              <div className="uppercase tracking-wide text-sm font-medium text-primary/80">Featured Work</div>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/50"></div>
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-blue-400/50"></div>
+              <div className="uppercase tracking-wide text-sm font-medium text-blue-300">Featured Work</div>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-blue-400/50"></div>
             </div>
           </motion.div>
           
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-primary">
-            Our Portfolio
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
+            Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Portfolio</span>
           </h2>
           
           <div className="relative">
-            <p className="text-gray-600 text-lg leading-relaxed mx-auto mb-8 max-w-2xl">
+            <p className="text-blue-100/80 text-lg leading-relaxed mx-auto mb-8 max-w-2xl">
               Explore our successful projects that have helped businesses transform their digital presence and operations.
             </p>
             
@@ -138,7 +138,7 @@ const PortfolioSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="bg-white/30 backdrop-blur-md p-2 rounded-full border border-white/40 shadow-lg flex flex-wrap justify-center">
+          <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/10 shadow-lg flex flex-wrap justify-center">
             {PORTFOLIO_CATEGORIES.map((category, index) => {
               // Determine which icon to use based on category
               const getIconForCategory = (value: string) => {
@@ -159,7 +159,7 @@ const PortfolioSection = () => {
                     ${index > 0 ? 'ml-1' : ''}
                     ${activeFilter === category.value
                       ? 'bg-primary text-white shadow-md'
-                      : 'bg-transparent text-gray-700 hover:bg-white/80'}
+                      : 'bg-transparent text-blue-100 hover:bg-white/10'}
                     transition-all duration-300 overflow-hidden
                   `}
                   onClick={() => handleFilterChange(category.value)}
@@ -391,11 +391,11 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="relative overflow-hidden rounded-xl shadow-xl h-full bg-white/70 backdrop-blur-sm border border-white/40 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
+      <div className="relative overflow-hidden rounded-xl shadow-xl h-full bg-white/10 backdrop-blur-sm border border-white/10 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500">
         {/* Image container with enhanced hover effects */}
         <div className="relative h-64 overflow-hidden">
           {/* Category badge */}
-          <div className="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-primary shadow-sm border border-white/80 flex items-center">
+          <div className="absolute top-4 left-4 z-10 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-white shadow-sm border border-white/20 flex items-center">
             {getTechIcon()}
             {categories[0].charAt(0).toUpperCase() + categories[0].slice(1)}
           </div>
@@ -436,7 +436,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
           </div>
           
           {/* Gradient overlay that reveals on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           {/* View button that reveals on hover */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
@@ -445,7 +445,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
               target={isExternalLink ? "_blank" : undefined}
               rel={isExternalLink ? "noopener noreferrer" : undefined}
               onClick={handleExternalLink}
-              className="bg-white/90 backdrop-blur-sm text-primary px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 hover:bg-white transition-colors"
+              className="flex items-center gap-2 bg-white text-primary font-medium py-2 px-4 rounded-lg shadow-lg hover:bg-primary hover:text-white transition-all duration-300 transform hover:scale-105"
             >
               <Eye className="h-4 w-4" />
               <span>{isExternalLink ? "Visit Website" : "View Details"}</span>
