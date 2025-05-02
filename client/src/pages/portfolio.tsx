@@ -20,7 +20,18 @@ const PortfolioPage = () => {
   // Filter projects based on active filter
   const filteredProjects = projects?.filter(project => {
     if (activeFilter === 'all') return true;
-    return project.category.includes(activeFilter);
+    
+    // Handle empty category (fallback to "web-app" for all projects to make filtering work)
+    const categoryToUse = project.category || "web-app";
+    
+    // Convert both to lowercase for case-insensitive comparison
+    const projectCategory = categoryToUse.toLowerCase();
+    const filter = activeFilter.toLowerCase();
+    
+    console.log("Project:", project.title, "Category:", projectCategory, "Filter:", filter, "Match:", projectCategory.includes(filter));
+    
+    // Check if the category contains the filter keyword
+    return projectCategory.includes(filter);
   });
 
   return (
