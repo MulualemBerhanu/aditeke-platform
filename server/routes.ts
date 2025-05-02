@@ -2004,16 +2004,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Check if we have a token
     const tokenExists = !!req.cookies?.csrf_token;
     
-    // If not, force generate one by explicitly setting a cookie
-    if (!tokenExists) {
+    // Force generate a new token for Replit environments to ensure it's always valid
+    const isReplitEnv = req.hostname.includes('replit.dev') || 
+                        req.hostname.includes('replit.app') ||
+                        process.env.NODE_ENV === 'development';
+    
+    // If no token exists or we're in Replit, generate a new one
+    if (!tokenExists || isReplitEnv) {
       const newToken = require('crypto').randomBytes(32).toString('hex');
-      res.cookie('csrf_token', newToken, {
+      
+      // Determine cookie settings based on environment
+      const cookieSettings = {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'lax' as const,
         path: '/',
         maxAge: 24 * 60 * 60 * 1000
-      });
+      };
+      
+      // Adjust for Replit environments
+      if (isReplitEnv) {
+        cookieSettings.secure = false;
+        cookieSettings.sameSite = 'lax';
+      }
+      
+      res.cookie('csrf_token', newToken, cookieSettings);
       
       console.log('Generated new CSRF token for client:', newToken);
       

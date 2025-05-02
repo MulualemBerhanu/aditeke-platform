@@ -154,11 +154,33 @@ export default function LoginPage() {
       // Use direct fetch in all environments to ensure reliable authentication
       let userData;
       try {
+        // Make sure we get a CSRF token for the secure login request
+        try {
+          // Fetch a CSRF token first
+          await fetch('/api/public/csrf-test');
+        } catch (err) {
+          console.warn('Failed to prefetch CSRF token, but continuing with login attempt:', err);
+        }
+
+        // Get the CSRF token from cookies if available
+        let csrfToken = null;
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'csrf_token') {
+            csrfToken = decodeURIComponent(value);
+            break;
+          }
+        }
+
+        console.log('CSRF token for login request:', csrfToken ? 'Found' : 'Not found');
+        
         // Normal authentication flow using API
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
           },
           body: JSON.stringify({
             username: data.username,
