@@ -3526,6 +3526,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Test endpoint for notification emails
+  app.get('/api/public/test-notification', async (req, res) => {
+    try {
+      console.log('Testing notification email functionality');
+      
+      // Import database dependencies
+      const { db } = await import('./db');
+      const { users } = await import('@shared/schema');
+      const { sql } = await import('drizzle-orm');
+      const { desc } = await import('drizzle-orm');
+      
+      // We'll use a recently created test user if available
+      const recentTestUsers = await db.select().from(users).where(sql`username LIKE ${'test_user_%'}`).orderBy(desc(users.createdAt)).limit(1);
+      
+      if (recentTestUsers.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'No test users found - please create a test user first'
+        });
+      }
+      
+      const testUser = recentTestUsers[0];
+      const timestamp = new Date().toLocaleString();
+      
+      console.log(`Testing notification email for user ${testUser.username} (${testUser.email})`);
+      
+      // Use the direct Brevo implementation
+      const { sendCustomEmail } = await import('./utils/directBrevoService');
+      
+      const emailParams = {
+        to: testUser.email,
+        subject: 'New Project Update Notification',
+        templateData: {
+          firstName: testUser.name ? testUser.name.split(' ')[0] : testUser.username,
+          projectName: 'Test Project',
+          updateType: 'Status Change',
+          updateDetails: 'The project status has been updated to "In Progress"',
+          actionRequired: 'Please review the latest changes',
+          timestamp,
+          loginLink: 'https://www.aditeke.com/login'
+        }
+      };
+      
+      const result = await sendCustomEmail(emailParams);
+      
+      console.log('Notification email sent successfully:', result);
+      
+      return res.json({
+        success: true,
+        message: 'Notification email sent successfully',
+        user: {
+          id: testUser.id,
+          username: testUser.username,
+          email: testUser.email
+        },
+        notificationType: 'project_update',
+        timestamp,
+        result
+      });
+    } catch (error: any) {
+      console.error('Error testing notification email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send notification email',
+        error: error.message
+      });
+    }
+  });
+  
+  // Simple generic email test endpoint
+  app.get('/api/public/test-generic-email', async (req, res) => {
+    try {
+      console.log('Testing generic email functionality');
+      const { sendDirectBrevoEmail } = await import('./utils/directBrevoService');
+      
+      // Use query parameters to allow testing with different content
+      const to = req.query.to?.toString() || 'berhanumulualemadisu@gmail.com';
+      const subject = req.query.subject?.toString() || 'Test Generic Email';
+      const message = req.query.message?.toString() || 'This is a test of the generic email functionality';
+      
+      console.log(`Sending generic test email to ${to}`);
+      
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #0040A1; padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">Test Email</h1>
+          </div>
+          
+          <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
+            <p>${message}</p>
+            <p>This is a generic test email sent at ${new Date().toLocaleString()}</p>
+            <p>If you received this email, it confirms that the direct email functionality is working properly.</p>
+          </div>
+          
+          <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+            <p>&copy; 2025 AdiTeke Software Solutions. All rights reserved.</p>
+            <p>Portland, OR 97222 | <a href="mailto:support@aditeke.com">support@aditeke.com</a> | +1 (641) 481-8560</p>
+          </div>
+        </div>
+      `;
+      
+      const result = await sendDirectBrevoEmail({
+        to,
+        subject,
+        html: htmlContent,
+        text: message,
+        senderName: 'AdiTeke Email Tester'
+      });
+      
+      console.log('Generic email sent successfully:', result);
+      
+      return res.json({
+        success: true,
+        message: 'Generic test email sent successfully',
+        to,
+        subject,
+        result
+      });
+    } catch (error: any) {
+      console.error('Error sending generic test email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send generic test email',
+        error: error.message
+      });
+    }
+  });
+  
   // Direct email test endpoint that bypasses the wrapper
   app.get('/api/public/direct-email-test', async (req, res) => {
     try {
