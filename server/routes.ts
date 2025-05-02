@@ -397,6 +397,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Public API endpoint for client documents - public access without authentication
+  app.get("/api/public/client-documents/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      // Validate client exists
+      const client = await storage.getUser(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Get documents for the client
+      const documents = await db.select()
+        .from(clientDocuments)
+        .where(eq(clientDocuments.clientId, clientId))
+        .orderBy(desc(clientDocuments.uploadedAt));
+      
+      console.log(`Found ${documents.length} documents for client ID: ${clientId}`);
+      return res.json(documents);
+    } catch (error) {
+      console.error("Error fetching client documents:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Public API endpoint for client contracts - public access without authentication
+  app.get("/api/public/client-contracts/:clientId", async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      if (isNaN(clientId)) {
+        return res.status(400).json({ message: "Invalid client ID" });
+      }
+      
+      // Validate client exists
+      const client = await storage.getUser(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+      
+      // Get contracts for the client
+      const contracts = await db.select()
+        .from(clientContracts)
+        .where(eq(clientContracts.clientId, clientId))
+        .orderBy(desc(clientContracts.createdAt));
+      
+      console.log(`Found ${contracts.length} contracts for client ID: ${clientId}`);
+      return res.json(contracts);
+    } catch (error) {
+      console.error("Error fetching client contracts:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   // API endpoint for payment structures - handles the save payment structure functionality
   app.post("/api/payment-structures", async (req, res) => {
     try {
