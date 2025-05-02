@@ -507,100 +507,129 @@ const ServicesPage = () => {
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-300 sticky top-24">
                       <h3 className="text-xl font-bold mb-6 flex items-center">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/80 to-blue-500/80 flex items-center justify-center text-white mr-3">
-                          <span>🏆</span>
+                          <span>💼</span>
                         </div>
-                        Why Choose Us
+                        Why Choose AdiTeke
                       </h3>
-                      <ul className="space-y-6">
-                        <motion.li 
-                          className="flex items-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.1 }}
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary mr-4 mt-1 flex-shrink-0 border border-primary/10">
-                            <span>⭐</span>
-                          </div>
-                          <div>
-                            <h4 className="font-bold mb-1 text-gray-900">Proven Expertise</h4>
-                            <p className="text-gray-600 text-sm">We've successfully delivered over 200 projects across various industries</p>
-                          </div>
-                        </motion.li>
-                        <motion.li 
-                          className="flex items-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.2 }}
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary mr-4 mt-1 flex-shrink-0 border border-primary/10">
-                            <span>👥</span>
-                          </div>
-                          <div>
-                            <h4 className="font-bold mb-1 text-gray-900">Dedicated Team</h4>
-                            <p className="text-gray-600 text-sm">Skilled professionals committed to your success and satisfaction</p>
-                          </div>
-                        </motion.li>
-                        <motion.li 
-                          className="flex items-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.3 }}
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary mr-4 mt-1 flex-shrink-0 border border-primary/10">
-                            <span>📱</span>
-                          </div>
-                          <div>
-                            <h4 className="font-bold mb-1 text-gray-900">Modern Technology</h4>
-                            <p className="text-gray-600 text-sm">Using the latest frameworks, tools and development methodologies</p>
-                          </div>
-                        </motion.li>
-                        <motion.li 
-                          className="flex items-start"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.4 }}
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary mr-4 mt-1 flex-shrink-0 border border-primary/10">
-                            <span>🔄</span>
-                          </div>
-                          <div>
-                            <h4 className="font-bold mb-1 text-gray-900">Transparent Process</h4>
-                            <p className="text-gray-600 text-sm">Clear communication and regular progress updates throughout your project</p>
-                          </div>
-                        </motion.li>
-                      </ul>
                       
-                      <div className="mt-8 p-4 bg-gradient-to-br from-primary/5 to-blue-500/5 rounded-xl border border-primary/10">
-                        <div className="flex items-center mb-2">
+                      <div className="grid grid-cols-1 gap-5">
+                        <motion.div 
+                          className="p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.03] hover:border-primary/20 transition-all duration-300"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                          whileHover={{ 
+                            boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)"
+                          }}
+                        >
+                          <div className="text-2xl mb-3">🧠</div>
+                          <h4 className="font-bold text-gray-900 mb-2">Smart Innovation</h4>
+                          <p className="text-gray-600 text-sm">
+                            We harness AI, cloud, and modern stacks to deliver agile, scalable, and future-proof solutions.
+                          </p>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.03] hover:border-primary/20 transition-all duration-300"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.1 }}
+                          whileHover={{ 
+                            boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)"
+                          }}
+                        >
+                          <div className="text-2xl mb-3">👥</div>
+                          <h4 className="font-bold text-gray-900 mb-2">Client-First Culture</h4>
+                          <p className="text-gray-600 text-sm">
+                            You're not just a client—you're a partner. We co-create and adapt continuously to meet your evolving goals.
+                          </p>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.03] hover:border-primary/20 transition-all duration-300"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.2 }}
+                          whileHover={{ 
+                            boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)"
+                          }}
+                        >
+                          <div className="text-2xl mb-3">⚙️</div>
+                          <h4 className="font-bold text-gray-900 mb-2">Modern Engineering</h4>
+                          <p className="text-gray-600 text-sm">
+                            CI/CD pipelines, clean architecture, and DevOps practices—built-in from Day 1.
+                          </p>
+                        </motion.div>
+                        
+                        <motion.div 
+                          className="p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.03] hover:border-primary/20 transition-all duration-300"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.3 }}
+                          whileHover={{ 
+                            boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1)"
+                          }}
+                        >
+                          <div className="text-2xl mb-3">📈</div>
+                          <h4 className="font-bold text-gray-900 mb-2">Results Over Promises</h4>
+                          <p className="text-gray-600 text-sm">
+                            We track KPIs, iterate fast, and ship value—not just code.
+                          </p>
+                        </motion.div>
+                      </div>
+                      
+                      {/* Client Satisfaction Section */}
+                      <motion.div 
+                        className="mt-8 p-5 bg-gradient-to-br from-primary/5 to-blue-500/5 rounded-xl border border-primary/10"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.5 }}
+                      >
+                        <h4 className="font-bold text-gray-900 mb-4 flex items-center">
                           <span className="text-lg mr-2">📊</span>
-                          <h4 className="font-bold text-gray-900">Client Satisfaction</h4>
-                        </div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-700">Project Success Rate</span>
-                          <span className="text-sm font-bold text-gray-900">98%</span>
-                        </div>
-                        <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
-                          <motion.div 
-                            className="h-2 bg-gradient-to-r from-primary to-blue-500 rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: "98%" }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                          ></motion.div>
+                          Client Satisfaction
+                        </h4>
+                        
+                        {/* On-Time Delivery Metric */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-gray-700">On-Time Delivery</span>
+                            <span className="text-sm font-bold text-gray-900">98%</span>
+                          </div>
+                          <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                            <motion.div 
+                              className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full"
+                              initial={{ width: 0 }}
+                              animate={{ width: "98%" }}
+                              transition={{ 
+                                duration: 1.5,
+                                delay: 0.3,
+                                ease: "easeOut"
+                              }}
+                            ></motion.div>
+                          </div>
                         </div>
                         
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-700">Client Retention</span>
-                          <span className="text-sm font-bold text-gray-900">95%</span>
+                        {/* Client Retention Rate Metric */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-gray-700">Client Retention Rate</span>
+                            <span className="text-sm font-bold text-gray-900">95%</span>
+                          </div>
+                          <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                            <motion.div 
+                              className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full"
+                              initial={{ width: 0 }}
+                              animate={{ width: "95%" }}
+                              transition={{ 
+                                duration: 1.5, 
+                                delay: 0.5,
+                                ease: "easeOut"
+                              }}
+                            ></motion.div>
+                          </div>
                         </div>
-                        <div className="w-full h-2 bg-gray-200 rounded-full">
-                          <motion.div 
-                            className="h-2 bg-gradient-to-r from-primary to-blue-500 rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: "95%" }}
-                            transition={{ duration: 1, delay: 0.7 }}
-                          ></motion.div>
-                        </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </motion.div>
                 </div>
