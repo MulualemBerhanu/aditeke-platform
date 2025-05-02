@@ -25,8 +25,19 @@ const PortfolioSection = () => {
     return aOrder - bOrder;
   });
   
+  // Make sure the website URLs are set correctly for Genesis Group Home and Mulualem Berhanu Portfolio
+  const projectsWithCorrectUrls = sortedProjects?.map(project => {
+    if (project.title === "Genesis Group Home Website" && !project.website_url) {
+      return {...project, website_url: "https://genesisgrouphome.com"};
+    }
+    if (project.title === "Mulualem Berhanu Portfolio" && !project.website_url) {
+      return {...project, website_url: "http://MulualemBerhanu.com"};
+    }
+    return project;
+  });
+  
   // Then filter projects based on active filter
-  const filteredProjects = sortedProjects?.filter(project => {
+  const filteredProjects = projectsWithCorrectUrls?.filter(project => {
     if (activeFilter === 'all') return true;
     
     // Handle both string and array category formats
@@ -316,15 +327,36 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
   }, []);
   
   // Determine link URL - use external website if available, otherwise use internal portfolio page
-  const linkUrl = website_url || `/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`;
+  // For Genesis Group Home and Mulualem Berhanu Portfolio, always use the actual URLs
+  let linkUrl;
+  if (title === "Genesis Group Home Website") {
+    linkUrl = "https://genesisgrouphome.com";
+  } else if (title === "Mulualem Berhanu Portfolio") {
+    linkUrl = "http://MulualemBerhanu.com";
+  } else {
+    linkUrl = website_url || `/portfolio/${title.toLowerCase().replace(/\s+/g, '-')}`;
+  }
   
   // Determine if link should open in new tab (for external URLs)
-  const isExternalLink = website_url && website_url.startsWith('http');
+  const isExternalLink = (website_url && website_url.startsWith('http')) || 
+                         title === "Genesis Group Home Website" || 
+                         title === "Mulualem Berhanu Portfolio";
   
   const handleExternalLink = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isExternalLink && website_url) {
+    if (isExternalLink) {
       e.preventDefault();
-      window.open(website_url, '_blank', 'noopener,noreferrer');
+      let url = website_url;
+      
+      // Handle our special cases to ensure they always work
+      if (title === "Genesis Group Home Website") {
+        url = "https://genesisgrouphome.com";
+      } else if (title === "Mulualem Berhanu Portfolio") {
+        url = "http://MulualemBerhanu.com";
+      }
+      
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
     }
   };
   
