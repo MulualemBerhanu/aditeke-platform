@@ -373,12 +373,46 @@ export const insertClientInvoiceSchema = createInsertSchema(clientInvoices).pick
   receiptNumber: true,
 });
 
+// Contracts schema for client agreements
+export const clientContracts = pgTable("client_contracts", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  content: text("content").notNull(), // The full contract text/HTML content
+  status: text("status").notNull().default("pending"), // pending, signed, rejected, expired
+  documentId: integer("document_id").references(() => clientDocuments.id), // Optional PDF version
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at"),
+  expiresAt: timestamp("expires_at"),
+  signedAt: timestamp("signed_at"),
+  signatureData: text("signature_data"), // Base64 encoded signature image
+  ipAddress: text("ip_address"), // IP address at time of signing
+  version: text("version").notNull().default("1.0"), // Contract version
+  metadata: json("metadata").default({}), // Additional contract metadata
+  projectId: integer("project_id").references(() => projects.id), // Optional project association
+});
+
+export const insertClientContractSchema = createInsertSchema(clientContracts).pick({
+  clientId: true,
+  title: true,
+  content: true,
+  status: true,
+  documentId: true,
+  expiresAt: true,
+  version: true,
+  metadata: true,
+  projectId: true,
+});
+
 // Type exports for new schemas
 export type ClientCommunication = typeof clientCommunications.$inferSelect;
 export type InsertClientCommunication = z.infer<typeof insertClientCommunicationSchema>;
 
 export type ClientDocument = typeof clientDocuments.$inferSelect;
 export type InsertClientDocument = z.infer<typeof insertClientDocumentSchema>;
+
+export type ClientContract = typeof clientContracts.$inferSelect;
+export type InsertClientContract = z.infer<typeof insertClientContractSchema>;
 
 export type ClientInvoice = typeof clientInvoices.$inferSelect;
 export type InsertClientInvoice = z.infer<typeof insertClientInvoiceSchema>;

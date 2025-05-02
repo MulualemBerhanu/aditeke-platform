@@ -11,6 +11,7 @@ import PDFDocument from "pdfkit";
 import authRoutes from "./routes/auth-routes";
 import userRoutes from "./routes/user-routes";
 import emailTestRoutes from "./routes/email-test-routes";
+import contractRoutes from "./routes/contract-routes";
 import {
   insertUserSchema,
   insertContactMessageSchema,
@@ -34,6 +35,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (process.env.NODE_ENV !== 'production') {
     app.use('/api', emailTestRoutes);
   }
+  
+  // Register contract management routes
+  app.use('/api', contractRoutes);
   
   // API endpoints
   // ===============
