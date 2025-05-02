@@ -478,14 +478,22 @@ const PortfolioPage = () => {
                                 : `/portfolio/${project.id}`}
                             target={project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "_blank" : undefined}
                             rel={project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio" ? "noopener noreferrer" : undefined}
-                            className="bg-white text-primary px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 hover:bg-white/90 transition-colors border border-white/20"
                             onClick={(e) => {
                               if (project.title === "Genesis Group Home Website" || project.title === "Mulualem Berhanu Portfolio") {
                                 e.preventDefault();
                                 let url = project.title === "Genesis Group Home Website" 
                                   ? "https://genesisgrouphome.com" 
                                   : "http://MulualemBerhanu.com";
-                                window.open(url, '_blank', 'noopener,noreferrer');
+                                window.open(url, "_blank", "noopener,noreferrer");
+                              } else {
+                                // For projects under implementation, show a toast message
+                                e.preventDefault();
+                                toast({
+                                  title: "Project Under Implementation",
+                                  description: "This project is currently under implementation. When completed, we will link the actual URL for you to visit.",
+                                  variant: "default",
+                                  duration: 5000,
+                                });
                               }
                             }}
                           >
