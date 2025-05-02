@@ -228,10 +228,34 @@ export default function LoginPage() {
         }
       }
       
-      // Determine the appropriate dashboard path
+      // Import the utility function to determine the correct dashboard URL
+      // Simpler approach to determine redirect URL
+      try {
+        const dynamicModuleImport = import('@/lib/roleUtils');
+        dynamicModuleImport.then(({ getDashboardPath }) => {
+          // Get the appropriate dashboard path based on user data
+          const redirectUrl = getDashboardPath(userData);
+          
+          console.log("Determined dashboard path:", redirectUrl, "for user:", userData.username);
+          
+          // Store the redirect URL for fallback mechanisms
+          localStorage.setItem('targetRedirect', redirectUrl);
+          
+          // Force a refresh for manager roles to help resolve state issues
+          if (redirectUrl.includes('/manager/')) {
+            localStorage.setItem('forceRefresh', 'true');
+          }
+        }).catch(err => {
+          console.error("Failed to load roleUtils:", err);
+        });
+      } catch (err) {
+        console.error("Import error:", err);
+      }
+      
+      // Determine the appropriate dashboard path based on user data
       let defaultRedirectUrl = '/dashboard';
       
-      // Simple role-based redirect logic
+      // Direct dashboard redirect based on roleId
       const numericRoleId = typeof userData.roleId === 'string' 
         ? parseInt(userData.roleId) 
         : (typeof userData.roleId === 'number' ? userData.roleId : null);
@@ -243,7 +267,7 @@ export default function LoginPage() {
       } else if (numericRoleId === 1001) {
         defaultRedirectUrl = '/client/dashboard';
       } else {
-        // Username fallback
+        // Fallback to username pattern
         const username = userData.username.toLowerCase();
         if (username.includes('admin')) {
           defaultRedirectUrl = '/admin/dashboard';
@@ -254,15 +278,28 @@ export default function LoginPage() {
         }
       }
       
-      // Save all authentication data
+      // Store essential authentication data
       localStorage.setItem('targetRedirect', defaultRedirectUrl);
       localStorage.setItem('loginTimestamp', Date.now().toString());
       localStorage.setItem('loginStatus', 'success');
+      localStorage.setItem('roleId', userData.roleId?.toString() || '');
+      localStorage.setItem('username', userData.username);
       
       console.log("Login successful, redirecting to", defaultRedirectUrl);
       
-      // Perform the redirect
-      window.location.href = defaultRedirectUrl;
+      // Try to fire an event for the standalone script
+      try {
+        window.dispatchEvent(new CustomEvent('aditeke-login-success', { 
+          detail: { redirectUrl: defaultRedirectUrl } 
+        }));
+      } catch (e) {
+        console.warn("Event dispatch failed but continuing", e);
+      }
+      
+      // Perform the redirect with a small delay
+      setTimeout(() => {
+        window.location.href = defaultRedirectUrl;
+      }, 100);
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion
