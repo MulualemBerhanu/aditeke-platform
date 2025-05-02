@@ -271,7 +271,28 @@ router.get("/contracts/:id/pdf", async (req, res) => {
     // Add contract content
     doc.fontSize(25).text(contract.title, { align: 'center' });
     doc.moveDown();
-    doc.fontSize(12).text(contract.content);
+    
+    // Process the HTML content to plain text for PDF rendering
+    let cleanContent = contract.content;
+    // Remove HTML tags while preserving line breaks and structure
+    cleanContent = cleanContent.replace(/<h[1-6]>(.*?)<\/h[1-6]>/g, '$1\n\n');
+    cleanContent = cleanContent.replace(/<p>(.*?)<\/p>/g, '$1\n\n');
+    cleanContent = cleanContent.replace(/<br\s*\/?>/g, '\n');
+    cleanContent = cleanContent.replace(/<li>(.*?)<\/li>/g, '• $1\n');
+    cleanContent = cleanContent.replace(/<div>(.*?)<\/div>/g, '$1\n');
+    cleanContent = cleanContent.replace(/<\/div>/g, '\n');
+    cleanContent = cleanContent.replace(/<ol>|<ul>|<\/ol>|<\/ul>/g, '\n');
+    // Remove any remaining HTML tags
+    cleanContent = cleanContent.replace(/<[^>]*>/g, '');
+    // Decode HTML entities
+    cleanContent = cleanContent.replace(/&lt;/g, '<')
+                              .replace(/&gt;/g, '>')
+                              .replace(/&amp;/g, '&')
+                              .replace(/&quot;/g, '"')
+                              .replace(/&#39;/g, "'")
+                              .replace(/&nbsp;/g, ' ');
+    
+    doc.fontSize(12).text(cleanContent);
     
     // Add signature if contract is signed
     if (contract.status === 'signed' && contract.signatureData) {
