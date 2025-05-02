@@ -20,8 +20,11 @@ const PortfolioPage = () => {
     
     return [...rawProjects].sort((a, b) => {
       // First prioritize by sort_order field if it exists
+      const sortA = a.sort_order ?? 0;
+      const sortB = b.sort_order ?? 0;
+      
       if (a.sort_order !== undefined && b.sort_order !== undefined) {
-        return a.sort_order - b.sort_order;
+        return sortA - sortB;
       } else if (a.sort_order !== undefined) {
         return -1; // a has sort_order, b doesn't -> a comes first
       } else if (b.sort_order !== undefined) {
@@ -533,14 +536,14 @@ const PortfolioPage = () => {
                               </span>
                             ))
                           ) : (
-                            Array.isArray(project.category) && project.category.map((cat: string, index: number) => (
+                            Array.isArray(project.category) ? (project.category as string[]).map((cat: string, index: number) => (
                               <span 
                                 key={index}
                                 className="px-3 py-1 bg-white/10 backdrop-blur-sm text-blue-100 text-xs rounded-full border border-white/10 hover:bg-white/15 transition-colors"
                               >
                                 {cat}
                               </span>
-                            ))
+                            )) : null
                           )}
                         </div>
                         
