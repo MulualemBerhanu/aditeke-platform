@@ -95,122 +95,105 @@ const AboutPage = () => {
         </div>
       </div>
       
-      {/* Team Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-full -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-primary/5 to-transparent rounded-tr-full -z-10"></div>
-        
+      {/* Team Section - Clean Modern Style */}
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
-          <motion.div 
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Section title with decorative elements */}
-            <div className="inline-block">
-              <div className="flex items-center justify-center mb-4">
-                <div className="h-px w-8 bg-primary/40"></div>
-                <Users className="h-5 w-5 mx-2 text-primary/70" />
-                <div className="h-px w-8 bg-primary/40"></div>
+          <div className="text-center mb-16">
+            {/* User icon decoration */}
+            <div className="flex justify-center mb-6">
+              <div className="relative w-12 h-12">
+                <motion.div 
+                  className="absolute inset-0 rounded-full bg-gray-100 flex items-center justify-center"
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Users className="w-6 h-6 text-gray-600" />
+                </motion.div>
+                <motion.div 
+                  className="absolute inset-0 border-2 border-gray-200 rounded-full"
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1.15, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                />
               </div>
-              
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Meet Our Team
-              </h2>
             </div>
             
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Our talented professionals are the heart of <span className="font-bold">Adi<span className="text-blue-600">Teke</span></span>. We bring together expertise from diverse backgrounds to deliver exceptional results.
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-            {/* CTO Card - Modern design with overlay */}
-            <motion.div
-              className="relative group"
-              initial={{ opacity: 0, y: 30 }}
+            <motion.h2 
+              className="text-4xl md:text-5xl font-bold mb-6 text-gray-900"
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
-              <div className="relative overflow-hidden rounded-2xl shadow-xl">
-                {/* Background gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent z-10 opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                
-                {/* Image with zoom effect */}
-                <img
-                  src="/assets/team/mulualem.jpeg"
-                  alt="Mulualem Berhanu"
-                  className="w-full aspect-[4/3] object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                
-                {/* Content overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-                  <h3 className="text-2xl font-bold text-white mb-1">Mulualem Berhanu</h3>
-                  <p className="text-primary-foreground/80 mb-3 flex items-center text-lg">
-                    <Code className="w-5 h-5 mr-2 text-primary-foreground/70" />
-                    CTO & Founder
-                  </p>
-                  <p className="text-white/90 mb-4 line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
-                    Mulualem has over 7 years of experience in software development and technical leadership.
-                  </p>
-                  
-                  {/* Skills tags */}
-                  <div className="flex flex-wrap gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {["Software Architecture", "AI Development", "Technical Leadership"].map((skill, i) => (
-                      <span key={i} className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs rounded-full">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* CEO Card - Modern design with overlay */}
-            <motion.div
-              className="relative group"
-              initial={{ opacity: 0, y: 30 }}
+              Meet Our Team
+            </motion.h2>
+            
+            <motion.p 
+              className="text-lg text-gray-600 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
-              <div className="relative overflow-hidden rounded-2xl shadow-xl">
-                {/* Background gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent z-10 opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-                
-                {/* Image with zoom effect */}
-                <img
-                  src="/assets/team/samrawit-kassa.jpg"
-                  alt="Samrawit Kassa"
-                  className="w-full aspect-[4/3] object-cover object-top group-hover:scale-105 transition-transform duration-700"
-                />
-                
-                {/* Content overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
-                  <h3 className="text-2xl font-bold text-white mb-1">Samrawit Kassa</h3>
-                  <p className="text-primary-foreground/80 mb-3 flex items-center text-lg">
-                    <Users className="w-5 h-5 mr-2 text-primary-foreground/70" />
-                    CEO
-                  </p>
-                  <p className="text-white/90 mb-4 line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
-                    Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.
-                  </p>
-                  
-                  {/* Skills tags */}
-                  <div className="flex flex-wrap gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {["Strategic Leadership", "Business Development", "Client Relations"].map((skill, i) => (
-                      <span key={i} className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs rounded-full">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+              Our talented professionals are the heart of <span className="text-blue-600 font-medium">AdiTeke</span>. We bring together expertise from diverse backgrounds to deliver exceptional results.
+            </motion.p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* CTO Card - Clean Modern Style */}
+            <motion.div
+              className="relative rounded-xl overflow-hidden shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
+            >
+              <img
+                src="/assets/team/mulualem.jpeg"
+                alt="Mulualem Berhanu"
+                className="w-full object-cover"
+              />
+              
+              <div className="p-6 relative">
+                <h3 className="text-2xl font-bold mb-1 text-gray-900">Mulualem Berhanu</h3>
+                <p className="text-blue-600 mb-3 flex items-center">
+                  <Code className="w-4 h-4 mr-2" />
+                  CTO & Founder
+                </p>
+                <p className="text-gray-600">
+                  Mulualem has over 7 years of experience in software development and technical leadership.
+                </p>
+              </div>
+            </motion.div>
+            
+            {/* CEO Card - Clean Modern Style */}
+            <motion.div
+              className="relative rounded-xl overflow-hidden shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
+            >
+              <img
+                src="/assets/team/samrawit-kassa.jpg"
+                alt="Samrawit Kassa"
+                className="w-full object-cover object-top"
+              />
+              
+              <div className="p-6 relative">
+                <h3 className="text-2xl font-bold mb-1 text-gray-900">Samrawit Kassa</h3>
+                <p className="text-blue-600 mb-3 flex items-center">
+                  <Users className="w-4 h-4 mr-2" />
+                  CEO
+                </p>
+                <p className="text-gray-600">
+                  Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.
+                </p>
               </div>
             </motion.div>
           </div>
@@ -218,7 +201,7 @@ const AboutPage = () => {
           {/* Join Team button */}
           <motion.div 
             className="text-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.3 }}
