@@ -268,7 +268,7 @@ const AboutSection = () => {
                 </div>
                 
                 {/* Company timeline */}
-                <div className="mb-10 border-l-2 border-primary/20 pl-6 space-y-6">
+                <div className="mb-10 border-l-2 border-primary/20 pl-4 space-y-6">
                   {timeline.map((item, index) => (
                     <motion.div 
                       key={index}
@@ -278,11 +278,9 @@ const AboutSection = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
                     >
-                      <div className="absolute -left-[2.2rem] w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-white"></div>
-                      </div>
-                      <div className="font-medium text-gray-800">{item.title}</div>
-                      <div className="text-gray-600 text-sm">{item.description}</div>
+                      {/* Removed dot since we have emojis in the title */}
+                      <div className="font-medium text-gray-800 text-lg">{item.title}</div>
+                      <div className="text-gray-600 text-sm pl-5">{item.description}</div>
                     </motion.div>
                   ))}
                 </div>
