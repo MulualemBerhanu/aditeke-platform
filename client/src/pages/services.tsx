@@ -525,7 +525,7 @@ const ServicesPage = () => {
                           <div className="text-2xl mb-3">🧠</div>
                           <h4 className="font-bold text-gray-900 mb-2">Smart Innovation</h4>
                           <p className="text-gray-600 text-sm">
-                            We harness AI, cloud, and modern stacks to deliver agile, scalable, and future-proof solutions.
+                            By combining our team's experience and deep knowledge with powerful tools like AI and cloud technologies, we deliver smart, scalable, and future-ready solutions.
                           </p>
                         </motion.div>
                         
