@@ -39,10 +39,11 @@ const AboutSection = () => {
 
   // Timeline data for company milestones
   const timeline = [
-    { title: "Company Founded", description: "Started with a team of passionate software engineers" },
-    { title: "Expanded Services", description: "Added mobile and cloud development offerings" },
-    { title: "Global Expansion", description: "Opened international offices and partnerships" },
-    { title: "AI Integration", description: "Incorporated advanced AI solutions in our services" }
+    { title: "🧭 Belief", description: "Purposeful technology can empower businesses of all sizes." },
+    { title: "👨‍💻 Humble Beginnings", description: "Started as a small, passionate team of software engineers." },
+    { title: "🧠 Beyond Developers", description: "We're problem solvers, collaborators, and digital craftsmen." },
+    { title: "🚀 Growth & Trust", description: "From MVPs to enterprise platforms — built with precision and empathy." },
+    { title: "🌍 Mission", description: "To craft transformative, future-ready digital solutions." }
   ];
 
   // Animated background pattern for visual interest
