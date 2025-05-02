@@ -315,6 +315,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
   const [imageError, setImageError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const fallbackRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
   // Handle image load/error
   useEffect(() => {
@@ -345,6 +346,7 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
   
   const handleExternalLink = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isExternalLink) {
+      // For external links, open in a new tab
       e.preventDefault();
       let url = website_url;
       
@@ -358,6 +360,15 @@ const ProjectCard = ({ title, description, image, index, category, website_url }
       if (url) {
         window.open(url, '_blank', 'noopener,noreferrer');
       }
+    } else {
+      // For projects under implementation, show a toast message
+      e.preventDefault();
+      toast({
+        title: "Project Under Implementation",
+        description: "This project is currently under implementation. When completed, we will link the actual URL for you to visit.",
+        variant: "default",
+        duration: 5000,
+      });
     }
   };
   

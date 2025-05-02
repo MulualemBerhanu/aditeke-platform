@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PORTFOLIO_CATEGORIES } from '@/lib/constants';
 import { Project } from '@shared/schema';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const PortfolioPage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
@@ -31,6 +32,8 @@ const PortfolioPage = () => {
     });
   }, [rawProjects]);
 
+  const { toast } = useToast();
+  
   const handleFilterChange = (category: string) => {
     setActiveFilter(category);
   };
