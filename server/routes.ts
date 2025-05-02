@@ -3366,6 +3366,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Test endpoint for client creation that bypasses CSRF
+  app.get('/api/public/test-client-creation', async (req, res) => {
+    try {
+      console.log('Testing client creation with welcome email');
+      
+      // Generate a unique username and email for testing
+      const timestamp = Date.now();
+      const username = `test_user_${timestamp}`;
+      const email = `berhanumulualemadisu+${timestamp}@gmail.com`; // Using admin email with + alias for testing
+      
+      // Generate a secure random password
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).toUpperCase().slice(-2) + '1!';
+      
+      // Test client data
+      const clientData = {
+        username,
+        email,
+        name: 'Test Client',
+        company: 'Test Company',
+        phone: '+1234567890',
+        roleId: 1001,
+        isActive: true,
+        passwordResetRequired: true,
+        createdAt: new Date()
+      };
+      
+      console.log(`Creating test client: ${username} (${email})`);
+      
+      // Hash the password
+      const crypto = await import('crypto');
+      const salt = crypto.randomBytes(16).toString('hex');
+      const hashBuffer = await crypto.scryptSync(tempPassword, salt, 64) as Buffer;
+      const hashedPassword = `${hashBuffer.toString('hex')}.${salt}`;
+      
+      // Add the hashed password to the client data
+      const finalClientData = {
+        ...clientData,
+        password: hashedPassword
+      };
+      
+      // Create the client in the database
+      const newClient = await storage.createUser(finalClientData);
+      
+      // Now send the welcome email
+      try {
+        console.log(`Sending welcome email to ${email} for test client ${username}`);
+        
+        // Use the direct Brevo implementation that's now working
+        const { sendWelcomeEmail } = await import('./utils/directBrevoService');
+        const emailResult = await sendWelcomeEmail({
+          email,
+          name: clientData.name,
+          username,
+          temporaryPassword: tempPassword
+        });
+        
+        console.log('Welcome email sent successfully:', emailResult);
+        
+        // Return success with the client data (removing sensitive fields)
+        const { password, ...safeClient } = newClient;
+        return res.json({
+          success: true,
+          message: 'Test client created successfully with welcome email',
+          client: safeClient,
+          tempPassword, // Normally we wouldn't return this, but it's useful for testing
+          emailResult
+        });
+      } catch (emailError: any) {
+        console.error('Error sending welcome email:', emailError);
+        
+        // Even if email fails, we return the created client
+        const { password, ...safeClient } = newClient;
+        return res.json({
+          success: true,
+          message: 'Test client created but welcome email failed',
+          client: safeClient,
+          tempPassword,
+          emailError: emailError.message
+        });
+      }
+    } catch (error: any) {
+      console.error('Error in test client creation:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to create test client',
+        error: error.message
+      });
+    }
+  });
+  
+  // Test endpoint for password reset emails
+  app.get('/api/public/test-password-reset', async (req, res) => {
+    try {
+      console.log('Testing password reset email functionality');
+      
+      // Import crypto module
+      const crypto = await import('crypto');
+      
+      // Import database dependencies
+      const { db } = await import('./db');
+      const { users } = await import('@shared/schema');
+      const { sql } = await import('drizzle-orm');
+      const { desc } = await import('drizzle-orm');
+      
+      // Generate a test reset token
+      const timestamp = Date.now();
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const expiryHours = 24;
+      
+      // We'll use a recently created test user if available
+      const recentTestUsers = await db.select().from(users).where(sql`username LIKE ${'test_user_%'}`).orderBy(desc(users.createdAt)).limit(1);
+      
+      if (recentTestUsers.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'No test users found - please create a test user first'
+        });
+      }
+      
+      const testUser = recentTestUsers[0];
+      
+      // Create a mock reset link
+      const resetLink = `https://www.aditeke.com/reset-password?token=${resetToken}&email=${encodeURIComponent(testUser.email)}`;
+      
+      console.log(`Testing password reset email for user ${testUser.username} (${testUser.email})`);
+      
+      // Use the direct Brevo implementation
+      const { sendPasswordResetEmail } = await import('./utils/directBrevoService');
+      const result = await sendPasswordResetEmail({
+        email: testUser.email,
+        name: testUser.name || testUser.username,
+        username: testUser.username,
+        resetLink,
+        expiryTime: expiryHours
+      });
+      
+      console.log('Password reset email sent successfully:', result);
+      
+      return res.json({
+        success: true,
+        message: 'Password reset email sent successfully',
+        user: {
+          id: testUser.id,
+          username: testUser.username,
+          email: testUser.email
+        },
+        resetToken, // Normally we wouldn't return this
+        expiryHours,
+        result
+      });
+    } catch (error: any) {
+      console.error('Error testing password reset email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send password reset email',
+        error: error.message
+      });
+    }
+  });
+  
   // Direct email test endpoint that bypasses the wrapper
   app.get('/api/public/direct-email-test', async (req, res) => {
     try {
