@@ -171,7 +171,7 @@ export async function sendWelcomeEmail(params: {
           
           For security reasons, you will be required to change your password when you first log in.
           
-          Please visit our website to log in: https://www.aditeke.com/login
+          Please visit our website to log in: https://aditeke.com/login
           
           If you have any questions, please don't hesitate to contact our support team.
           

@@ -3347,7 +3347,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         temporaryPassword: 'TestPwd123!'
       };
       
-      // Send the test email
+      // Generate the email content but don't send it if verbose mode requested
+      const showContent = req.query.verbose === 'content' || req.query.content === 'true';
+      
+      if (showContent) {
+        // Generate content without sending
+        const loginUrl = `https://aditeke.com/login`;
+        const { email, name, username, temporaryPassword } = testData;
+        
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #0040A1; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Your AdiTeke Account</h1>
+            </div>
+            
+            <div style="padding: 20px; border: 1px solid #e0e0e0; border-top: none;">
+              <p>Hello ${name},</p>
+              
+              <p>Thank you for joining AdiTeke Software Solutions. Your account has been created successfully.</p>
+              
+              <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Your login information:</strong></p>
+                <p style="margin: 5px 0;">Username: <strong>${username}</strong></p>
+                <p style="margin: 5px 0;">Initial Password: <strong>${temporaryPassword}</strong></p>
+              </div>
+              
+              <p><strong>Important:</strong> You will need to set a new password when you first log in.</p>
+              
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${loginUrl}" 
+                   style="background-color: #0040A1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                  Access Your Account
+                </a>
+              </p>
+              
+              <p>If you have any questions about your account, please contact our support team at support@aditeke.com.</p>
+              
+              <p>Best regards,<br>AdiTeke Software Solutions Team</p>
+            </div>
+            
+            <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+              <p>&copy; 2025 AdiTeke Software Solutions. All rights reserved.</p>
+              <p>Portland, OR 97222 | <a href="mailto:support@aditeke.com">support@aditeke.com</a> | +1 (641) 481-8560</p>
+            </div>
+          </div>
+        `;
+        
+        // Return the template preview instead of sending
+        return res.json({
+          success: true,
+          message: 'Welcome email template preview',
+          loginUrl,
+          htmlContent,
+          testData
+        });
+      }
+      
+      // Otherwise send the actual email
       const result = await sendWelcomeEmail(testData);
       
       return res.json({
