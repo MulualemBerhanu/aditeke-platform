@@ -6,6 +6,7 @@ import { PORTFOLIO_CATEGORIES } from '@/lib/constants';
 import { Project } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowRightCircle, ExternalLink, Eye, Code, Database, Server, Layout } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const PortfolioSection = () => {
   const [activeFilter, setActiveFilter] = useState('all');
