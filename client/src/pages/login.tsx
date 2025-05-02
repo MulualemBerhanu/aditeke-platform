@@ -326,29 +326,100 @@ export default function LoginPage() {
         // PRODUCTION ENVIRONMENT: Use the most reliable approach
         console.log("💫 PRODUCTION: Redirecting to", defaultRedirectUrl);
         
-        // In production, set the URL and then force a full page reload
-        // This is the most reliable way to handle redirects in production
+        // This is the most reliable approach for replit.app - add a login_success flag to the URL
+        const successUrl = `${window.location.origin}${window.location.pathname}?login_success=true`;
+        
+        // In production, we need to do multiple things to ensure redirection happens
         try {
-          // Set the destination in storage
+          // 1. Store all important data
           sessionStorage.setItem('pendingRedirect', defaultRedirectUrl);
           localStorage.setItem('pendingRedirect', defaultRedirectUrl);
+          localStorage.setItem('login_redirect_target', defaultRedirectUrl);
+          localStorage.setItem('login_timestamp', Date.now().toString());
           
-          // Force a small delay
-          setTimeout(() => {
-            try {
-              // Try the most direct approach first
-              window.location.href = defaultRedirectUrl;
+          // 2. Create a window-level variable for the standalone scripts to access
+          // @ts-ignore - Adding to window
+          window.__loginSuccessTarget = defaultRedirectUrl;
+          
+          // 3. Send a direct message to our standalone script in case it's listening
+          try {
+            window.dispatchEvent(new CustomEvent('aditeke-login-success', { 
+              detail: { redirectUrl: defaultRedirectUrl } 
+            }));
+          } catch (e) {
+            console.warn("Event dispatch failed but continuing", e);
+          }
+          
+          // 4. Create a literal meta refresh element as final fallback
+          const meta = document.createElement('meta');
+          meta.httpEquiv = 'refresh';
+          meta.content = `0.5;url=${defaultRedirectUrl}`;
+          document.head.appendChild(meta);
+          
+          // 5. Schedule multiple attempts with increasing delay
+          const redirectAttempts = [
+            // First try immediately with full href
+            () => { window.location.href = defaultRedirectUrl; },
+            
+            // Try reload to the success URL after 100ms
+            () => setTimeout(() => { window.location.href = successUrl; }, 100),
+            
+            // Try location.replace after 200ms
+            () => setTimeout(() => { window.location.replace(defaultRedirectUrl); }, 200),
+            
+            // Use document.location after 300ms
+            () => setTimeout(() => { document.location.href = defaultRedirectUrl; }, 300),
+            
+            // Create a clickable link as absolute last resort after 400ms
+            () => setTimeout(() => {
+              // Create a visually distinct "Continue" button
+              const redirectDiv = document.createElement('div');
+              redirectDiv.style.position = 'fixed';
+              redirectDiv.style.top = '50%';
+              redirectDiv.style.left = '50%';
+              redirectDiv.style.transform = 'translate(-50%, -50%)';
+              redirectDiv.style.backgroundColor = '#ffffff';
+              redirectDiv.style.padding = '20px';
+              redirectDiv.style.borderRadius = '8px';
+              redirectDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+              redirectDiv.style.zIndex = '999999';
+              redirectDiv.style.textAlign = 'center';
               
-              // As a fallback, also try replace to avoid history issues
-              setTimeout(() => window.location.replace(defaultRedirectUrl), 100);
-            } catch (e) {
-              console.error("Direct redirect failed, using fallback", e);
-              document.location.href = defaultRedirectUrl;
-            }
-          }, 800);
+              const title = document.createElement('h2');
+              title.textContent = 'Login Successful!';
+              title.style.marginBottom = '15px';
+              title.style.color = '#333';
+              
+              const message = document.createElement('p');
+              message.textContent = 'Click the button below to continue to your dashboard';
+              message.style.marginBottom = '20px';
+              message.style.color = '#666';
+              
+              const button = document.createElement('a');
+              button.href = defaultRedirectUrl;
+              button.textContent = 'Continue to Dashboard';
+              button.style.display = 'inline-block';
+              button.style.backgroundColor = '#6366F1';
+              button.style.color = 'white';
+              button.style.padding = '10px 20px';
+              button.style.borderRadius = '4px';
+              button.style.textDecoration = 'none';
+              button.style.fontWeight = 'bold';
+              
+              redirectDiv.appendChild(title);
+              redirectDiv.appendChild(message);
+              redirectDiv.appendChild(button);
+              document.body.appendChild(redirectDiv);
+            }, 400)
+          ];
+          
+          // Execute all redirect attempts
+          redirectAttempts.forEach(attempt => attempt());
         } catch (error) {
           console.error("Production redirect error:", error);
-          alert("Navigation error. Please try again or contact support if this continues.");
+          // Last resort alert
+          alert("Login successful! Please click OK to continue to your dashboard.");
+          window.location.href = defaultRedirectUrl;
         }
       } else {
         // DEVELOPMENT ENVIRONMENT: Can use the utility function
