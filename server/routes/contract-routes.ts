@@ -125,17 +125,18 @@ router.post("/contracts/:id/sign", async (req, res) => {
 
     // Validate request body
     const signatureSchema = z.object({
-      signatureData: z.string().min(1), // Base64 encoded signature image
+      signature: z.string().min(1), // Text signature
+      signedById: z.number().optional()
     });
 
-    const { signatureData } = signatureSchema.parse(req.body);
+    const { signature } = signatureSchema.parse(req.body);
 
     // Update the contract
     const [updatedContract] = await db.update(clientContracts)
       .set({
         status: "signed",
         signedAt: new Date(),
-        signatureData,
+        signatureData: signature,
         ipAddress: req.ip || "Unknown",
         updatedAt: new Date(),
       })
@@ -268,7 +269,7 @@ router.get("/contracts/:id/pdf", async (req, res) => {
       doc.fontSize(14).text('Signed:', { underline: true });
       doc.moveDown(0.5);
       
-      // Convert base64 signature to image
+      // Check if signature is in base64 format (for future compatibility)
       if (contract.signatureData.startsWith('data:image')) {
         try {
           const base64Data = contract.signatureData.split(',')[1];

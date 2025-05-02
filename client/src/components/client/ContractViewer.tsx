@@ -200,10 +200,10 @@ export default function ContractViewer({ contractId, onBack }: ContractViewerPro
                       <p className="font-medium">{formatDate(contract.signedAt)}</p>
                     </div>
                   )}
-                  {contract.signature && (
+                  {contract.signatureData && (
                     <div>
                       <Label className="text-sm text-muted-foreground">Signature</Label>
-                      <p className="font-medium italic">{contract.signature}</p>
+                      <p className="font-medium italic">{contract.signatureData}</p>
                     </div>
                   )}
                   {contract.notes && (
