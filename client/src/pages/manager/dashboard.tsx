@@ -276,25 +276,31 @@ export default function ManagerDashboard() {
           'Content-Type': 'application/json'
         };
         
-        // Add localStorage authentication token if available
+        // Use credentials: 'include' to send cookies for session-based authentication
+        const options: RequestInit = {
+          method: 'DELETE',
+          headers,
+          credentials: 'include' // This is the key addition to include session cookies
+        };
+        
+        // Add localStorage authentication token as fallback
         const authToken = localStorage.getItem('authToken');
         if (authToken) {
-          console.log("⚠️ Using localStorage authentication for client deletion");
+          console.log("⚠️ Using localStorage authentication as fallback for client deletion");
           headers['Authorization'] = `Bearer ${authToken}`;
         }
         
+        console.log("🔒 Sending authenticated delete request with credentials");
+        
         // Make API call to delete the client
-        const response = await fetch(`/api/users/${clientId}`, {
-          method: 'DELETE',
-          headers
-        });
+        const response = await fetch(`/api/users/${clientId}`, options);
         
         if (!response.ok) {
           const errorText = await response.text();
           let errorMessage;
           try {
             const errorData = JSON.parse(errorText);
-            errorMessage = errorData.message || 'Failed to delete client';
+            errorMessage = errorData.message || errorData.error || 'Failed to delete client';
           } catch {
             errorMessage = errorText || 'Failed to delete client';
           }
@@ -337,18 +343,39 @@ export default function ManagerDashboard() {
       try {
         console.log(`Assigning project ${projectId} to client ${clientId} via API endpoint`);
         
-        // Make a real API call to the backend
-        const response = await fetch('/api/projects/assign', {
+        // Add authorization headers
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Add localStorage authentication token as fallback
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+          console.log("⚠️ Using localStorage authentication as fallback for project assignment");
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        // Use credentials: 'include' to send cookies for session-based authentication
+        const options: RequestInit = {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
+          credentials: 'include', // Include session cookies
           body: JSON.stringify({ projectId, clientId }),
-        });
+        };
+        
+        // Make a real API call to the backend
+        const response = await fetch('/api/projects/assign', options);
         
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to assign project');
+          const errorText = await response.text();
+          let errorMessage;
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorData.error || 'Failed to assign project';
+          } catch {
+            errorMessage = errorText || 'Failed to assign project';
+          }
+          throw new Error(errorMessage);
         }
         
         // Parse and return the response
