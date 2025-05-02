@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,21 +17,42 @@ const PortfolioPage = () => {
     setActiveFilter(category);
   };
 
+  // Sort projects by sort_order first, then by id
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      console.log("Filter value:", activeFilter);
+      console.log("All projects:", projects.map(p => ({
+        id: p.id, 
+        title: p.title, 
+        category: p.category,
+        sort_order: p.sort_order
+      })));
+    }
+  }, [projects, activeFilter]);
+
   // Filter projects based on active filter
   const filteredProjects = projects?.filter(project => {
     if (activeFilter === 'all') return true;
     
-    // Handle empty category (fallback to "web-app" for all projects to make filtering work)
-    const categoryToUse = project.category || "web-app";
+    // Create a mapping for the filter values to match project categories
+    const categoryMappings: Record<string, string[]> = {
+      'web': ['web', 'web app', 'web application', 'website'],
+      'mobile': ['mobile', 'mobile app', 'ios', 'android'],
+      'ai': ['ai', 'artificial intelligence', 'machine learning', 'ml'],
+      'ecommerce': ['ecommerce', 'e-commerce', 'shop', 'store']
+    };
     
-    // Convert both to lowercase for case-insensitive comparison
-    const projectCategory = categoryToUse.toLowerCase();
-    const filter = activeFilter.toLowerCase();
+    // Get the category to match against
+    const categoryToUse = project.category || "web";
     
-    console.log("Project:", project.title, "Category:", projectCategory, "Filter:", filter, "Match:", projectCategory.includes(filter));
+    // Convert project category to lowercase
+    const lcProjectCategory = categoryToUse.toLowerCase();
     
-    // Check if the category contains the filter keyword
-    return projectCategory.includes(filter);
+    // Get array of keywords for this filter
+    const matchingKeywords = categoryMappings[activeFilter] || [];
+    
+    // Return true if any of the keywords match
+    return matchingKeywords.some(keyword => lcProjectCategory.includes(keyword));
   });
 
   return (
