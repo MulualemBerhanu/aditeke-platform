@@ -145,26 +145,28 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* CTO Card - Clean Modern Style */}
             <motion.div
-              className="relative rounded-xl overflow-hidden shadow-lg"
+              className="overflow-hidden bg-white rounded-xl shadow-md"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
+              whileHover={{ y: -5, boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
             >
-              <img
-                src="/assets/team/mulualem.jpeg"
-                alt="Mulualem Berhanu"
-                className="w-full object-cover"
-              />
+              <div className="w-full h-80">
+                <img
+                  src="/assets/team/mulualem.jpeg"
+                  alt="Mulualem Berhanu"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
               
-              <div className="p-6 relative">
+              <div className="p-6">
                 <h3 className="text-2xl font-bold mb-1 text-gray-900">Mulualem Berhanu</h3>
-                <p className="text-blue-600 mb-3 flex items-center">
-                  <Code className="w-4 h-4 mr-2" />
+                <p className="text-blue-600 mb-3 flex items-center text-sm">
+                  <Code className="w-4 h-4 mr-1" />
                   CTO & Founder
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   Mulualem has over 7 years of experience in software development and technical leadership.
                 </p>
               </div>
@@ -172,26 +174,28 @@ const AboutPage = () => {
             
             {/* CEO Card - Clean Modern Style */}
             <motion.div
-              className="relative rounded-xl overflow-hidden shadow-lg"
+              className="overflow-hidden bg-white rounded-xl shadow-md"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
+              whileHover={{ y: -5, boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.1)" }}
             >
-              <img
-                src="/assets/team/samrawit-kassa.jpg"
-                alt="Samrawit Kassa"
-                className="w-full object-cover object-top"
-              />
+              <div className="w-full h-80">
+                <img
+                  src="/assets/team/samrawit-kassa.jpg"
+                  alt="Samrawit Kassa"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
               
-              <div className="p-6 relative">
+              <div className="p-6">
                 <h3 className="text-2xl font-bold mb-1 text-gray-900">Samrawit Kassa</h3>
-                <p className="text-blue-600 mb-3 flex items-center">
-                  <Users className="w-4 h-4 mr-2" />
+                <p className="text-blue-600 mb-3 flex items-center text-sm">
+                  <Users className="w-4 h-4 mr-1" />
                   CEO
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   Samrawit leads our business operations with expertise in strategic planning, client relations, and organizational growth.
                 </p>
               </div>
