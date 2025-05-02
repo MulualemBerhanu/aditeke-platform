@@ -9,9 +9,27 @@ import { Button } from '@/components/ui/button';
 const PortfolioPage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   
-  const { data: projects, isLoading, error } = useQuery<Project[]>({
+  const { data: rawProjects, isLoading, error } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
   });
+  
+  // Sort projects by sort_order first, then by id
+  const projects = useMemo(() => {
+    if (!rawProjects) return undefined;
+    
+    return [...rawProjects].sort((a, b) => {
+      // First prioritize by sort_order field if it exists
+      if (a.sort_order !== undefined && b.sort_order !== undefined) {
+        return a.sort_order - b.sort_order;
+      } else if (a.sort_order !== undefined) {
+        return -1; // a has sort_order, b doesn't -> a comes first
+      } else if (b.sort_order !== undefined) {
+        return 1;  // b has sort_order, a doesn't -> b comes first
+      }
+      // Fall back to sorting by id if sort_order is not available
+      return a.id - b.id;
+    });
+  }, [rawProjects]);
 
   const handleFilterChange = (category: string) => {
     setActiveFilter(category);
