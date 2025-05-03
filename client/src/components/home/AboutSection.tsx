@@ -1,65 +1,101 @@
 import { motion } from 'framer-motion';
-import { Award, Code, Globe, HeartHandshake, Lightbulb, LineChart, MessageSquare, Users } from 'lucide-react';
+import { 
+  Award, 
+  Code, 
+  Globe, 
+  HeartHandshake, 
+  Lightbulb, 
+  LineChart, 
+  Users, 
+  Rocket, 
+  CheckCircle, 
+  Shield,
+  BarChart4
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 
 const AboutSection = () => {
+  // Enhanced features with advanced descriptions and icons
   const features = [
     { 
-      title: "Expert Team", 
-      description: "Industry veterans with diverse technical expertise", 
-      icon: <Users className="h-5 w-5" /> 
+      title: "Expert Engineering Team", 
+      description: "Seasoned engineers with deep expertise across multiple technology stacks and domains", 
+      icon: <Users className="h-6 w-6" />,
+      gradient: "from-blue-600 to-blue-400"
     },
     { 
-      title: "Quality Driven", 
-      description: "Excellence in code, design, and performance", 
-      icon: <Award className="h-5 w-5" /> 
+      title: "Quality Assurance", 
+      description: "Rigorous testing methodologies ensuring flawless code, design, and performance", 
+      icon: <CheckCircle className="h-6 w-6" />,
+      gradient: "from-green-600 to-emerald-400" 
     },
     { 
-      title: "Innovative Approach", 
-      description: "Cutting-edge solutions using latest technologies", 
-      icon: <Lightbulb className="h-5 w-5" /> 
+      title: "Innovative Solutions", 
+      description: "Pioneering approaches using cutting-edge technologies and creative problem-solving", 
+      icon: <Lightbulb className="h-6 w-6" />,
+      gradient: "from-amber-500 to-yellow-400" 
     },
     { 
-      title: "Client Partnership", 
-      description: "Dedicated support from concept to deployment", 
-      icon: <HeartHandshake className="h-5 w-5" /> 
+      title: "Strategic Partnerships", 
+      description: "Collaborative relationships with clients from initial concept through continuous evolution", 
+      icon: <HeartHandshake className="h-6 w-6" />,
+      gradient: "from-rose-600 to-pink-400"
     },
     { 
-      title: "Global Reach", 
-      description: "Serving clients across multiple industries worldwide", 
-      icon: <Globe className="h-5 w-5" /> 
+      title: "Global Capabilities", 
+      description: "International presence with solutions deployed across diverse industries and markets", 
+      icon: <Globe className="h-6 w-6" />,
+      gradient: "from-indigo-600 to-blue-400"
     },
     { 
-      title: "Data-Driven", 
-      description: "Analytics-backed decisions for optimal results", 
-      icon: <LineChart className="h-5 w-5" /> 
+      title: "Data-Driven Excellence", 
+      description: "Analytics-powered decisions and metrics-based optimizations for maximum business impact", 
+      icon: <BarChart4 className="h-6 w-6" />,
+      gradient: "from-violet-600 to-purple-400"
+    },
+    { 
+      title: "Rapid Delivery", 
+      description: "Optimized development processes for fast time-to-market without compromising quality", 
+      icon: <Rocket className="h-6 w-6" />,
+      gradient: "from-red-600 to-orange-400"
+    },
+    { 
+      title: "Security Focus", 
+      description: "Best-in-class security practices integrated throughout the development lifecycle", 
+      icon: <Shield className="h-6 w-6" />,
+      gradient: "from-cyan-600 to-teal-400"
     }
   ];
 
-  // Timeline data for company milestones
+  // Timeline data for company milestones with enhanced narrative
   const timeline = [
-    { title: "🧭 Belief", description: "Purposeful technology can empower businesses of all sizes." },
-    { title: "👨‍💻 Humble Beginnings", description: "Started as a small, passionate team of software engineers." },
-    { title: "🧠 Beyond Developers", description: "We're problem solvers, collaborators, and digital craftsmen." },
-    { title: "🚀 Growth & Trust", description: "From MVPs to enterprise platforms — built with precision and empathy." },
-    { title: "🌍 Mission", description: "To craft transformative, future-ready digital solutions." }
+    { 
+      title: "🧭 Vision & Purpose", 
+      description: "Founded on the belief that thoughtfully designed technology can transform businesses of every size.", 
+      year: "2018"
+    },
+    { 
+      title: "👨‍💻 Innovation Begins", 
+      description: "Started as a close-knit team of passionate engineers with a focus on quality and client satisfaction.", 
+      year: "2019"
+    },
+    { 
+      title: "🧠 Beyond Code", 
+      description: "Evolved into a full-service solution provider—combining technical expertise with strategic consulting.", 
+      year: "2020"
+    },
+    { 
+      title: "🚀 Accelerated Growth", 
+      description: "Expanded our capabilities from MVPs to enterprise platforms, built with precision, scale, and empathy.", 
+      year: "2022"
+    },
+    { 
+      title: "🌍 Global Impact", 
+      description: "Today, we craft transformative, future-ready digital solutions that drive measurable business outcomes.", 
+      year: "2023"
+    }
   ];
-
-  // Animated background pattern for visual interest
-  const BackgroundPattern = () => (
-    <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
-      <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10"></div>
-      <div className="absolute top-40 -left-20 w-60 h-60 rounded-full bg-primary/5"></div>
-      <div className="absolute bottom-40 right-20 w-40 h-40 rounded-full bg-primary/5"></div>
-      
-      <svg className="absolute bottom-0 left-0 w-full h-32 text-primary/5" viewBox="0 0 1200 120" preserveAspectRatio="none">
-        <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25"></path>
-        <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5"></path>
-        <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" opacity=".25"></path>
-      </svg>
-    </div>
-  );
 
   return (
     <section id="about" className="pt-32 pb-24 relative overflow-hidden">
@@ -67,9 +103,9 @@ const AboutSection = () => {
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#071336]/20 to-transparent -z-10"></div>
       
       {/* Main background with dynamic pattern */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 to-white/95 -z-20"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 via-blue-50/60 to-white/95 -z-20"></div>
       
-      {/* Abstract wave divider */}
+      {/* Abstract wave divider - more prominent */}
       <div className="absolute inset-x-0 top-0 transform -translate-y-[99%] z-0 overflow-hidden pointer-events-none">
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-24 text-blue-50">
           <path 
@@ -79,36 +115,49 @@ const AboutSection = () => {
         </svg>
       </div>
       
-      {/* Enhanced background pattern with animations */}
+      {/* Enhanced background pattern with more dynamic animations */}
       <div className="absolute inset-0 overflow-hidden -z-10">
+        {/* Radial gradients for depth */}
         <div className="absolute w-full h-full bg-[radial-gradient(circle_at_10%_20%,rgba(59,130,246,0.1)_0%,transparent_50%)]"></div>
         <div className="absolute w-full h-full bg-[radial-gradient(circle_at_80%_60%,rgba(59,130,246,0.05)_0%,transparent_50%)]"></div>
+        <div className="absolute w-full h-full bg-[radial-gradient(circle_at_40%_90%,rgba(59,130,246,0.08)_0%,transparent_40%)]"></div>
         
-        {/* Animated floating elements */}
-        {[...Array(8)].map((_, i) => (
+        {/* Animated floating elements with parallax effect */}
+        {[...Array(12)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full bg-blue-500/5"
+            className="absolute rounded-full bg-gradient-to-br from-blue-500/10 to-blue-600/5"
             style={{
-              width: `${20 + i * 10}px`,
-              height: `${20 + i * 10}px`,
-              left: `${5 + i * 12}%`,
-              top: `${10 + (i % 5) * 15}%`,
+              width: `${20 + i * 8}px`,
+              height: `${20 + i * 8}px`,
+              left: `${3 + i * 8}%`,
+              top: `${5 + (i % 6) * 15}%`,
+              filter: "blur(1px)",
             }}
             animate={{
               y: [0, -15, 0],
-              x: [0, i % 2 === 0 ? 8 : -8, 0],
-              opacity: [0.3, 0.6, 0.3]
+              x: [0, i % 2 === 0 ? 10 : -10, 0],
+              opacity: [0.3, 0.7, 0.3],
+              scale: [1, i % 3 === 0 ? 1.1 : 0.9, 1]
             }}
             transition={{
-              duration: 5 + i,
+              duration: 4 + (i % 4),
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: "easeInOut",
+              delay: i * 0.2
             }}
           />
         ))}
         
-        {/* Grid pattern */}
+        {/* Hexagonal grid pattern for a more technical feel */}
+        <div className="absolute inset-0 opacity-10" 
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='40' viewBox='0 0 24 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40c5.523 0 10-4.477 10-10V0C4.477 0 0 4.477 0 10v30zm22 0c-5.523 0-10-4.477-10-10V0c5.523 0 10 4.477 10 10v30z' fill='%233b82f6' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+            backgroundSize: '60px 60px'
+          }}
+        ></div>
+        
+        {/* Futuristic grid lines */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30"></div>
       </div>
       
@@ -278,8 +327,12 @@ const AboutSection = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
                     >
-                      {/* Removed dot since we have emojis in the title */}
-                      <div className="font-medium text-gray-800 text-lg">{item.title}</div>
+                      <div className="font-medium text-gray-800 text-lg flex items-center">
+                        <span>{item.title}</span>
+                        <span className="ml-2 text-xs font-normal bg-primary/10 text-primary px-2 py-0.5 rounded">
+                          {item.year}
+                        </span>
+                      </div>
                       <div className="text-gray-600 text-sm pl-5">{item.description}</div>
                     </motion.div>
                   ))}
@@ -296,59 +349,90 @@ const AboutSection = () => {
           </div>
         </div>
         
-        {/* Features Grid */}
-        <motion.div 
-          className="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          {features.map((feature, index) => (
-            <motion.div 
-              key={index}
-              className="relative overflow-hidden backdrop-blur-sm bg-white/80 rounded-xl p-6 shadow-lg border border-white/60 flex group"
-              initial={{ opacity: 0, y: 20 }}
+        {/* Features Grid - Advanced Design */}
+        <div className="relative mt-32 mb-16">
+          {/* Section Title */}
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              className="inline-block px-5 py-1.5 mb-4 rounded-full bg-blue-100/60 backdrop-blur-sm text-primary font-medium border border-blue-200/50"
+              initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ 
-                y: -5, 
-                boxShadow: "0 20px 30px -10px rgba(59, 130, 246, 0.15)",
-                borderColor: "rgba(59, 130, 246, 0.3)"
-              }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
-              {/* Glossy background effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/70 to-white/50 opacity-90 group-hover:opacity-100 transition-all duration-300" />
-              
-              {/* Accent line */}
-              <div className="absolute h-1 bottom-0 left-0 right-0 bg-gradient-to-r from-primary/80 via-primary to-primary/50 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-              
-              {/* Icon with enhanced animation */}
-              <div className="mr-5 mt-1 z-10">
-                <motion.div 
-                  className="relative w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-primary to-primary/80 group-hover:shadow-primary/20 transition-all duration-300"
-                  whileHover={{ rotate: [0, -5, 5, 0] }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  {feature.icon}
-                  
-                  {/* Glow effect on hover */}
-                  <div className="absolute -inset-0.5 bg-primary/20 rounded-lg blur-sm opacity-0 group-hover:opacity-70 transition-opacity duration-300 -z-10"></div>
-                </motion.div>
-              </div>
-              
-              {/* Content with improved styling */}
-              <div className="z-10">
-                <h3 className="font-bold text-lg mb-2 text-gray-800 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
-              </div>
-              
-              {/* Subtle corner accent */}
-              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              Why Choose Us
             </motion.div>
-          ))}
-        </motion.div>
+            
+            <h3 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-700">
+              Our Core Capabilities
+            </h3>
+            
+            <motion.div 
+              className="mx-auto w-20 h-1 mt-4 bg-gradient-to-r from-transparent via-primary/40 to-transparent rounded-full"
+              initial={{ scaleX: 0, opacity: 0 }}
+              whileInView={{ scaleX: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            />
+          </motion.div>
+          
+          {/* Modern Features Grid with glass cards */}
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {features.map((feature, index) => (
+              <motion.div 
+                key={index}
+                className="relative overflow-hidden rounded-2xl shadow-lg group h-full"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 + index * 0.08 }}
+                whileHover={{ 
+                  y: -6, 
+                  boxShadow: "0 25px 35px -12px rgba(59, 130, 246, 0.25)",
+                }}
+              >
+                {/* Glossy background effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/95 via-white/90 to-white/80 backdrop-blur-sm opacity-90 group-hover:opacity-100 transition-all duration-300" />
+                
+                {/* Accent gradient border top */}
+                <div className="absolute h-1 top-0 left-0 right-0 bg-gradient-to-r from-transparent via-blue-500/80 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"></div>
+                
+                {/* Decorative corner accent */}
+                <div className="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-gradient-to-bl from-transparent to-primary/10 opacity-0 group-hover:opacity-100 transform group-hover:scale-125 transition-all duration-700"></div>
+                
+                {/* Icon container with dynamic gradient */}
+                <div className="relative p-6 flex flex-col h-full">
+                  <div 
+                    className={`mb-4 p-3 w-14 h-14 rounded-xl shadow-md flex items-center justify-center text-white z-10 group-hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${feature.gradient}`}
+                  >
+                    {feature.icon}
+                  </div>
+                  
+                  {/* Content with improved styling */}
+                  <div className="z-10">
+                    <h3 className="font-bold text-lg mb-2 text-gray-800 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
+                    <p className="text-gray-600 text-sm">{feature.description}</p>
+                  </div>
+                </div>
+                
+                {/* Subtle corner accent */}
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
         
         {/* Enhanced CTA Section */}
         <motion.div 
@@ -362,22 +446,6 @@ const AboutSection = () => {
           <div className="relative rounded-2xl overflow-hidden backdrop-blur-md">
             {/* Fancy background with animated gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-blue-400/5 -z-10" />
-            
-            {/* Animated gradient overlay */}
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-primary/10 to-blue-500/5 -z-10"
-              animate={{
-                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              style={{
-                backgroundSize: '200% 200%',
-              }}
-            />
             
             {/* Animated dots pattern */}
             <div className="absolute inset-0 opacity-10">
@@ -418,14 +486,6 @@ const AboutSection = () => {
               {/* Heading with subtle animation */}
               <motion.h3 
                 className="text-2xl md:text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-primary relative inline-block"
-                whileInView={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
                 style={{
                   backgroundSize: '200% auto',
                 }}
