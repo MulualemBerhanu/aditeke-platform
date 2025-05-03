@@ -312,54 +312,56 @@ const AboutPage = () => {
                   transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 />
                 
-                {/* 3D-like chart visualization */}
+                {/* Mission Strength Card */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative w-full max-w-[400px] h-[300px] border border-gray-100 rounded-2xl bg-white shadow-xl p-8">
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-transparent rounded-2xl" />
+                  <div className="relative w-full max-w-[400px] h-auto min-h-[320px] border border-gray-100 rounded-2xl bg-white shadow-xl p-4 md:p-8 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-transparent rounded-2xl"></div>
                     
-                    {/* Title with Mission icon */}
-                    <div className="mb-8 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Target className="w-5 h-5 text-primary" />
+                    {/* Card Header */}
+                    <div className="mb-6 flex items-center gap-2">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Target className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-800">Mission Strength</h3>
-                        <div className="h-1 w-16 bg-primary/30 mt-2"></div>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-800">Mission Strength</h3>
+                        <div className="h-1 w-12 md:w-16 bg-primary/30 mt-1 md:mt-2"></div>
                       </div>
                     </div>
                     
-                    {/* Animated Bar Chart */}
-                    {[
-                      { label: "Innovation", value: 95, color: "from-primary to-blue-500" },
-                      { label: "Client Focus", value: 98, color: "from-blue-500 to-cyan-400" },
-                      { label: "Excellence", value: 90, color: "from-cyan-400 to-teal-400" },
-                      { label: "Integrity", value: 97, color: "from-teal-400 to-emerald-500" }
-                    ].map((item, index) => (
-                      <motion.div 
-                        key={index} 
-                        className="mb-4"
-                        initial={{ opacity: 0 }}
-                        animate={missionInView ? { opacity: 1 } : { opacity: 0 }}
-                        transition={{ delay: 0.3 + (index * 0.1), duration: 0.5 }}
-                      >
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-medium text-gray-600">{item.label}</span>
-                          <span className="text-sm font-semibold text-primary">{item.value}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                          <motion.div 
-                            className={`h-full rounded-full bg-gradient-to-r ${item.color}`}
-                            initial={{ width: 0 }}
-                            animate={missionInView ? { width: `${item.value}%` } : { width: 0 }}
-                            transition={{ 
-                              delay: 0.5 + (index * 0.15), 
-                              duration: 1,
-                              ease: "easeOut" 
-                            }}
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
+                    {/* Progress Bars */}
+                    <div className="space-y-3 md:space-y-4">
+                      {[
+                        { label: "Innovation", value: 95, color: "from-primary to-blue-500" },
+                        { label: "Client Focus", value: 98, color: "from-blue-500 to-cyan-400" },
+                        { label: "Excellence", value: 90, color: "from-cyan-400 to-teal-400" },
+                        { label: "Integrity", value: 97, color: "from-teal-400 to-emerald-500" }
+                      ].map((item, index) => (
+                        <motion.div 
+                          key={index} 
+                          className="mb-2"
+                          initial={{ opacity: 0 }}
+                          animate={missionInView ? { opacity: 1 } : { opacity: 0 }}
+                          transition={{ delay: 0.3 + (index * 0.1), duration: 0.5 }}
+                        >
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs md:text-sm font-medium text-gray-600">{item.label}</span>
+                            <span className="text-xs md:text-sm font-semibold text-primary">{item.value}%</span>
+                          </div>
+                          <div className="h-1.5 md:h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                            <motion.div 
+                              className={`h-full rounded-full bg-gradient-to-r ${item.color}`}
+                              initial={{ width: 0 }}
+                              animate={missionInView ? { width: `${item.value}%` } : { width: 0 }}
+                              transition={{ 
+                                delay: 0.5 + (index * 0.15), 
+                                duration: 1,
+                                ease: "easeOut" 
+                              }}
+                            />
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
