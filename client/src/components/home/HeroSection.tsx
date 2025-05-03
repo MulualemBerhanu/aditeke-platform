@@ -285,6 +285,58 @@ const HeroSection = () => {
       <VideoBackground />
       
       <div className="container mx-auto px-4 relative z-10">
+        {/* Vertical Contact Icons */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="absolute right-0 md:right-6 lg:right-10 xl:right-16 top-1/2 transform -translate-y-1/2 z-50 flex flex-col gap-4 hidden md:flex"
+        >
+          {/* Phone Icon */}
+          <div className="relative group">
+            <a href="tel:+16414818560" className="block">
+              <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
+                {/* Pulsing animation */}
+                <div className="absolute inset-0 rounded-full animate-contact-ping bg-blue-400/40"></div>
+                <Phone className="h-5 w-5 text-white relative z-10" />
+              </div>
+            </a>
+            
+            {/* Horizontal info that appears on hover */}
+            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-x-3 group-hover:translate-x-0 transition-all duration-300">
+              <div className="flex items-center bg-gradient-to-r from-blue-800/90 to-blue-600/90 text-white rounded-lg shadow-lg shadow-blue-500/20 px-4 py-2 border border-blue-500/30 backdrop-blur-md">
+                <div className="flex flex-col pr-1">
+                  <span className="text-xs text-blue-300 font-medium">Call Us</span>
+                  <span className="text-sm font-medium">+1 (641) 481-8560</span>
+                </div>
+                <ExternalLink className="h-3 w-3 ml-2 text-blue-300" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Email Icon */}
+          <div className="relative group">
+            <a href="mailto:berhanumulualemadisu@gmail.com" className="block">
+              <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
+                {/* Pulsing animation */}
+                <div className="absolute inset-0 rounded-full animate-contact-ping bg-purple-400/40"></div>
+                <Mail className="h-5 w-5 text-white relative z-10" />
+              </div>
+            </a>
+            
+            {/* Horizontal info that appears on hover */}
+            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-x-3 group-hover:translate-x-0 transition-all duration-300">
+              <div className="flex items-center bg-gradient-to-r from-purple-800/90 to-purple-600/90 text-white rounded-lg shadow-lg shadow-purple-500/20 px-4 py-2 border border-purple-500/30 backdrop-blur-md">
+                <div className="flex flex-col pr-1">
+                  <span className="text-xs text-purple-300 font-medium">Email Us</span>
+                  <span className="text-sm font-medium animate-text-shimmer">berhanumulualemadisu@gmail.com</span>
+                </div>
+                <ExternalLink className="h-3 w-3 ml-2 text-purple-300" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+        
         <div className="flex flex-col lg:flex-row items-center gap-12">
           {/* Hero Content */}
           <motion.div 
@@ -352,57 +404,7 @@ const HeroSection = () => {
               </motion.div>
             </div>
             
-            {/* Vertical Contact Icons */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50 flex flex-col gap-4"
-            >
-              {/* Phone Icon */}
-              <div className="relative group">
-                <a href="tel:+16414818560" className="block">
-                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
-                    {/* Pulsing animation */}
-                    <div className="absolute inset-0 rounded-full animate-contact-ping bg-blue-400/40"></div>
-                    <Phone className="h-5 w-5 text-white relative z-10" />
-                  </div>
-                </a>
-                
-                {/* Horizontal info that appears on hover */}
-                <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-x-3 group-hover:translate-x-0 transition-all duration-300">
-                  <div className="flex items-center bg-gradient-to-r from-blue-800/90 to-blue-600/90 text-white rounded-lg shadow-lg shadow-blue-500/20 px-4 py-2 border border-blue-500/30 backdrop-blur-md">
-                    <div className="flex flex-col pr-1">
-                      <span className="text-xs text-blue-300 font-medium">Call Us</span>
-                      <span className="text-sm font-medium">+1 (641) 481-8560</span>
-                    </div>
-                    <ExternalLink className="h-3 w-3 ml-2 text-blue-300" />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Email Icon */}
-              <div className="relative group">
-                <a href="mailto:berhanumulualemadisu@gmail.com" className="block">
-                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
-                    {/* Pulsing animation */}
-                    <div className="absolute inset-0 rounded-full animate-contact-ping bg-purple-400/40"></div>
-                    <Mail className="h-5 w-5 text-white relative z-10" />
-                  </div>
-                </a>
-                
-                {/* Horizontal info that appears on hover */}
-                <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-x-3 group-hover:translate-x-0 transition-all duration-300">
-                  <div className="flex items-center bg-gradient-to-r from-purple-800/90 to-purple-600/90 text-white rounded-lg shadow-lg shadow-purple-500/20 px-4 py-2 border border-purple-500/30 backdrop-blur-md">
-                    <div className="flex flex-col pr-1">
-                      <span className="text-xs text-purple-300 font-medium">Email Us</span>
-                      <span className="text-sm font-medium animate-text-shimmer">berhanumulualemadisu@gmail.com</span>
-                    </div>
-                    <ExternalLink className="h-3 w-3 ml-2 text-purple-300" />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+
             
             <motion.div
               className="flex items-center justify-center lg:justify-start gap-2 text-sm text-white/60"
