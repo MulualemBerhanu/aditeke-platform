@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, Phone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Phone, Mail, ExternalLink } from "lucide-react";
 import Lottie from 'lottie-react';
 import CustomCountUp from '@/components/common/CustomCountUp';
 import CodeAnimation from './CodeAnimation';
@@ -352,20 +352,47 @@ const HeroSection = () => {
               </motion.div>
             </div>
             
-            {/* Quick Action Icons */}
-            <div className="flex items-center space-x-6 mb-6 justify-center lg:justify-start">
-              <Link href="/portfolio">
-                <motion.div 
-                  className="flex items-center text-white/70 hover:text-white/90 transition-colors"
-                  whileHover={{ y: -3 }}
+            {/* Contact Info Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mb-6 backdrop-blur-md bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-blue-500/20 rounded-xl p-3 md:p-4 max-w-md mx-auto lg:mx-0"
+            >
+              <div className="flex flex-wrap md:flex-nowrap items-center justify-center lg:justify-start gap-4">
+                <a 
+                  href="tel:+16414818560"
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-blue-400/10 hover:from-blue-500/30 hover:to-blue-400/20 border border-blue-500/30 group transition-all duration-300"
                 >
-                  <div className="p-2 rounded-full bg-blue-500/10 border border-blue-500/30 mr-2">
-                    <Phone className="h-4 w-4" />
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full animate-ping bg-blue-400/20"></div>
+                    <div className="relative p-2 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                      <Phone className="h-4 w-4" />
+                    </div>
                   </div>
-                  <span className="text-sm">Contact Us</span>
-                </motion.div>
-              </Link>
-            </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-blue-300">Call Us</span>
+                    <span className="text-sm text-white group-hover:text-blue-200 font-medium transition-colors">+1 (641) 481-8560</span>
+                  </div>
+                </a>
+                
+                <a 
+                  href="mailto:berhanumulualemadisu@gmail.com" 
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500/20 to-purple-400/10 hover:from-purple-500/30 hover:to-purple-400/20 border border-purple-500/30 group transition-all duration-300"
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full animate-ping bg-purple-400/20"></div>
+                    <div className="relative p-2 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 text-white">
+                      <Mail className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-purple-300">Email Us</span>
+                    <span className="text-sm text-white group-hover:text-purple-200 font-medium transition-colors animate-text-shimmer">berhanumulualemadisu@gmail.com</span>
+                  </div>
+                </a>
+              </div>
+            </motion.div>
             
             <motion.div
               className="flex items-center justify-center lg:justify-start gap-2 text-sm text-white/60"
