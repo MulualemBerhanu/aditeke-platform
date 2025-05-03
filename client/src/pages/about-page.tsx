@@ -655,72 +655,7 @@ const AboutPage = () => {
             ))}
           </div>
           
-          {/* Stat Counters */}
-          <div className="mt-20 md:mt-32 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl"></div>
-            
-            <div className="relative z-10 py-10 md:py-16 px-6 md:px-10 rounded-2xl overflow-hidden">
-              <div className="text-center max-w-3xl mx-auto mb-12">
-                <h2 className="text-2xl md:text-3xl font-bold mb-6">Our Success By The Numbers</h2>
-                <div className="h-1 w-20 bg-primary/30 mx-auto"></div>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {[
-                  { label: "Projects Delivered", value: "120+" },
-                  { label: "Client Retention Rate", value: "95%" },
-                  { label: "On-Time Delivery", value: "98%" },
-                  { label: "Team Experts", value: "18+" }
-                ].map((stat, index) => (
-                  <motion.div 
-                    key={index}
-                    className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-                    whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                  >
-                    <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                    <div className="text-sm text-gray-600">{stat.label}</div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Tech floating elements */}
-            <motion.div
-              className="absolute w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center"
-              style={{ top: "20%", left: "15%" }}
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              animate={{ 
-                y: [0, -10, 0],
-                scale: [1, 1.05, 1],
-                rotate: [0, 5, 0] 
-              }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Code className="w-5 h-5 text-primary" />
-            </motion.div>
-            
-            <motion.div
-              className="absolute w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"
-              style={{ bottom: "30%", right: "10%" }}
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              animate={{ 
-                y: [0, -15, 0],
-                scale: [1, 1.1, 1],
-                rotate: [0, -10, 0] 
-              }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            >
-              <Database className="w-4 h-4 text-blue-500" />
-            </motion.div>
-          </div>
+
         </div>
       </section>
       
