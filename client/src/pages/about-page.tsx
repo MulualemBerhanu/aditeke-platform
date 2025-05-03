@@ -524,9 +524,9 @@ const AboutPage = () => {
                       <h3 className="text-2xl font-bold mt-3 mb-4 text-gray-900">Mulualem Berhanu</h3>
                       
                       <p className="text-gray-600 mb-6">
-                        Mulualem brings over 7 years of expertise in software architecture, technical leadership, and innovation. 
-                        He oversees the technical direction of AdiTeke, ensuring all solutions are built with scalability, 
-                        security, and performance in mind.
+                        With over 7 years of hands-on expertise in full-stack development, software architecture, and technical leadership. 
+                        He drives the company's technical vision—leading with innovation, ensuring every solution is scalable, secure, 
+                        and high-performing, and mentoring the team to uphold engineering excellence.
                       </p>
                     </div>
                     
