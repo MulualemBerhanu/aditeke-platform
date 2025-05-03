@@ -1001,10 +1001,10 @@ const ServicesPage = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-b from-blue-950 to-blue-900 relative overflow-hidden">
         {/* Background patterns */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_90%,rgba(59,130,246,0.02),transparent_25%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgba(59,130,246,0.02),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_90%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgba(255,255,255,0.03),transparent_25%)]"></div>
         
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
@@ -1016,14 +1016,14 @@ const ServicesPage = () => {
           >
             <div className="inline-block mb-3">
               <div className="flex items-center justify-center mb-4">
-                <div className="h-px w-8 bg-primary/40"></div>
-                <div className="mx-2 text-primary/70 text-lg">❓</div>
-                <div className="h-px w-8 bg-primary/40"></div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
+                <div className="mx-2 text-blue-300 text-lg">❓</div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
               </div>
             </div>
             
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Frequently Asked Questions</h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
               Find answers to common questions about our services and development process
             </p>
           </motion.div>
@@ -1036,8 +1036,8 @@ const ServicesPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4 }}
               >
-                <AccordionItem value="item-1" className="border border-gray-200 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <AccordionItem value="item-1" className="border border-blue-300/20 bg-white/95 rounded-lg overflow-hidden shadow-md">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-blue-50 transition-colors">
                     <div className="text-left font-medium text-lg">How long does the development process typically take?</div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-2 text-gray-600">
@@ -1052,8 +1052,8 @@ const ServicesPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
-                <AccordionItem value="item-2" className="border border-gray-200 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <AccordionItem value="item-2" className="border border-blue-300/20 bg-white/95 rounded-lg overflow-hidden shadow-md">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-blue-50 transition-colors">
                     <div className="text-left font-medium text-lg">What is your approach to project management?</div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-2 text-gray-600">
@@ -1068,8 +1068,8 @@ const ServicesPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.2 }}
               >
-                <AccordionItem value="item-3" className="border border-gray-200 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <AccordionItem value="item-3" className="border border-blue-300/20 bg-white/95 rounded-lg overflow-hidden shadow-md">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-blue-50 transition-colors">
                     <div className="text-left font-medium text-lg">Do you provide maintenance and support after launch?</div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-2 text-gray-600">
@@ -1134,9 +1134,9 @@ const ServicesPage = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.6 }}
             >
-              <p className="text-gray-700 mb-6">Still have questions? We're here to help.</p>
+              <p className="text-gray-300 mb-6">Still have questions? We're here to help.</p>
               <Link href="/contact">
-                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/5">
+                <Button className="bg-white text-primary hover:bg-white/90 shadow-md">
                   Contact Our Team
                 </Button>
               </Link>
