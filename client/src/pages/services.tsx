@@ -1084,8 +1084,8 @@ const ServicesPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.3 }}
               >
-                <AccordionItem value="item-4" className="border border-gray-200 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <AccordionItem value="item-4" className="border border-blue-300/20 bg-white/95 rounded-lg overflow-hidden shadow-md">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-blue-50 transition-colors">
                     <div className="text-left font-medium text-lg">How do you handle data security and privacy?</div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-2 text-gray-600">
@@ -1100,8 +1100,8 @@ const ServicesPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.4 }}
               >
-                <AccordionItem value="item-5" className="border border-gray-200 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <AccordionItem value="item-5" className="border border-blue-300/20 bg-white/95 rounded-lg overflow-hidden shadow-md">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-blue-50 transition-colors">
                     <div className="text-left font-medium text-lg">Can you work with our existing systems and technologies?</div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-2 text-gray-600">
@@ -1116,8 +1116,8 @@ const ServicesPage = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: 0.5 }}
               >
-                <AccordionItem value="item-6" className="border border-gray-200 rounded-lg overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <AccordionItem value="item-6" className="border border-blue-300/20 bg-white/95 rounded-lg overflow-hidden shadow-md">
+                  <AccordionTrigger className="px-6 py-4 hover:bg-blue-50 transition-colors">
                     <div className="text-left font-medium text-lg">What payment terms do you offer?</div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-2 text-gray-600">
