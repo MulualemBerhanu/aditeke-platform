@@ -68,16 +68,16 @@ const AboutPage = () => {
         />
       </Helmet>
       
-      {/* Modern Animated Hero Section with 3D depth */}
-      <div className="relative py-32 md:py-40 overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white">
+      {/* Modern Animated Hero Section with 3D depth - With Mobile Responsiveness */}
+      <div className="relative min-h-[60vh] py-20 md:py-40 overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white">
         {/* Enhanced decorative elements */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_80%,rgba(59,130,246,0.08),transparent_30%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(59,130,246,0.08),transparent_35%)]"></div>
         <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.01)_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
         
-        {/* Advanced floating elements with parallax effect */}
+        {/* Advanced floating elements with parallax effect - Only visible on larger screens */}
         <motion.div 
-          className="absolute top-40 left-[10%] w-48 h-48 rounded-full bg-gradient-to-br from-primary/10 to-blue-400/5 blur-3xl opacity-70"
+          className="absolute hidden md:block top-40 left-[10%] w-48 h-48 rounded-full bg-gradient-to-br from-primary/10 to-blue-400/5 blur-3xl opacity-70"
           animate={{ 
             y: [0, -20, 0],
             scale: [1, 1.05, 1],
@@ -91,7 +91,7 @@ const AboutPage = () => {
         ></motion.div>
         
         <motion.div 
-          className="absolute bottom-40 right-[15%] w-36 h-36 rounded-full bg-blue-500/5 blur-2xl opacity-60"
+          className="absolute hidden md:block bottom-40 right-[15%] w-36 h-36 rounded-full bg-blue-500/5 blur-2xl opacity-60"
           animate={{ 
             y: [0, -15, 0],
             scale: [1, 1.1, 1],
@@ -105,7 +105,7 @@ const AboutPage = () => {
         ></motion.div>
         
         <motion.div 
-          className="absolute top-1/2 right-[40%] w-24 h-24 rounded-full bg-primary/10 blur-xl opacity-40"
+          className="absolute hidden md:block top-1/2 right-[40%] w-24 h-24 rounded-full bg-primary/10 blur-xl opacity-40"
           animate={{ 
             y: [0, -10, 0],
             scale: [1, 1.15, 1],
@@ -317,18 +317,23 @@ const AboutPage = () => {
                   <div className="relative w-full max-w-[400px] h-[300px] border border-gray-100 rounded-2xl bg-white shadow-xl p-8">
                     <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-transparent rounded-2xl" />
                     
-                    {/* Title */}
-                    <div className="mb-8">
-                      <h3 className="text-2xl font-bold text-gray-800">Our Focus Areas</h3>
-                      <div className="h-1 w-16 bg-primary/30 mt-2"></div>
+                    {/* Title with Mission icon */}
+                    <div className="mb-8 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Target className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-800">Mission Strength</h3>
+                        <div className="h-1 w-16 bg-primary/30 mt-2"></div>
+                      </div>
                     </div>
                     
                     {/* Animated Bar Chart */}
                     {[
-                      { label: "Software Development", value: 95, color: "from-primary to-blue-500" },
-                      { label: "Mobile Applications", value: 85, color: "from-blue-500 to-cyan-400" },
-                      { label: "AI Solutions", value: 80, color: "from-cyan-400 to-teal-400" },
-                      { label: "Web Applications", value: 90, color: "from-teal-400 to-emerald-500" }
+                      { label: "Innovation", value: 95, color: "from-primary to-blue-500" },
+                      { label: "Client Focus", value: 98, color: "from-blue-500 to-cyan-400" },
+                      { label: "Excellence", value: 90, color: "from-cyan-400 to-teal-400" },
+                      { label: "Integrity", value: 97, color: "from-teal-400 to-emerald-500" }
                     ].map((item, index) => (
                       <motion.div 
                         key={index} 
