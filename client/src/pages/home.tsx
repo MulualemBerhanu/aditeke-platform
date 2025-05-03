@@ -6,7 +6,6 @@ import PortfolioSection from '@/components/home/PortfolioSection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import ContactSection from '@/components/home/ContactSection';
 import ClientDashboardPreview from '@/components/home/ClientDashboardPreview';
-import TechStackShowcase from '@/components/home/TechStackShowcase';
 import FeatureSection from '@/components/home/FeatureSection';
 
 const Home = () => {
@@ -20,7 +19,6 @@ const Home = () => {
       <HeroSection />
       <ServicesSection />
       <AboutSection />
-      <TechStackShowcase />
       <PortfolioSection />
       <TestimonialsSection />
       <ContactSection />
