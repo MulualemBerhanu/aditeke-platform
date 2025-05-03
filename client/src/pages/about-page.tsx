@@ -523,19 +523,11 @@ const AboutPage = () => {
                       
                       <h3 className="text-2xl font-bold mt-3 mb-4 text-gray-900">Mulualem Berhanu</h3>
                       
-                      <p className="text-gray-600 mb-6">
+                      <p className="text-gray-600">
                         With over 7 years of hands-on expertise in full-stack development, software architecture, and technical leadership. 
                         He drives the company's technical vision—leading with innovation, ensuring every solution is scalable, secure, 
                         and high-performing, and mentoring the team to uphold engineering excellence.
                       </p>
-                    </div>
-                    
-                    <div className="flex space-x-4">
-                      {['React', 'Node.js', 'PostgreSQL'].map((skill, i) => (
-                        <Badge key={i} className="bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-                          {skill}
-                        </Badge>
-                      ))}
                     </div>
                   </div>
                 </div>
@@ -575,20 +567,12 @@ const AboutPage = () => {
                       
                       <h3 className="text-2xl font-bold mt-3 mb-4 text-gray-900">Samrawit Kassa</h3>
                       
-                      <p className="text-gray-600 mb-6">
+                      <p className="text-gray-600">
                         With her background in business strategy and technology management, Samrawit leads our company 
                         vision and growth. Her expertise in strategic partnerships, 
                         client relations, and organizational leadership ensures our company delivers exceptional value while 
                         maintaining our core mission.
                       </p>
-                    </div>
-                    
-                    <div className="flex space-x-4">
-                      {['Strategy', 'Leadership', 'Marketing'].map((skill, i) => (
-                        <Badge key={i} className="bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-                          {skill}
-                        </Badge>
-                      ))}
                     </div>
                   </div>
                 </div>
