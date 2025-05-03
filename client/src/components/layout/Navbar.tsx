@@ -72,8 +72,15 @@ const Navbar = () => {
     lastScrollY.current = latest;
   });
 
+  // Toggle mobile menu with viewport-aware positioning
   const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
+    // If we're opening the menu, we need to calculate position
+    if (!mobileMenuOpen) {
+      // The menu will remain attached to the header, no scrolling needed
+      setMobileMenuOpen(true);
+    } else {
+      setMobileMenuOpen(false);
+    }
   };
 
   // Close mobile menu when route changes
@@ -330,12 +337,21 @@ const Navbar = () => {
           </motion.button>
         </nav>
         
-        {/* Enhanced Mobile Menu with animations */}
+        {/* Enhanced Mobile Menu with animations - positioned in current viewport */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="md:hidden fixed inset-0 top-0 z-50 bg-white dark:bg-gray-900 overflow-auto"
-              style={{ top: '60px' }} 
+              className="md:hidden fixed left-0 right-0 z-50 bg-white dark:bg-gray-900 shadow-xl border-t border-gray-100"
+              style={{ 
+                position: 'fixed',
+                top: '60px', // Height of the header
+                left: 0,
+                right: 0,
+                maxHeight: 'min(85vh, 100vh - 60px)',
+                overflowY: 'auto',
+                overscrollBehavior: 'contain',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+              }} 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
