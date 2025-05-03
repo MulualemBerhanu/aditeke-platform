@@ -444,8 +444,8 @@ const AboutPage = () => {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
             <div className="max-w-xl">
               <div className="flex items-center space-x-2 mb-4">
-                <Badge className="bg-primary/10 text-primary border-none px-3 py-1 text-xs">Leadership</Badge>
-                <div className="h-px w-12 bg-primary/30"></div>
+                <Badge className="bg-blue-300/20 text-blue-300 border-none px-3 py-1 text-xs">Leadership</Badge>
+                <div className="h-px w-12 bg-blue-300/50"></div>
               </div>
               
               <motion.h2 
@@ -479,7 +479,7 @@ const AboutPage = () => {
               <Link href="/careers">
                 <Button 
                   variant="outline" 
-                  className="border-primary/30 text-primary hover:bg-primary/5 px-5 py-6 group"
+                  className="border-blue-300/50 text-blue-300 hover:bg-blue-900/30 px-5 py-6 group"
                 >
                   <Briefcase className="mr-2 h-5 w-5" />
                   <span>Join Our Team</span>
@@ -660,18 +660,18 @@ const AboutPage = () => {
       </section>
       
       {/* Work Process Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-b from-blue-950 to-blue-900 relative overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto mb-16">
             <div className="md:max-w-xl mb-10 md:mb-0">
               <div className="flex items-center mb-4">
-                <Badge className="bg-primary/10 text-primary border-none px-3 py-1 text-xs">Process</Badge>
-                <div className="h-px w-12 bg-primary/30 ml-2"></div>
+                <Badge className="bg-blue-300/20 text-blue-300 border-none px-3 py-1 text-xs">Process</Badge>
+                <div className="h-px w-12 bg-blue-300/50 ml-2"></div>
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">How We Transform Your Ideas Into Reality</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">How We Transform Your Ideas Into Reality</h2>
               
-              <p className="text-gray-600 text-lg leading-relaxed">
+              <p className="text-gray-300 text-lg leading-relaxed">
                 Our proven development methodology brings structure and transparency to every project.
                 From initial concept to deployment and beyond, we follow a well-defined process
                 that ensures quality, communication, and successful delivery.
@@ -686,17 +686,17 @@ const AboutPage = () => {
               transition={{ duration: 0.6 }}
             >
               <motion.div 
-                className="absolute inset-0 border-4 border-dashed border-primary/20 rounded-full"
+                className="absolute inset-0 border-4 border-dashed border-blue-300/30 rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
               />
               
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center">
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 3, repeat: Infinity }}
                 >
-                  <Award className="w-14 h-14 text-primary" />
+                  <Award className="w-14 h-14 text-blue-300" />
                 </motion.div>
               </div>
             </motion.div>
