@@ -910,33 +910,53 @@ const AboutPage = () => {
                 </div>
                 
                 {/* Tech floating elements */}
-                {[
-                  { top: "20%", left: "15%", color: "bg-primary/20", size: "w-12 h-12", icon: Database, delay: 0 },
-                  { top: "65%", left: "75%", color: "bg-blue-500/20", size: "w-10 h-10", icon: Code, delay: 0.2 },
-                  { top: "30%", left: "80%", color: "bg-cyan-500/20", size: "w-14 h-14", icon: Layers, delay: 0.4 },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    className={`absolute ${item.size} rounded-full ${item.color} flex items-center justify-center`}
-                    style={{ top: item.top, left: item.left }}
-                    initial={{ scale: 0, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    animate={{ 
-                      y: [0, -10, 0],
-                      scale: [1, 1.05, 1],
-                      rotate: [0, 5, 0]
-                    }}
-                    transition={{ 
-                      duration: 5, 
-                      repeat: Infinity, 
-                      ease: "easeInOut", 
-                      delay: i * 0.5 
-                    }}
-                  >
-                    <item.icon className="text-gray-700 opacity-60 w-6 h-6" />
-                  </motion.div>
-                ))}
+                <motion.div
+                  className="absolute w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center"
+                  style={{ top: "20%", left: "15%" }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  animate={{ 
+                    y: [0, -10, 0],
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, 0] 
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Database className="text-gray-700 opacity-60 w-6 h-6" />
+                </motion.div>
+                
+                <motion.div
+                  className="absolute w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"
+                  style={{ top: "65%", left: "75%" }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  animate={{ 
+                    y: [0, -10, 0],
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, 0] 
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                >
+                  <Code className="text-gray-700 opacity-60 w-6 h-6" />
+                </motion.div>
+                
+                <motion.div
+                  className="absolute w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center"
+                  style={{ top: "30%", left: "80%" }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  animate={{ 
+                    y: [0, -10, 0],
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, 0] 
+                  }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                >
+                  <Layers className="text-gray-700 opacity-60 w-6 h-6" />
+                </motion.div>
               </motion.div>
             </div>
           </div>
@@ -1152,7 +1172,7 @@ const AboutPage = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/contact">
+              <Link to="/contact">
                 <motion.div 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
@@ -1165,7 +1185,7 @@ const AboutPage = () => {
                 </motion.div>
               </Link>
               
-              <Link href="/services">
+              <Link to="/services">
                 <motion.div 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
