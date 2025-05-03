@@ -271,17 +271,32 @@ const ContactSection = () => {
                 className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className={`p-3 rounded-full bg-gradient-to-br ${getGradientClass(item.color)} text-white shadow-lg ${getGlowClass(item.color)}`}>
+                <div className="p-6 h-full">
+                  <div className="flex items-start h-full">
+                    <div className={`p-3 rounded-full bg-gradient-to-br ${getGradientClass(item.color)} text-white shadow-lg ${getGlowClass(item.color)} flex-shrink-0`}>
                       {item.icon}
                     </div>
-                    <h3 className="ml-4 text-xl font-bold text-white">{item.title}</h3>
-                  </div>
-                  <div className="pl-16">
-                    {item.details.map((detail, i) => (
-                      <p key={i} className="text-slate-300 mb-1">{detail}</p>
-                    ))}
+                    <div className="ml-4 flex-1 min-w-0 w-full">
+                      <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                      <div className="w-full overflow-hidden">
+                        {item.details.map((detail, i) => {
+                          // Apply shimmer effect only to email addresses (simple check if contains @)
+                          const isEmail = detail.includes('@');
+                          return (
+                            <p 
+                              key={i} 
+                              className={`mb-1 text-sm md:text-base w-full break-all hyphens-auto ${
+                                isEmail 
+                                  ? 'font-medium animate-text-shimmer' 
+                                  : 'text-slate-300'
+                              }`}
+                            >
+                              {detail}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
