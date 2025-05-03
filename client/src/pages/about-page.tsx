@@ -25,7 +25,12 @@ import {
   Settings,
   BookOpen,
   Coffee,
-  Sparkles
+  Sparkles,
+  Target,
+  Eye,
+  Smartphone,
+  ExternalLink,
+  ChevronRight
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -585,11 +590,12 @@ const AboutPage = () => {
         </div>
       </section>
       
-      {/* Feature Section */}
+      {/* Core Values Section - Modern Interactive Cards */}
       <section className="py-24 bg-gradient-to-b from-white to-primary/5 relative overflow-hidden">
         {/* Background patterns */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.03),transparent_25%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.01)_1px,transparent_1px)] bg-[size:16px_16px] opacity-20"></div>
         
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
@@ -600,114 +606,339 @@ const AboutPage = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-block">
-              <div className="flex items-center justify-center mb-4">
-                <div className="h-px w-8 bg-primary/40"></div>
-                <Zap className="h-5 w-5 mx-2 text-primary/70" />
-                <div className="h-px w-8 bg-primary/40"></div>
+              <div className="flex items-center justify-center mb-4 gap-3">
+                <Badge className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 border-none text-xs font-medium">
+                  Core Values
+                </Badge>
+                <Sparkles className="h-5 w-5 text-blue-500/70" />
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Our Features
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-700">
+                What Drives Us
               </h2>
             </div>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              We combine technical expertise with industry best practices to deliver exceptional results.
+              Our core values guide every aspect of our work, from how we engage with clients to how we develop our solutions.
             </p>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-            {/* Technical Excellence */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {/* Innovation Card */}
             <motion.div 
-              className="relative group"
+              className="relative group overflow-hidden rounded-xl"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-white/80 h-full 
-                hover:shadow-xl transition-all duration-300">
-                
-                {/* Icon container */}
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-blue-500 
-                  flex items-center justify-center text-white mb-6 shadow-md group-hover:shadow-primary/20 transition-all">
-                  <Code className="w-6 h-6" />
+              {/* Glow effect on hover */}
+              <motion.div 
+                className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 0.7 }}
+                transition={{ duration: 0.4 }}
+              />
+              
+              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
+                {/* Top badge */}
+                <div className="absolute -right-2 -top-2">
+                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-primary to-blue-500 pl-2 pr-2.5 text-xs font-medium text-white">
+                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
+                    <span>01</span>
+                  </div>
                 </div>
                 
-                <h3 className="text-xl font-bold mb-4 group-hover:text-primary transition-colors duration-300">
-                  Technical Excellence
+                {/* Icon container with animation */}
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 
+                  flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-all duration-500">
+                  <Zap className="w-6 h-6" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-primary transition-colors duration-300">
+                  Innovation
                 </h3>
                 
-                <p className="text-gray-600">
-                  Our team stays up-to-date with the latest technologies and best practices to deliver high-quality solutions.
+                <p className="text-gray-600 text-sm">
+                  We embrace creative thinking and innovative approaches to solve complex challenges and deliver cutting-edge solutions.
                 </p>
                 
                 {/* Animated indicator line */}
-                <div className="h-0.5 w-0 bg-primary/30 mt-5 group-hover:w-20 transition-all duration-500 ease-out"></div>
+                <div className="h-0.5 w-8 bg-primary/20 mt-5 rounded-full group-hover:w-full group-hover:bg-primary/40 transition-all duration-700 ease-out"></div>
               </div>
             </motion.div>
             
-            {/* Scalable Solutions */}
+            {/* Client-Focused Card */}
             <motion.div 
-              className="relative group"
+              className="relative group overflow-hidden rounded-xl"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-white/80 h-full 
-                hover:shadow-xl transition-all duration-300">
-                
-                {/* Icon container */}
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-blue-500 
-                  flex items-center justify-center text-white mb-6 shadow-md group-hover:shadow-primary/20 transition-all">
-                  <Layout className="w-6 h-6" />
+              {/* Glow effect on hover */}
+              <motion.div 
+                className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 0.7 }}
+                transition={{ duration: 0.4 }}
+              />
+              
+              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
+                {/* Top badge */}
+                <div className="absolute -right-2 -top-2">
+                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 pl-2 pr-2.5 text-xs font-medium text-white">
+                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
+                    <span>02</span>
+                  </div>
                 </div>
                 
-                <h3 className="text-xl font-bold mb-4 group-hover:text-primary transition-colors duration-300">
-                  Scalable Solutions
+                {/* Icon container with animation */}
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-blue-500/10 to-cyan-500/10
+                  flex items-center justify-center mb-6 text-blue-500 group-hover:scale-110 transition-all duration-500">
+                  <Heart className="w-6 h-6" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-500 transition-colors duration-300">
+                  Client-Focused
                 </h3>
                 
-                <p className="text-gray-600">
-                  We build applications that can grow with your business, ensuring long-term success and adaptability.
+                <p className="text-gray-600 text-sm">
+                  We prioritize understanding our clients' needs and exceeding their expectations through attentive service and personalized solutions.
                 </p>
                 
                 {/* Animated indicator line */}
-                <div className="h-0.5 w-0 bg-primary/30 mt-5 group-hover:w-20 transition-all duration-500 ease-out"></div>
+                <div className="h-0.5 w-8 bg-blue-500/20 mt-5 rounded-full group-hover:w-full group-hover:bg-blue-500/40 transition-all duration-700 ease-out"></div>
               </div>
             </motion.div>
             
-            {/* On-Time Delivery */}
+            {/* Quality Card */}
             <motion.div 
-              className="relative group"
+              className="relative group overflow-hidden rounded-xl"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
             >
-              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-white/80 h-full 
-                hover:shadow-xl transition-all duration-300">
-                
-                {/* Icon container */}
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-blue-500 
-                  flex items-center justify-center text-white mb-6 shadow-md group-hover:shadow-primary/20 transition-all">
-                  <Clock className="w-6 h-6" />
+              {/* Glow effect on hover */}
+              <motion.div 
+                className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 0.7 }}
+                transition={{ duration: 0.4 }}
+              />
+              
+              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
+                {/* Top badge */}
+                <div className="absolute -right-2 -top-2">
+                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 pl-2 pr-2.5 text-xs font-medium text-white">
+                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
+                    <span>03</span>
+                  </div>
                 </div>
                 
-                <h3 className="text-xl font-bold mb-4 group-hover:text-primary transition-colors duration-300">
-                  On-Time Delivery
+                {/* Icon container with animation */}
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-cyan-500/10 to-teal-500/10
+                  flex items-center justify-center mb-6 text-cyan-600 group-hover:scale-110 transition-all duration-500">
+                  <Star className="w-6 h-6" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-cyan-600 transition-colors duration-300">
+                  Quality
                 </h3>
                 
-                <p className="text-gray-600">
-                  We value your time and always strive to deliver projects on schedule without compromising quality.
+                <p className="text-gray-600 text-sm">
+                  We are committed to delivering high-quality, reliable solutions that adhere to industry best practices and exceed quality standards.
                 </p>
                 
                 {/* Animated indicator line */}
-                <div className="h-0.5 w-0 bg-primary/30 mt-5 group-hover:w-20 transition-all duration-500 ease-out"></div>
+                <div className="h-0.5 w-8 bg-cyan-500/20 mt-5 rounded-full group-hover:w-full group-hover:bg-cyan-500/40 transition-all duration-700 ease-out"></div>
               </div>
             </motion.div>
+            
+            {/* Integrity Card */}
+            <motion.div 
+              className="relative group overflow-hidden rounded-xl"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+            >
+              {/* Glow effect on hover */}
+              <motion.div 
+                className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 0.7 }}
+                transition={{ duration: 0.4 }}
+              />
+              
+              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
+                {/* Top badge */}
+                <div className="absolute -right-2 -top-2">
+                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 pl-2 pr-2.5 text-xs font-medium text-white">
+                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
+                    <span>04</span>
+                  </div>
+                </div>
+                
+                {/* Icon container with animation */}
+                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-teal-500/10 to-emerald-500/10
+                  flex items-center justify-center mb-6 text-teal-600 group-hover:scale-110 transition-all duration-500">
+                  <Shield className="w-6 h-6" />
+                </div>
+                
+                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-teal-600 transition-colors duration-300">
+                  Integrity
+                </h3>
+                
+                <p className="text-gray-600 text-sm">
+                  We maintain the highest ethical standards in all our business practices and relationships, building trust through transparency.
+                </p>
+                
+                {/* Animated indicator line */}
+                <div className="h-0.5 w-8 bg-teal-500/20 mt-5 rounded-full group-hover:w-full group-hover:bg-teal-500/40 transition-all duration-700 ease-out"></div>
+              </div>
+            </motion.div>
+          </div>
+          
+          {/* Core Expertise Section */}
+          <div className="mt-24 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left side - Text content */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="flex items-center space-x-2 mb-6">
+                  <Badge className="bg-primary/10 text-primary border-none px-3 py-1 text-xs font-medium">
+                    Our Expertise
+                  </Badge>
+                  <div className="h-px w-12 bg-primary/30"></div>
+                </div>
+                
+                <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800">Technical Excellence that Drives Results</h3>
+                
+                <p className="text-gray-600 mb-8">
+                  We combine deep technical expertise with industry knowledge to deliver solutions that drive tangible business results. Our team stays at the forefront of technology trends to ensure you receive the most innovative and effective solutions.
+                </p>
+                
+                <div className="space-y-6">
+                  {[
+                    { title: "Custom Software Development", icon: Code },
+                    { title: "Mobile Application Development", icon: Monitor },
+                    { title: "Web Application Development", icon: Globe },
+                    { title: "AI & Machine Learning Solutions", icon: Sparkles }
+                  ].map((item, index) => (
+                    <motion.div 
+                      key={index}
+                      className="flex items-start gap-4"
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
+                    >
+                      <div className="flex-shrink-0 mt-1">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center">
+                          <item.icon className="w-4 h-4 text-primary" />
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-800 mb-1">{item.title}</h4>
+                        <div className="h-0.5 w-12 bg-primary/20 rounded-full mb-2"></div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+              
+              {/* Right side - Image or visual */}
+              <motion.div
+                className="relative h-[400px] rounded-xl overflow-hidden"
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+              >
+                {/* Modern gradient background with code-like pattern */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-500/5 to-primary/10"></div>
+                
+                {/* Decorative code-like elements */}
+                <div className="absolute inset-x-0 top-8 px-8">
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, index) => (
+                      <motion.div 
+                        key={index}
+                        className="h-3 bg-primary/10 rounded-full"
+                        style={{ width: `${Math.random() * 40 + 60}%` }}
+                        initial={{ width: 0, opacity: 0 }}
+                        whileInView={{ width: `${Math.random() * 40 + 60}%`, opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: 0.3 + (index * 0.1) }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Statistics */}
+                <div className="absolute bottom-0 inset-x-0 px-8 py-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: "Projects Completed", value: "85+" },
+                      { label: "Client Retention", value: "95%" },
+                      { label: "On-Time Delivery", value: "98%" },
+                      { label: "Team Experts", value: "18+" }
+                    ].map((stat, index) => (
+                      <motion.div 
+                        key={index}
+                        className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                      >
+                        <div className="text-2xl font-bold text-primary">{stat.value}</div>
+                        <div className="text-sm text-gray-600">{stat.label}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Tech floating elements */}
+                {[
+                  { top: "20%", left: "15%", color: "bg-primary/20", size: "w-12 h-12", icon: Database, delay: 0 },
+                  { top: "65%", left: "75%", color: "bg-blue-500/20", size: "w-10 h-10", icon: Code, delay: 0.2 },
+                  { top: "30%", left: "80%", color: "bg-cyan-500/20", size: "w-14 h-14", icon: Layers, delay: 0.4 },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    className={`absolute ${item.size} rounded-full ${item.color} flex items-center justify-center`}
+                    style={{ top: item.top, left: item.left }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    animate={{ 
+                      y: [0, -10, 0],
+                      scale: [1, 1.05, 1],
+                      rotate: [0, 5, 0]
+                    }}
+                    transition={{ 
+                      duration: 5, 
+                      repeat: Infinity, 
+                      ease: "easeInOut", 
+                      delay: i * 0.5 
+                    }}
+                  >
+                    <item.icon className="text-gray-700 opacity-60 w-6 h-6" />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
