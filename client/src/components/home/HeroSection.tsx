@@ -412,8 +412,8 @@ const HeroSection = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="flex items-center">
+              <div className="flex items-center sm:items-start gap-4">
+                <div>
                   <span>Trusted by innovative companies</span>
                   <div className="flex gap-4 items-center ml-2">
                     <div className="h-5 w-10 bg-white/20 rounded"></div>
@@ -422,11 +422,11 @@ const HeroSection = () => {
                   </div>
                 </div>
                 
-                <div className="flex gap-3 mt-4 sm:mt-0">
+                <div className="flex flex-col gap-3 ml-4">
                   {/* Phone Icon */}
                   <div className="relative group">
                     <a href="tel:+16414818560" className="block">
-                      <div className="relative w-10 h-10 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
+                      <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300">
                         {/* Pulsing animation */}
                         <div className="absolute inset-0 rounded-full animate-contact-ping bg-blue-400/40"></div>
                         <Phone className="h-4 w-4 text-white relative z-10" />
@@ -448,7 +448,7 @@ const HeroSection = () => {
                   {/* Email Icon */}
                   <div className="relative group">
                     <a href="mailto:berhanumulualemadisu@gmail.com" className="block">
-                      <div className="relative w-10 h-10 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
+                      <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
                         {/* Pulsing animation */}
                         <div className="absolute inset-0 rounded-full animate-contact-ping bg-purple-400/40"></div>
                         <Mail className="h-4 w-4 text-white relative z-10" />
