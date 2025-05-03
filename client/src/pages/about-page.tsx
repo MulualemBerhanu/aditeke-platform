@@ -285,9 +285,9 @@ const AboutPage = () => {
       <section ref={missionRef} className="py-24 bg-white overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-16 items-center">
-            {/* Left Side - Animated Visual */}
+            {/* Left Side - Animated Visual (hidden on mobile) */}
             <motion.div 
-              className="lg:w-1/2 relative"
+              className="hidden md:block lg:w-1/2 relative"
               initial={{ opacity: 0, x: -30 }}
               animate={missionInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
               transition={{ duration: 0.7 }}
@@ -365,9 +365,9 @@ const AboutPage = () => {
               </div>
             </motion.div>
             
-            {/* Right Side - Text Content */}
+            {/* Right Side - Text Content (full width on mobile) */}
             <motion.div 
-              className="lg:w-1/2"
+              className="w-full lg:w-1/2 mx-auto max-w-2xl md:max-w-none"
               initial={{ opacity: 0, x: 30 }}
               animate={missionInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
               transition={{ duration: 0.7 }}
