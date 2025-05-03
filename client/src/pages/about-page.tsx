@@ -213,7 +213,7 @@ const AboutPage = () => {
                   className="absolute inset-1/4 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 backdrop-blur-md border border-white/30"
                   animate={{
                     scale: [1, 1.05, 1],
-                    rotate: [0, 10, 0], 
+                    rotate: [0, 10, 0]
                   }}
                   transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
                 />
@@ -232,7 +232,7 @@ const AboutPage = () => {
                   { Icon: Globe, position: "bottom-0 left-1/2 -translate-x-1/2", delay: 2 },
                   { Icon: Layers, position: "top-1/4 left-0", delay: 3 },
                   { Icon: Monitor, position: "bottom-1/4 right-0", delay: 4 },
-                  { Icon: MessageSquare, position: "bottom-1/4 left-0", delay: 5 },
+                  { Icon: MessageSquare, position: "bottom-1/4 left-0", delay: 5 }
                 ].map((item, index) => (
                   <motion.div 
                     key={index}
@@ -570,20 +570,21 @@ const AboutPage = () => {
                         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 mr-3">
                           <Users className="h-4 w-4 text-blue-500" />
                         </div>
-                        <p className="text-blue-500 font-medium">CEO</p>
+                        <p className="text-blue-500 font-medium">CEO & Co-Founder</p>
                       </div>
                       
                       <h3 className="text-2xl font-bold mt-3 mb-4 text-gray-900">Samrawit Kassa</h3>
                       
                       <p className="text-gray-600 mb-6">
-                        Samrawit leads AdiTeke with a vision for growth and excellence. Her expertise in business strategy, 
+                        With her background in business strategy and technology management, Samrawit leads our company 
+                        vision and growth. Her expertise in strategic partnerships, 
                         client relations, and organizational leadership ensures our company delivers exceptional value while 
-                        maintaining strong partnerships with clients.
+                        maintaining our core mission.
                       </p>
                     </div>
                     
                     <div className="flex space-x-4">
-                      {['Business Strategy', 'Leadership', 'Client Relations'].map((skill, i) => (
+                      {['Strategy', 'Leadership', 'Marketing'].map((skill, i) => (
                         <Badge key={i} className="bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
                           {skill}
                         </Badge>
@@ -597,615 +598,319 @@ const AboutPage = () => {
         </div>
       </section>
       
-      {/* Core Values Section - Modern Interactive Cards */}
+      {/* Our Values Section */}
       <section className="py-24 bg-gradient-to-b from-white to-primary/5 relative overflow-hidden">
-        {/* Background patterns */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.03),transparent_25%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.03),transparent_25%)]"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.01)_1px,transparent_1px)] bg-[size:16px_16px] opacity-20"></div>
-        
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-block">
-              <div className="flex items-center justify-center mb-4 gap-3">
-                <Badge className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 border-none text-xs font-medium">
-                  Core Values
-                </Badge>
-                <Sparkles className="h-5 w-5 text-blue-500/70" />
-              </div>
-              
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-700">
-                What Drives Us
-              </h2>
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-block mb-4">
+              <Badge variant="outline" className="px-3 py-1 text-primary border-primary/30 font-medium">
+                Our Core Values
+              </Badge>
             </div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Our core values guide every aspect of our work, from how we engage with clients to how we develop our solutions.
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">The Principles That Guide Us</h2>
+            <p className="text-gray-600 text-lg">
+              Our values define how we work, make decisions, and deliver value to our clients.
+              They are the foundation of our company culture and guide everything we do.
             </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            {/* Innovation Card */}
-            <motion.div 
-              className="relative group overflow-hidden rounded-xl"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            >
-              {/* Glow effect on hover */}
-              <motion.div 
-                className="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-600 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 0.7 }}
-                transition={{ duration: 0.4 }}
-              />
-              
-              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
-                {/* Top badge */}
-                <div className="absolute -right-2 -top-2">
-                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-primary to-blue-500 pl-2 pr-2.5 text-xs font-medium text-white">
-                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
-                    <span>01</span>
-                  </div>
-                </div>
-                
-                {/* Icon container with animation */}
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 
-                  flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-all duration-500">
-                  <Zap className="w-6 h-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-primary transition-colors duration-300">
-                  Innovation
-                </h3>
-                
-                <p className="text-gray-600 text-sm">
-                  We embrace creative thinking and innovative approaches to solve complex challenges and deliver cutting-edge solutions.
-                </p>
-                
-                {/* Animated indicator line */}
-                <div className="h-0.5 w-8 bg-primary/20 mt-5 rounded-full group-hover:w-full group-hover:bg-primary/40 transition-all duration-700 ease-out"></div>
-              </div>
-            </motion.div>
-            
-            {/* Client-Focused Card */}
-            <motion.div 
-              className="relative group overflow-hidden rounded-xl"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            >
-              {/* Glow effect on hover */}
-              <motion.div 
-                className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 0.7 }}
-                transition={{ duration: 0.4 }}
-              />
-              
-              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
-                {/* Top badge */}
-                <div className="absolute -right-2 -top-2">
-                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 pl-2 pr-2.5 text-xs font-medium text-white">
-                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
-                    <span>02</span>
-                  </div>
-                </div>
-                
-                {/* Icon container with animation */}
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-blue-500/10 to-cyan-500/10
-                  flex items-center justify-center mb-6 text-blue-500 group-hover:scale-110 transition-all duration-500">
-                  <Heart className="w-6 h-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-500 transition-colors duration-300">
-                  Client-Focused
-                </h3>
-                
-                <p className="text-gray-600 text-sm">
-                  We prioritize understanding our clients' needs and exceeding their expectations through attentive service and personalized solutions.
-                </p>
-                
-                {/* Animated indicator line */}
-                <div className="h-0.5 w-8 bg-blue-500/20 mt-5 rounded-full group-hover:w-full group-hover:bg-blue-500/40 transition-all duration-700 ease-out"></div>
-              </div>
-            </motion.div>
-            
-            {/* Quality Card */}
-            <motion.div 
-              className="relative group overflow-hidden rounded-xl"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            >
-              {/* Glow effect on hover */}
-              <motion.div 
-                className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 0.7 }}
-                transition={{ duration: 0.4 }}
-              />
-              
-              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
-                {/* Top badge */}
-                <div className="absolute -right-2 -top-2">
-                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 pl-2 pr-2.5 text-xs font-medium text-white">
-                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
-                    <span>03</span>
-                  </div>
-                </div>
-                
-                {/* Icon container with animation */}
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-cyan-500/10 to-teal-500/10
-                  flex items-center justify-center mb-6 text-cyan-600 group-hover:scale-110 transition-all duration-500">
-                  <Star className="w-6 h-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-cyan-600 transition-colors duration-300">
-                  Quality
-                </h3>
-                
-                <p className="text-gray-600 text-sm">
-                  We are committed to delivering high-quality, reliable solutions that adhere to industry best practices and exceed quality standards.
-                </p>
-                
-                {/* Animated indicator line */}
-                <div className="h-0.5 w-8 bg-cyan-500/20 mt-5 rounded-full group-hover:w-full group-hover:bg-cyan-500/40 transition-all duration-700 ease-out"></div>
-              </div>
-            </motion.div>
-            
-            {/* Integrity Card */}
-            <motion.div 
-              className="relative group overflow-hidden rounded-xl"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            >
-              {/* Glow effect on hover */}
-              <motion.div 
-                className="absolute -inset-0.5 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl opacity-0 blur group-hover:opacity-70 transition duration-700"
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 0.7 }}
-                transition={{ duration: 0.4 }}
-              />
-              
-              <div className="relative h-full bg-white rounded-xl p-8 shadow-lg transition-all duration-300">
-                {/* Top badge */}
-                <div className="absolute -right-2 -top-2">
-                  <div className="relative flex h-6 items-center justify-center rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 pl-2 pr-2.5 text-xs font-medium text-white">
-                    <span className="absolute -left-2 aspect-square w-2 rounded-full bg-white/25" />
-                    <span>04</span>
-                  </div>
-                </div>
-                
-                {/* Icon container with animation */}
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-teal-500/10 to-emerald-500/10
-                  flex items-center justify-center mb-6 text-teal-600 group-hover:scale-110 transition-all duration-500">
-                  <Shield className="w-6 h-6" />
-                </div>
-                
-                <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-teal-600 transition-colors duration-300">
-                  Integrity
-                </h3>
-                
-                <p className="text-gray-600 text-sm">
-                  We maintain the highest ethical standards in all our business practices and relationships, building trust through transparency.
-                </p>
-                
-                {/* Animated indicator line */}
-                <div className="h-0.5 w-8 bg-teal-500/20 mt-5 rounded-full group-hover:w-full group-hover:bg-teal-500/40 transition-all duration-700 ease-out"></div>
-              </div>
-            </motion.div>
           </div>
           
-          {/* Core Expertise Section */}
-          <div className="mt-24 max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left side - Text content */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-6 xl:gap-10">
+            {[
+              { 
+                icon: <Star className="h-6 w-6" />, 
+                title: "Excellence", 
+                color: "bg-blue-50 text-blue-600",
+                description: "We are committed to delivering the highest quality in everything we do, from code to client service." 
+              },
+              { 
+                icon: <Heart className="h-6 w-6" />, 
+                title: "Client Focus", 
+                color: "bg-pink-50 text-pink-600",
+                description: "We place our clients at the center of our work, understanding their needs and exceeding their expectations." 
+              },
+              { 
+                icon: <Zap className="h-6 w-6" />, 
+                title: "Innovation", 
+                color: "bg-yellow-50 text-yellow-600",
+                description: "We continuously explore new technologies and approaches to deliver cutting-edge solutions." 
+              },
+              { 
+                icon: <RefreshCw className="h-6 w-6" />, 
+                title: "Adaptability", 
+                color: "bg-green-50 text-green-600",
+                description: "We embrace change and pivot quickly to respond to evolving technologies and market needs." 
+              },
+              { 
+                icon: <Users className="h-6 w-6" />, 
+                title: "Collaboration", 
+                color: "bg-purple-50 text-purple-600",
+                description: "We believe in the power of teamwork and partnership to create solutions greater than the sum of their parts." 
+              },
+              { 
+                icon: <Shield className="h-6 w-6" />, 
+                title: "Integrity", 
+                color: "bg-primary/10 text-primary",
+                description: "We operate with transparency, honesty, and ethical principles in all our business dealings." 
+              },
+            ].map((value, index) => (
+              <motion.div 
+                key={index}
+                className="bg-white rounded-xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.7 }}
+                transition={{ duration: 0.5, delay: 0.1 * index }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
-                <div className="flex items-center space-x-2 mb-6">
-                  <Badge className="bg-primary/10 text-primary border-none px-3 py-1 text-xs font-medium">
-                    Our Expertise
-                  </Badge>
-                  <div className="h-px w-12 bg-primary/30"></div>
+                <div className={`w-12 h-12 rounded-full ${value.color} flex items-center justify-center mb-4`}>
+                  {value.icon}
                 </div>
-                
-                <h3 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800">Technical Excellence that Drives Results</h3>
-                
-                <p className="text-gray-600 mb-8">
-                  We combine deep technical expertise with industry knowledge to deliver solutions that drive tangible business results. Our team stays at the forefront of technology trends to ensure you receive the most innovative and effective solutions.
-                </p>
-                
-                <div className="space-y-6">
-                  {[
-                    { title: "Custom Software Development", icon: Code },
-                    { title: "Mobile Application Development", icon: Monitor },
-                    { title: "Web Application Development", icon: Globe },
-                    { title: "AI & Machine Learning Solutions", icon: Sparkles }
-                  ].map((item, index) => (
-                    <motion.div 
-                      key={index}
-                      className="flex items-start gap-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
-                    >
-                      <div className="flex-shrink-0 mt-1">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center">
-                          <item.icon className="w-4 h-4 text-primary" />
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-800 mb-1">{item.title}</h4>
-                        <div className="h-0.5 w-12 bg-primary/20 rounded-full mb-2"></div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900">{value.title}</h3>
+                <p className="text-gray-600">{value.description}</p>
               </motion.div>
+            ))}
+          </div>
+          
+          {/* Stat Counters */}
+          <div className="mt-20 md:mt-32 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl"></div>
+            
+            <div className="relative z-10 py-10 md:py-16 px-6 md:px-10 rounded-2xl overflow-hidden">
+              <div className="text-center max-w-3xl mx-auto mb-12">
+                <h2 className="text-2xl md:text-3xl font-bold mb-6">Our Success By The Numbers</h2>
+                <div className="h-1 w-20 bg-primary/30 mx-auto"></div>
+              </div>
               
-              {/* Right side - Image or visual */}
-              <motion.div
-                className="relative h-[400px] rounded-xl overflow-hidden"
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7 }}
-              >
-                {/* Modern gradient background with code-like pattern */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-500/5 to-primary/10"></div>
-                
-                {/* Decorative code-like elements */}
-                <div className="absolute inset-x-0 top-8 px-8">
-                  <div className="space-y-4">
-                    {[...Array(5)].map((_, index) => (
-                      <motion.div 
-                        key={index}
-                        className="h-3 bg-primary/10 rounded-full"
-                        style={{ width: `${Math.random() * 40 + 60}%` }}
-                        initial={{ width: 0, opacity: 0 }}
-                        whileInView={{ width: `${Math.random() * 40 + 60}%`, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: 0.3 + (index * 0.1) }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Statistics */}
-                <div className="absolute bottom-0 inset-x-0 px-8 py-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {[
-                      { label: "Projects Completed", value: "85+" },
-                      { label: "Client Retention", value: "95%" },
-                      { label: "On-Time Delivery", value: "98%" },
-                      { label: "Team Experts", value: "18+" }
-                    ].map((stat, index) => (
-                      <motion.div 
-                        key={index}
-                        className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                      >
-                        <div className="text-2xl font-bold text-primary">{stat.value}</div>
-                        <div className="text-sm text-gray-600">{stat.label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Tech floating elements */}
-                <motion.div
-                  className="absolute w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center"
-                  style={{ top: "20%", left: "15%" }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  animate={{ 
-                    y: [0, -10, 0],
-                    scale: [1, 1.05, 1],
-                    rotate: [0, 5, 0] 
-                  }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Database className="text-gray-700 opacity-60 w-6 h-6" />
-                </motion.div>
-                
-                <motion.div
-                  className="absolute w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"
-                  style={{ top: "65%", left: "75%" }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  animate={{ 
-                    y: [0, -10, 0],
-                    scale: [1, 1.05, 1],
-                    rotate: [0, 5, 0] 
-                  }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                >
-                  <Code className="text-gray-700 opacity-60 w-6 h-6" />
-                </motion.div>
-                
-                <motion.div
-                  className="absolute w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center"
-                  style={{ top: "30%", left: "80%" }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  animate={{ 
-                    y: [0, -10, 0],
-                    scale: [1, 1.05, 1],
-                    rotate: [0, 5, 0] 
-                  }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                >
-                  <Layers className="text-gray-700 opacity-60 w-6 h-6" />
-                </motion.div>
-              </motion.div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {[
+                  { label: "Projects Delivered", value: "120+" },
+                  { label: "Client Retention Rate", value: "95%" },
+                  { label: "On-Time Delivery", value: "98%" },
+                  { label: "Team Experts", value: "18+" }
+                ].map((stat, index) => (
+                  <motion.div 
+                    key={index}
+                    className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+                    whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  >
+                    <div className="text-2xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-sm text-gray-600">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
+            
+            {/* Tech floating elements */}
+            <motion.div
+              className="absolute w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center"
+              style={{ top: "20%", left: "15%" }}
+              initial={{ scale: 0, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              animate={{ 
+                y: [0, -10, 0],
+                scale: [1, 1.05, 1],
+                rotate: [0, 5, 0] 
+              }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Code className="w-5 h-5 text-primary" />
+            </motion.div>
+            
+            <motion.div
+              className="absolute w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"
+              style={{ bottom: "30%", right: "10%" }}
+              initial={{ scale: 0, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              animate={{ 
+                y: [0, -15, 0],
+                scale: [1, 1.1, 1],
+                rotate: [0, -10, 0] 
+              }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+              <Database className="w-4 h-4 text-blue-500" />
+            </motion.div>
           </div>
         </div>
       </section>
       
-      {/* Values Section */}
+      {/* Work Process Section */}
       <section className="py-24 bg-white relative overflow-hidden">
-        {/* Background patterns */}
-        <div className="absolute top-0 inset-x-0 h-32 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
-        <div className="absolute bottom-0 inset-x-0 h-32 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
-        
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-block">
-              <div className="flex items-center justify-center mb-4">
-                <div className="h-px w-8 bg-primary/40"></div>
-                <Award className="h-5 w-5 mx-2 text-primary/70" />
-                <div className="h-px w-8 bg-primary/40"></div>
+          <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto mb-16">
+            <div className="md:max-w-xl mb-10 md:mb-0">
+              <div className="flex items-center mb-4">
+                <Badge className="bg-primary/10 text-primary border-none px-3 py-1 text-xs">Process</Badge>
+                <div className="h-px w-12 bg-primary/30 ml-2"></div>
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Our Values
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">How We Transform Your Ideas Into Reality</h2>
+              
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Our proven development methodology brings structure and transparency to every project.
+                From initial concept to deployment and beyond, we follow a well-defined process
+                that ensures quality, communication, and successful delivery.
+              </p>
             </div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              These core principles guide everything we do and help us deliver exceptional results.
-            </p>
-          </motion.div>
+            
+            <motion.div
+              className="relative flex items-center justify-center w-full md:w-64 h-64"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <motion.div 
+                className="absolute inset-0 border-4 border-dashed border-primary/20 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+              />
+              
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Award className="w-14 h-14 text-primary" />
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            {/* Client Satisfaction */}
-            <motion.div
-              className="bg-gradient-to-b from-white to-primary/5 rounded-xl p-6 shadow-lg border border-gray-100 group"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
-            >
-              {/* Value icon with animation */}
-              <div className="rounded-lg bg-white p-4 shadow-md w-16 h-16 flex items-center justify-center 
-                mb-6 text-primary/80 group-hover:text-primary group-hover:shadow-lg 
-                group-hover:scale-110 transition-all duration-300">
-                <Heart className="h-6 w-6" />
-              </div>
-              
-              <h3 className="text-xl font-bold mb-3 group-hover:text-primary/90 transition-colors duration-300">
-                Client Satisfaction
-              </h3>
-              
-              <p className="text-gray-600 mb-4">
-                We prioritize understanding our clients' needs and exceeding their expectations at every step.
-              </p>
-              
-              {/* Animated line */}
-              <div className="h-0.5 w-10 bg-primary/30 group-hover:w-full transition-all duration-500"></div>
-            </motion.div>
-            
-            {/* Innovation */}
-            <motion.div
-              className="bg-gradient-to-b from-white to-primary/5 rounded-xl p-6 shadow-lg border border-gray-100 group"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
-            >
-              {/* Value icon with animation */}
-              <div className="rounded-lg bg-white p-4 shadow-md w-16 h-16 flex items-center justify-center 
-                mb-6 text-primary/80 group-hover:text-primary group-hover:shadow-lg 
-                group-hover:scale-110 transition-all duration-300">
-                <Zap className="h-6 w-6" />
-              </div>
-              
-              <h3 className="text-xl font-bold mb-3 group-hover:text-primary/90 transition-colors duration-300">
-                Innovation
-              </h3>
-              
-              <p className="text-gray-600 mb-4">
-                We embrace creative thinking and innovative approaches to solve complex challenges.
-              </p>
-              
-              {/* Animated line */}
-              <div className="h-0.5 w-10 bg-primary/30 group-hover:w-full transition-all duration-500"></div>
-            </motion.div>
-            
-            {/* Integrity */}
-            <motion.div
-              className="bg-gradient-to-b from-white to-primary/5 rounded-xl p-6 shadow-lg border border-gray-100 group"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
-            >
-              {/* Value icon with animation */}
-              <div className="rounded-lg bg-white p-4 shadow-md w-16 h-16 flex items-center justify-center 
-                mb-6 text-primary/80 group-hover:text-primary group-hover:shadow-lg 
-                group-hover:scale-110 transition-all duration-300">
-                <Shield className="h-6 w-6" />
-              </div>
-              
-              <h3 className="text-xl font-bold mb-3 group-hover:text-primary/90 transition-colors duration-300">
-                Integrity
-              </h3>
-              
-              <p className="text-gray-600 mb-4">
-                We maintain the highest ethical standards in all our business practices and relationships.
-              </p>
-              
-              {/* Animated line */}
-              <div className="h-0.5 w-10 bg-primary/30 group-hover:w-full transition-all duration-500"></div>
-            </motion.div>
-            
-            {/* Continuous Improvement */}
-            <motion.div
-              className="bg-gradient-to-b from-white to-primary/5 rounded-xl p-6 shadow-lg border border-gray-100 group"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ y: -10, transition: { duration: 0.3 } }}
-            >
-              {/* Value icon with animation */}
-              <div className="rounded-lg bg-white p-4 shadow-md w-16 h-16 flex items-center justify-center 
-                mb-6 text-primary/80 group-hover:text-primary group-hover:shadow-lg 
-                group-hover:scale-110 transition-all duration-300">
-                <RefreshCw className="h-6 w-6" />
-              </div>
-              
-              <h3 className="text-xl font-bold mb-3 group-hover:text-primary/90 transition-colors duration-300">
-                Continuous Improvement
-              </h3>
-              
-              <p className="text-gray-600 mb-4">
-                We constantly seek ways to enhance our processes, skills, and deliverables.
-              </p>
-              
-              {/* Animated line */}
-              <div className="h-0.5 w-10 bg-primary/30 group-hover:w-full transition-all duration-500"></div>
-            </motion.div>
+          {/* Process Steps */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                step: "01",
+                title: "Discovery & Planning",
+                description: "We begin by understanding your business objectives, gathering requirements, and defining the project scope and timeline.",
+                icon: <BookOpen className="h-6 w-6" />
+              },
+              {
+                step: "02",
+                title: "Design & Architecture",
+                description: "Our team creates intuitive UI/UX designs and establishes a robust technical architecture tailored to your needs.",
+                icon: <Layout className="h-6 w-6" />
+              },
+              {
+                step: "03",
+                title: "Development & Testing",
+                description: "We build your solution using agile methodologies with continuous integration and comprehensive testing.",
+                icon: <Code className="h-6 w-6" />
+              },
+              {
+                step: "04",
+                title: "Deployment & Support",
+                description: "After successful launch, we provide ongoing maintenance, performance monitoring, and continuous improvements.",
+                icon: <Settings className="h-6 w-6" />
+              }
+            ].map((process, index) => (
+              <motion.div
+                key={index}
+                className="relative bg-white p-8 rounded-xl shadow-md border border-gray-100 z-10"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                  {process.icon}
+                </div>
+                
+                <span className="text-5xl font-bold text-gray-100 absolute top-4 right-4">{process.step}</span>
+                
+                <h3 className="text-xl font-bold mb-4 text-gray-900">{process.title}</h3>
+                
+                <p className="text-gray-600 mb-6">{process.description}</p>
+                
+                {index < 3 && (
+                  <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 z-0">
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <ChevronRight className="w-5 h-5 text-primary" />
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
-
+      
       {/* CTA Section */}
       <section className="py-20 relative overflow-hidden">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10"></div>
+        <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+        <div className="absolute left-0 right-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
         
-        {/* Pattern overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="absolute h-full w-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="diagonalHatchCTA" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <line x1="0" y1="0" x2="0" y2="40" stroke="white" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#diagonalHatchCTA)" />
-          </svg>
-        </div>
-        
-        {/* Animated circles */}
-        <motion.div
-          className="absolute rounded-full bg-white/10 w-32 h-32 left-[20%] top-[30%]"
-          animate={{
-            y: [0, -20, 0],
-            x: [0, 15, 0],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        
-        <motion.div
-          className="absolute rounded-full bg-white/10 w-40 h-40 right-[25%] bottom-[20%]"
-          animate={{
-            y: [0, -15, 0],
-            x: [0, -10, 0],
-            opacity: [0.15, 0.25, 0.15]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            className="text-center max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-              Ready to Transform Your Ideas Into Reality?
-            </h2>
-            
-            <p className="text-xl mb-10 text-white/90">
-              Let's discuss how we can help with your next project.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/contact">
-                <motion.div 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button 
-                    className="bg-white text-primary hover:bg-white/90 px-8 py-6 text-lg font-medium w-full sm:w-auto"
-                  >
-                    Contact Us Today
-                  </Button>
-                </motion.div>
-              </Link>
+        <div className="relative z-10 container mx-auto px-4">
+          <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="flex flex-col md:flex-row">
+              <div className="md:w-1/2 p-10 md:p-12 bg-gradient-to-br from-primary/5 to-blue-500/5">
+                <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Business?</h2>
+                <p className="text-gray-600 mb-8">
+                  Let's discuss how AdiTeke can help you achieve your digital transformation goals. 
+                  Our team is ready to bring your vision to life with cutting-edge software solutions.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                      <Coffee className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Free Consultation</p>
+                      <p className="text-sm text-gray-600">No obligation, just valuable insights</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                      <LineChart className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Custom Strategy</p>
+                      <p className="text-sm text-gray-600">Tailored to your unique needs</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
-              <Link to="/services">
-                <motion.div 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button 
-                    className="bg-white/15 text-white hover:bg-white/30 border border-white/50 px-8 py-6 text-lg font-medium w-full sm:w-auto"
-                  >
-                    Explore Our Services
-                  </Button>
-                </motion.div>
-              </Link>
+              <div className="md:w-1/2 p-10 md:p-12 bg-gradient-to-br from-primary to-blue-600 text-white">
+                <h3 className="text-xl font-bold mb-6">Get In Touch</h3>
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <Smartphone className="w-5 h-5" />
+                    </div>
+                    <p>+1 (641) 481-8560</p>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <p>support@aditeke.com</p>
+                  </div>
+                </div>
+                
+                <div className="mt-8">
+                  <Link href="/contact">
+                    <Button className="w-full bg-white text-primary hover:bg-white/90">
+                      Contact Us
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>
