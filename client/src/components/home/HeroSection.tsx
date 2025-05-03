@@ -434,7 +434,7 @@ const HeroSection = () => {
                     </a>
                     
                     {/* Horizontal info that appears on hover */}
-                    <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform -translate-x-3 group-hover:translate-x-0 transition-all duration-300">
+                    <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-x-3 group-hover:translate-x-0 transition-all duration-300">
                       <div className="flex items-center bg-gradient-to-r from-blue-800/90 to-blue-600/90 text-white rounded-lg shadow-lg shadow-blue-500/20 px-4 py-2 border border-blue-500/30 backdrop-blur-md">
                         <div className="flex flex-col pr-1">
                           <span className="text-xs text-blue-300 font-medium">Call Us</span>
@@ -456,7 +456,7 @@ const HeroSection = () => {
                     </a>
                     
                     {/* Horizontal info that appears on hover */}
-                    <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform -translate-x-3 group-hover:translate-x-0 transition-all duration-300">
+                    <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-x-3 group-hover:translate-x-0 transition-all duration-300">
                       <div className="flex items-center bg-gradient-to-r from-purple-800/90 to-purple-600/90 text-white rounded-lg shadow-lg shadow-purple-500/20 px-4 py-2 border border-purple-500/30 backdrop-blur-md">
                         <div className="flex flex-col pr-1">
                           <span className="text-xs text-purple-300 font-medium">Email Us</span>
