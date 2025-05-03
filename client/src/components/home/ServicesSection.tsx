@@ -158,6 +158,16 @@ const ServiceTabs = ({ services, activeTab, setActiveTab }: {
   );
 };
 
+// Helper function to get the service href
+const getServiceHref = (service: any) => {
+  // If it's from the API (has id property), generate the href
+  if ('id' in service) {
+    return `/services#${service.title.toLowerCase().replace(/\s+/g, '-')}`;
+  }
+  // If it's from the constants (already has href property)
+  return service.href;
+};
+
 // Function to get the animation based on service type
 const getServiceAnimation = (iconName: string) => {
   switch(iconName) {
@@ -283,143 +293,7 @@ const ServicesSection = () => {
               setActiveTab={setActiveTab}
             />
             
-            {/* Featured Service Showcase */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                className="bg-gradient-to-br from-blue-900/30 to-blue-800/10 backdrop-blur-md rounded-3xl overflow-hidden shadow-2xl border border-blue-500/20"
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Animation/Visual Side */}
-                  <div className="relative p-8 lg:p-12 flex items-center justify-center overflow-hidden group">
-                    {/* Animated background effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-700/20 to-blue-500/5"></div>
-                    
-                    {/* Animated circles */}
-                    <div className="absolute inset-0 overflow-hidden opacity-50">
-                      <motion.div 
-                        className="absolute w-[300px] h-[300px] rounded-full border border-blue-400/10"
-                        style={{ top: '50%', left: '50%', x: '-50%', y: '-50%' }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                      />
-                      <motion.div 
-                        className="absolute w-[400px] h-[400px] rounded-full border border-blue-400/20"
-                        style={{ top: '50%', left: '50%', x: '-50%', y: '-50%' }}
-                        animate={{ rotate: -360 }}
-                        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                      />
-                      <motion.div 
-                        className="absolute w-[500px] h-[500px] rounded-full border border-blue-400/10"
-                        style={{ top: '50%', left: '50%', x: '-50%', y: '-50%' }}
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                      />
-                    </div>
-                    
-                    {/* Service Illustration/Animation */}
-                    <motion.div 
-                      className="relative z-10 w-64 h-64 md:w-80 md:h-80"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                    >
-                      <Lottie 
-                        animationData={getServiceAnimation(activeService?.icon)} 
-                        loop={true} 
-                        className="w-full h-full"
-                      />
-                    </motion.div>
-                    
-                    {/* Glowing effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                  </div>
-                  
-                  {/* Content Side */}
-                  <div className="p-8 lg:p-12 flex flex-col justify-center">
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                    >
-                      {/* Service Icon with enhanced animation */}
-                      <motion.div 
-                        className="relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg shadow-blue-500/20 bg-gradient-to-br from-blue-600 to-blue-400 border border-blue-300/20"
-                        whileHover={{ scale: 1.05, rotate: [0, -5, 5, 0] }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                      >
-                        {getServiceIcon(activeService?.icon)}
-                        
-                        {/* Glowing pulse animation */}
-                        <motion.div 
-                          className="absolute inset-0 rounded-2xl bg-blue-400/20"
-                          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.3, 0.5] }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                        />
-                      </motion.div>
-                      
-                      {/* Title with gradient effect */}
-                      <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-100 to-white">
-                        {activeService?.title}
-                      </h3>
-                      
-                      {/* Description with enhanced styling */}
-                      <p className="text-blue-100 mb-8 text-lg leading-relaxed">
-                        {activeService?.description}
-                      </p>
-                      
-                      {/* Feature list */}
-                      <ul className="space-y-3 mb-8">
-                        {['Tailored Solutions', 'Agile Development', 'Dedicated Support'].map((feature, idx) => (
-                          <motion.li 
-                            key={idx}
-                            className="flex items-start gap-3"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 + (idx * 0.1) }}
-                          >
-                            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center mt-0.5">
-                              <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                            </div>
-                            <span className="text-blue-100">{feature}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                      
-                      {/* Enhanced CTA Button */}
-                      <motion.div
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                      >
-                        <a 
-                          href={activeService?.href} 
-                          className="relative inline-flex items-center px-8 py-3 overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium shadow-lg shadow-blue-500/30 group"
-                        >
-                          <span className="relative z-10 flex items-center">
-                            Explore {activeService?.title}
-                            <motion.span 
-                              className="ml-2"
-                              animate={{ x: [0, 5, 0] }}
-                              transition={{ duration: 1.5, repeat: Infinity }}
-                            >
-                              →
-                            </motion.span>
-                          </span>
-                          <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                        </a>
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+
             
             {/* Service Grid - bottom part */}
             <motion.div
@@ -435,7 +309,7 @@ const ServicesSection = () => {
                   title={service.title}
                   description={service.description}
                   icon={service.icon}
-                  href={service.href}
+                  href={getServiceHref(service)}
                   index={index}
                 />
               ))}
