@@ -113,50 +113,7 @@ const GlowingParticles = () => {
   );
 };
 
-// Enhanced Tabs
-const ServiceTabs = ({ services, activeTab, setActiveTab }: { 
-  services: any[], 
-  activeTab: number, 
-  setActiveTab: (index: number) => void 
-}) => {
-  return (
-    <div className="mb-12 flex flex-wrap justify-center gap-3">
-      {services.map((service, index) => (
-        <motion.button
-          key={index}
-          className={`relative px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 
-            ${activeTab === index 
-              ? "text-white shadow-lg shadow-blue-500/20" 
-              : "text-gray-600 hover:text-blue-600 bg-white/80 hover:bg-white shadow"
-            }
-          `}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: index * 0.1 }}
-          onClick={() => setActiveTab(index)}
-          whileHover={{ y: -3 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          {activeTab === index && (
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full -z-10"
-              layoutId="activeTab"
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 30
-              }}
-            />
-          )}
-          <div className="flex items-center space-x-2">
-            <span className="hidden sm:inline-block">{getServiceIcon(service.icon)}</span>
-            <span>{service.title}</span>
-          </div>
-        </motion.button>
-      ))}
-    </div>
-  );
-};
+
 
 // Helper function to get the service href
 const getServiceHref = (service: any) => {
@@ -193,9 +150,7 @@ const ServicesSection = () => {
     queryKey: ['/api/services'],
   });
   
-  const [activeTab, setActiveTab] = useState(0);
   const servicesData = services || SERVICES;
-  const activeService = servicesData[activeTab];
 
   return (
     <section id="services" className="relative py-24 overflow-hidden">
@@ -266,7 +221,7 @@ const ServicesSection = () => {
           </motion.div>
         </motion.div>
         
-        {/* Enhanced Interactive Tab System */}
+        {/* Service Cards */}
         {isLoading ? (
           // Show skeleton loaders while loading
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -287,15 +242,7 @@ const ServicesSection = () => {
           </div>
         ) : (
           <>
-            <ServiceTabs
-              services={servicesData}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
-            
-
-            
-            {/* Service Grid - bottom part */}
+            {/* Service Grid */}
             <motion.div
               className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16"
               variants={containerVariants}
