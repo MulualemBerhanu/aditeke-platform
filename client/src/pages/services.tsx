@@ -313,10 +313,10 @@ const ServicesPage = () => {
       </section>
 
       {/* Services Section */}
-      <section id="services-list" className="py-24 bg-white relative overflow-hidden">
+      <section id="services-list" className="py-24 bg-gradient-to-b from-blue-950 to-blue-900 relative overflow-hidden">
         {/* Background patterns */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.02),transparent_25%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.02),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_25%)]"></div>
         
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
@@ -328,16 +328,16 @@ const ServicesPage = () => {
           >
             <div className="inline-block">
               <div className="flex items-center justify-center mb-4">
-                <div className="h-px w-8 bg-primary/40"></div>
-                <div className="mx-2 text-primary/70 text-lg">⚙️</div>
-                <div className="h-px w-8 bg-primary/40"></div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
+                <div className="mx-2 text-blue-300 text-lg">⚙️</div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
                 Our Comprehensive Services
               </h2>
             </div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-300 max-w-2xl mx-auto">
               We deliver end-to-end software solutions that drive innovation and business growth
             </p>
           </motion.div>
@@ -640,7 +640,7 @@ const ServicesPage = () => {
       </section>
 
       {/* Our Process Section */}
-      <section className="py-24 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+      <section className="py-24 bg-white relative overflow-hidden">
         {/* Background elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 opacity-70"></div>
@@ -816,11 +816,11 @@ const ServicesPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-b from-blue-950 to-blue-900 relative overflow-hidden">
         {/* Background patterns */}
-        <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-gray-50 to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(59,130,246,0.03),transparent_25%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.03),transparent_25%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-blue-900/50 to-transparent"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.03),transparent_25%)]"></div>
         
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
@@ -832,14 +832,14 @@ const ServicesPage = () => {
           >
             <div className="inline-block mb-3">
               <div className="flex items-center justify-center mb-4">
-                <div className="h-px w-8 bg-primary/40"></div>
-                <div className="mx-2 text-primary/70 text-lg">💰</div>
-                <div className="h-px w-8 bg-primary/40"></div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
+                <div className="mx-2 text-blue-300 text-lg">💰</div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
               </div>
             </div>
             
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Transparent Pricing Plans</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Transparent Pricing Plans</h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
               Flexible options designed to accommodate businesses of all sizes with no hidden fees
             </p>
           </motion.div>
