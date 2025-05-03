@@ -287,12 +287,12 @@ const AboutPage = () => {
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             {/* Left Side - Animated Visual (hidden on mobile) */}
             <motion.div 
-              className="hidden md:block lg:w-1/2 relative"
+              className="w-full lg:w-1/2 relative mb-12 lg:mb-0"
               initial={{ opacity: 0, x: -30 }}
               animate={missionInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
               transition={{ duration: 0.7 }}
             >
-              <div className="relative h-[350px] w-full max-w-[500px] mx-auto">
+              <div className="relative h-[400px] md:h-[450px] w-full max-w-[500px] mx-auto">
                 {/* Decorative elements */}
                 <motion.div
                   className="absolute -top-16 -left-16 w-32 h-32 bg-primary/5 rounded-full blur-2xl"
@@ -314,7 +314,7 @@ const AboutPage = () => {
                 
                 {/* Mission Strength Card */}
                 <div className="absolute inset-0 flex items-center justify-start md:justify-center px-4 md:px-0">
-                  <div className="relative w-full max-w-[550px] bg-white shadow-xl rounded-2xl overflow-hidden p-5 md:p-6">
+                  <div className="relative w-[calc(100%-20px)] min-w-[300px] max-w-[550px] mx-auto bg-white shadow-xl rounded-2xl overflow-hidden p-5 md:p-6">
                     <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/3 to-transparent rounded-2xl"></div>
                     
                     {/* Card Header */}
