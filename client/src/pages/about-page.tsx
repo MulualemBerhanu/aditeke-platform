@@ -69,11 +69,11 @@ const AboutPage = () => {
       </Helmet>
       
       {/* Modern Animated Hero Section with 3D depth - With Mobile Responsiveness */}
-      <div className="relative min-h-[60vh] py-20 md:py-40 overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-white">
+      <div className="relative min-h-[60vh] py-20 md:py-40 overflow-hidden bg-gradient-to-b from-blue-950 via-blue-900 to-blue-950">
         {/* Enhanced decorative elements */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_80%,rgba(59,130,246,0.08),transparent_30%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(59,130,246,0.08),transparent_35%)]"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.01)_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_80%,rgba(59,130,246,0.15),transparent_30%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(59,130,246,0.15),transparent_35%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px),linear-gradient(to_right,rgba(59,130,246,0.05)_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
         
         {/* Advanced floating elements with parallax effect - Only visible on larger screens */}
         <motion.div 
@@ -136,14 +136,14 @@ const AboutPage = () => {
                 />
               </div>
               
-              <h1 className="text-4xl md:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl xl:text-6xl font-bold mb-6 leading-tight text-white">
                 <span className="block mb-2">Empowering Your</span>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-blue-600">
                   Digital Transformation
                 </span>
               </h1>
               
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed lg:pr-12">
+              <p className="text-lg text-gray-300 mb-8 leading-relaxed lg:pr-12">
                 AdiTeke Software Solutions was founded with a vision to transform businesses through innovative software solutions. We combine technical expertise with deep industry knowledge to deliver exceptional results that empower our clients to thrive in the digital era.
               </p>
               
@@ -162,7 +162,7 @@ const AboutPage = () => {
                     </span>
                     <span className="text-xl text-primary/80">+</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">Years Experience</p>
+                  <p className="text-sm text-gray-300 mt-1">Years Experience</p>
                 </motion.div>
                 
                 {/* On-Time Delivery */}
@@ -178,7 +178,7 @@ const AboutPage = () => {
                     </span>
                     <span className="text-xl text-primary/80">%</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">On-Time Delivery</p>
+                  <p className="text-sm text-gray-300 mt-1">On-Time Delivery</p>
                 </motion.div>
                 
                 {/* Client Satisfaction */}
@@ -194,7 +194,7 @@ const AboutPage = () => {
                     </span>
                     <span className="text-xl text-primary/80">%</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">Client Satisfaction</p>
+                  <p className="text-sm text-gray-300 mt-1">Client Satisfaction</p>
                 </motion.div>
               </div>
             </motion.div>
@@ -435,7 +435,7 @@ const AboutPage = () => {
       </section>
       
       {/* Team Section - Modern Elevated Style */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-primary/5 relative overflow-hidden">
+      <section className="py-20 md:py-28 bg-gradient-to-b from-blue-950 to-blue-900 relative overflow-hidden">
         {/* Background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.03),transparent_25%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.03),transparent_25%)]"></div>
@@ -449,17 +449,17 @@ const AboutPage = () => {
               </div>
               
               <motion.h2 
-                className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight"
+                className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-white"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                Meet The Team Behind <span className="text-primary">AdiTeke</span>
+                Meet The Team Behind <span className="text-blue-300">AdiTeke</span>
               </motion.h2>
               
               <motion.p 
-                className="text-gray-600 text-lg"
+                className="text-gray-300 text-lg"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
