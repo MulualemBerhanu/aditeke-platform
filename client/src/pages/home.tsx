@@ -5,7 +5,6 @@ import AboutSection from '@/components/home/AboutSection';
 import PortfolioSection from '@/components/home/PortfolioSection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import ContactSection from '@/components/home/ContactSection';
-import NewsletterSection from '@/components/home/NewsletterSection';
 import ClientDashboardPreview from '@/components/home/ClientDashboardPreview';
 import TechStackShowcase from '@/components/home/TechStackShowcase';
 import FeatureSection from '@/components/home/FeatureSection';
@@ -25,7 +24,6 @@ const Home = () => {
       <PortfolioSection />
       <TestimonialsSection />
       <ContactSection />
-      <NewsletterSection />
       <ClientDashboardPreview />
     </>
   );
