@@ -165,7 +165,7 @@ const AboutPage = () => {
                   <p className="text-sm text-gray-600 mt-1">Years Experience</p>
                 </motion.div>
                 
-                {/* Project Delivered */}
+                {/* On-Time Delivery */}
                 <motion.div 
                   className="flex flex-col"
                   initial={{ opacity: 0, y: 20 }}
@@ -174,11 +174,11 @@ const AboutPage = () => {
                 >
                   <div className="flex items-baseline">
                     <span className="text-4xl font-bold text-primary mr-1">
-                      <CustomCountUp end={85} duration={3} />
+                      <CustomCountUp end={98} duration={3} />
                     </span>
-                    <span className="text-xl text-primary/80">+</span>
+                    <span className="text-xl text-primary/80">%</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">Projects Delivered</p>
+                  <p className="text-sm text-gray-600 mt-1">On-Time Delivery</p>
                 </motion.div>
                 
                 {/* Client Satisfaction */}
