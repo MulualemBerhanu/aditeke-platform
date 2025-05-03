@@ -11,7 +11,7 @@ const Footer = () => {
   return (
     <footer className="bg-dark text-white pt-16 pb-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
           {/* Company Info */}
           <div>
             <Link href="/" className="inline-block text-3xl font-bold mb-6 font-accent bg-gray-900 py-1 px-3 rounded">
@@ -50,8 +50,8 @@ const Footer = () => {
             </ul>
           </div>
           
-          {/* Services */}
-          <div>
+          {/* Services - Hidden on mobile */}
+          <div className="hidden md:block">
             <h3 className="text-lg font-bold mb-6">Services</h3>
             <ul className="space-y-3">
               {FOOTER_SERVICE_LINKS.map((link, index) => (
