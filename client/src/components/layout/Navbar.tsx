@@ -334,123 +334,122 @@ const Navbar = () => {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div 
-              className="md:hidden fixed inset-0 z-50 pt-[72px] bg-white dark:bg-gray-900"
+              className="md:hidden fixed inset-0 top-0 z-50 bg-white dark:bg-gray-900 overflow-auto"
+              style={{ top: '60px' }} 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.15 }}
             >
-              <div className="h-full overflow-y-auto">
-                <div className="container mx-auto px-4 py-6 space-y-6">
-                  {/* Menu Links with animations */}
-                  <div className="space-y-1.5">
-                    {NAV_ITEMS.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.05 * index }}
+              <div className="px-4 py-4 space-y-5">
+                {/* Menu Links with animations */}
+                <div className="space-y-1.5">
+                  {NAV_ITEMS.map((item, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.05 * index }}
+                    >
+                      <Link 
+                        href={item.href}
+                        className={`flex items-center px-4 py-3 rounded-xl text-base font-medium group transition-all
+                          ${location === item.href ? 'text-primary bg-primary/5 border-l-2 border-primary' : 'text-gray-700 hover:bg-gray-50 hover:text-primary'}
+                        `}
                       >
-                        <Link 
-                          href={item.href}
-                          className={`flex items-center px-4 py-3 rounded-xl text-base font-medium group transition-all
-                            ${location === item.href ? 'text-primary bg-primary/5 border-l-2 border-primary' : 'text-gray-700 hover:bg-gray-50 hover:text-primary'}
-                          `}
-                        >
-                          <span>{item.label}</span>
-                          <ChevronRight className={`ml-auto h-5 w-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 ${location === item.href ? 'text-primary' : ''}`} />
-                        </Link>
-                      </motion.div>
-                    ))}
-                  </div>
-                  
-                  {/* Quick contact info */}
-                  <motion.div 
-                    className="mt-6 px-4 py-4 bg-gray-50 rounded-xl space-y-3"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                      <Phone className="w-4 h-4 mr-2 text-primary/70" />
-                      Quick Contacts
-                    </h3>
-                    <a href="tel:+1 (641) 481-8560" className="flex items-center text-sm text-gray-600 hover:text-primary py-1.5 transition-colors">
-                      <span>+1 (641) 481-8560</span>
-                    </a>
-                    <a href="mailto:berhanumulualemadisu@gmail.com" className="flex items-center text-sm text-gray-600 hover:text-primary py-1.5 transition-colors">
-                      <span>berhanumulualemadisu@gmail.com</span>
-                    </a>
-                  </motion.div>
-                  
-                  {/* Login Options */}
-                  <motion.div 
-                    className="mt-6 space-y-3"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <h3 className="text-sm font-medium text-gray-500 px-4 flex items-center">
-                      <Lock className="w-4 h-4 mr-2 text-primary/70" />
-                      Login Options
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 gap-2.5 px-1 mt-2">
-                      <Link href="/login?role=admin">
-                        <Button variant="outline" className="w-full justify-start text-gray-700 hover:text-primary hover:border-primary/30 rounded-xl py-6">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center mr-3">
-                            <UserCog className="h-4 w-4 text-primary" />
-                          </div>
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">Admin Login</span>
-                            <span className="text-xs text-gray-500">System management</span>
-                          </div>
-                        </Button>
+                        <span>{item.label}</span>
+                        <ChevronRight className={`ml-auto h-5 w-5 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 ${location === item.href ? 'text-primary' : ''}`} />
                       </Link>
-                      
-                      <Link href="/login?role=manager">
-                        <Button variant="outline" className="w-full justify-start text-gray-700 hover:text-primary hover:border-primary/30 rounded-xl py-6">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
-                            <Building2 className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">Manager Login</span>
-                            <span className="text-xs text-gray-500">Project management</span>
-                          </div>
-                        </Button>
-                      </Link>
-                      
-                      <Link href="/login?role=client">
-                        <Button variant="outline" className="w-full justify-start text-gray-700 hover:text-primary hover:border-primary/30 rounded-xl py-6">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center mr-3">
-                            <Users className="h-4 w-4 text-teal-600" />
-                          </div>
-                          <div className="flex flex-col items-start">
-                            <span className="font-medium">Client Login</span>
-                            <span className="text-xs text-gray-500">Access your dashboard</span>
-                          </div>
-                        </Button>
-                      </Link>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                {/* Quick contact info */}
+                <motion.div 
+                  className="mt-6 px-4 py-4 bg-gray-50 rounded-xl space-y-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                    <Phone className="w-4 h-4 mr-2 text-primary/70" />
+                    Quick Contacts
+                  </h3>
+                  <a href="tel:+1 (641) 481-8560" className="flex items-center text-sm text-gray-600 hover:text-primary py-1.5 transition-colors">
+                    <span>+1 (641) 481-8560</span>
+                  </a>
+                  <a href="mailto:berhanumulualemadisu@gmail.com" className="flex items-center text-sm text-gray-600 hover:text-primary py-1.5 transition-colors">
+                    <span>berhanumulualemadisu@gmail.com</span>
+                  </a>
+                </motion.div>
+                
+                {/* Login Options */}
+                <motion.div 
+                  className="mt-6 space-y-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <h3 className="text-sm font-medium text-gray-500 px-4 flex items-center">
+                    <Lock className="w-4 h-4 mr-2 text-primary/70" />
+                    Login Options
+                  </h3>
                   
-                  {/* CTA Button */}
-                  <motion.div 
-                    className="pt-6 pb-8"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Link href="/contact">
-                      <Button className="w-full justify-center bg-gradient-to-r from-primary to-blue-600 text-white rounded-xl py-6 shadow-md shadow-primary/10">
-                        <span className="flex items-center text-base">
-                          Get a Free Quote
-                          <ChevronRight className="ml-1.5 h-4 w-4" />
-                        </span>
+                  <div className="grid grid-cols-1 gap-2.5 px-1 mt-2">
+                    <Link href="/login?role=admin">
+                      <Button variant="outline" className="w-full justify-start text-gray-700 hover:text-primary hover:border-primary/30 rounded-xl py-6">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center mr-3">
+                          <UserCog className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Admin Login</span>
+                          <span className="text-xs text-gray-500">System management</span>
+                        </div>
                       </Button>
                     </Link>
-                  </motion.div>
-                </div>
+                    
+                    <Link href="/login?role=manager">
+                      <Button variant="outline" className="w-full justify-start text-gray-700 hover:text-primary hover:border-primary/30 rounded-xl py-6">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
+                          <Building2 className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Manager Login</span>
+                          <span className="text-xs text-gray-500">Project management</span>
+                        </div>
+                      </Button>
+                    </Link>
+                    
+                    <Link href="/login?role=client">
+                      <Button variant="outline" className="w-full justify-start text-gray-700 hover:text-primary hover:border-primary/30 rounded-xl py-6">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center mr-3">
+                          <Users className="h-4 w-4 text-teal-600" />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">Client Login</span>
+                          <span className="text-xs text-gray-500">Access your dashboard</span>
+                        </div>
+                      </Button>
+                    </Link>
+                  </div>
+                </motion.div>
+                
+                {/* CTA Button */}
+                <motion.div 
+                  className="pt-6 pb-8"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Link href="/contact">
+                    <Button className="w-full justify-center bg-gradient-to-r from-primary to-blue-600 text-white rounded-xl py-6 shadow-md shadow-primary/10">
+                      <span className="flex items-center text-base">
+                        Get a Free Quote
+                        <ChevronRight className="ml-1.5 h-4 w-4" />
+                      </span>
+                    </Button>
+                  </Link>
+                </motion.div>
               </div>
             </motion.div>
           )}
