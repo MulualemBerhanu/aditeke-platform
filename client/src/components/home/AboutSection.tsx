@@ -72,28 +72,23 @@ const AboutSection = () => {
   const timeline = [
     { 
       title: "🧭 Vision & Purpose", 
-      description: "Founded on the belief that thoughtfully designed technology can transform businesses of every size.", 
-      year: "2018"
+      description: "Founded on the belief that thoughtfully designed technology can transform businesses of every size."
     },
     { 
       title: "👨‍💻 Innovation Begins", 
-      description: "Started as a close-knit team of passionate engineers with a focus on quality and client satisfaction.", 
-      year: "2019"
+      description: "Started as a close-knit team of passionate engineers with a focus on quality and client satisfaction."
     },
     { 
       title: "🧠 Beyond Code", 
-      description: "Evolved into a full-service solution provider—combining technical expertise with strategic consulting.", 
-      year: "2020"
+      description: "Evolved into a full-service solution provider—combining technical expertise with strategic consulting."
     },
     { 
       title: "🚀 Accelerated Growth", 
-      description: "Expanded our capabilities from MVPs to enterprise platforms, built with precision, scale, and empathy.", 
-      year: "2022"
+      description: "Expanded our capabilities from MVPs to enterprise platforms, built with precision, scale, and empathy."
     },
     { 
       title: "🌍 Global Impact", 
-      description: "Today, we craft transformative, future-ready digital solutions that drive measurable business outcomes.", 
-      year: "2023"
+      description: "Today, we craft transformative, future-ready digital solutions that drive measurable business outcomes."
     }
   ];
 
@@ -327,11 +322,8 @@ const AboutSection = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
                     >
-                      <div className="font-medium text-gray-800 text-lg flex items-center">
-                        <span>{item.title}</span>
-                        <span className="ml-2 text-xs font-normal bg-primary/10 text-primary px-2 py-0.5 rounded">
-                          {item.year}
-                        </span>
+                      <div className="font-medium text-gray-800 text-lg">
+                        {item.title}
                       </div>
                       <div className="text-gray-600 text-sm pl-5">{item.description}</div>
                     </motion.div>
