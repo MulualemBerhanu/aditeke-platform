@@ -70,7 +70,6 @@ const TestimonialsSection = () => {
   
   // Stats to display
   const stats = [
-    { icon: <Users className="h-5 w-5" />, value: "50+", label: "Happy Clients" },
     { icon: <Award className="h-5 w-5" />, value: "100%", label: "Satisfaction" },
     { icon: <MessageCircle className="h-5 w-5" />, value: "24/7", label: "Support" },
     { icon: <Heart className="h-5 w-5" />, value: "98%", label: "Client Retention" },
@@ -153,7 +152,7 @@ const TestimonialsSection = () => {
           {/* Stats Section */}
           <motion.div 
             variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10 mx-auto max-w-4xl"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10 mx-auto max-w-4xl"
           >
             {stats.map((stat, index) => (
               <motion.div
@@ -205,21 +204,24 @@ const TestimonialsSection = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                    className="flex flex-col items-center justify-center max-w-3xl mx-auto text-center"
                   >
-                    <div className="h-52 bg-white/5 animate-pulse rounded-lg"></div>
-                    <div>
-                      <div className="h-6 bg-white/5 animate-pulse rounded-full w-2/3 mb-4"></div>
-                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-full mb-3"></div>
-                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-full mb-3"></div>
-                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-2/3 mb-6"></div>
-                      <div className="flex items-center mt-8">
-                        <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse mr-4"></div>
-                        <div>
-                          <div className="h-4 bg-white/5 animate-pulse rounded-full w-32 mb-2"></div>
-                          <div className="h-3 bg-white/5 animate-pulse rounded-full w-24"></div>
-                        </div>
-                      </div>
+                    {/* Rating skeleton */}
+                    <div className="bg-white/5 animate-pulse rounded-full px-6 py-2 w-32 mb-8"></div>
+                    
+                    {/* Text skeleton */}
+                    <div className="h-6 bg-white/5 animate-pulse rounded-full w-2/3 mb-4"></div>
+                    <div className="h-4 bg-white/5 animate-pulse rounded-full w-full mb-3"></div>
+                    <div className="h-4 bg-white/5 animate-pulse rounded-full w-full mb-3"></div>
+                    <div className="h-4 bg-white/5 animate-pulse rounded-full w-2/3 mb-6"></div>
+                    
+                    {/* Divider skeleton */}
+                    <div className="h-0.5 bg-white/5 animate-pulse w-24 mb-6"></div>
+                    
+                    {/* Info skeleton */}
+                    <div className="flex flex-col items-center">
+                      <div className="h-4 bg-white/5 animate-pulse rounded-full w-32 mb-2"></div>
+                      <div className="h-3 bg-white/5 animate-pulse rounded-full w-24"></div>
                     </div>
                   </motion.div>
                 ) : error ? (
@@ -243,65 +245,32 @@ const TestimonialsSection = () => {
                     </div>
                   </motion.div>
                 ) : testimonials && testimonials.length > 0 ? (
-                  // Featured testimonial in 2-column layout on larger screens
+                  // Featured testimonial in centered layout
                   <motion.div
                     key={`testimonial-${activeIndex}`}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.7, ease: "easeOut" }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+                    className="flex flex-col items-center justify-center max-w-3xl mx-auto text-center"
                   >
-                    {/* Left Column: Person Image & Info */}
-                    <div className="relative flex flex-col items-center md:items-end">
-                      {/* Stylized testimonial image */}
-                      <div className="relative rounded-2xl overflow-hidden border-2 border-white/20 w-64 h-64 shadow-2xl mb-6">
-                        <div className="absolute inset-0 bg-gradient-to-b from-blue-600/20 to-purple-600/30 z-10"></div>
-                        {testimonials[activeIndex].profilePicture ? (
-                          <img 
-                            src={testimonials[activeIndex].profilePicture} 
-                            alt={`${testimonials[activeIndex].clientName}'s portrait`}
-                            className="object-cover w-full h-full"
-                            width="256"
-                            height="256"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-blue-600/40 to-purple-600/40 flex items-center justify-center text-white text-6xl font-bold">
-                            {testimonials[activeIndex].clientName.charAt(0)}
-                          </div>
-                        )}
-                        <motion.div 
-                          className="absolute inset-0 bg-gradient-to-b from-blue-500/30 to-purple-500/30 scale-110 blur-md -z-10"
-                          animate={{ 
-                            opacity: [0.4, 0.6, 0.4],
-                            scale: [1.05, 1.1, 1.05]
-                          }}
-                          transition={{ 
-                            duration: 5, 
-                            repeat: Infinity,
-                            ease: "easeInOut" 
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Rating stars with glow effect */}
-                      <div className="bg-white/10 backdrop-blur-sm px-6 py-2 rounded-full border border-white/20 flex items-center shadow-lg">
-                        <RenderStars rating={testimonials[activeIndex].rating} />
-                        <span className="ml-2 text-blue-200">{testimonials[activeIndex].rating.toFixed(1)}</span>
-                      </div>
+                    {/* Rating stars with glow effect */}
+                    <div className="bg-white/10 backdrop-blur-sm px-6 py-2 rounded-full border border-white/20 flex items-center shadow-lg mb-8">
+                      <RenderStars rating={testimonials[activeIndex].rating} />
+                      <span className="ml-2 text-blue-200">{testimonials[activeIndex].rating.toFixed(1)}</span>
                     </div>
                     
-                    {/* Right Column: Testimonial Text & Info */}
-                    <div className="flex flex-col justify-center">
-                      <p className="text-blue-100 text-lg md:text-xl leading-relaxed mb-8 italic">
+                    {/* Testimonial Text & Info */}
+                    <div className="flex flex-col items-center">
+                      <p className="text-blue-100 text-lg md:text-2xl leading-relaxed mb-8 italic">
                         "{testimonials[activeIndex].testimonial}"
                       </p>
                       
                       {/* Animated divider */}
                       <motion.div 
-                        className="h-0.5 bg-gradient-to-r from-blue-500/50 to-purple-500/50 mb-6 w-16"
+                        className="h-0.5 bg-gradient-to-r from-blue-500/50 via-purple-500/50 to-blue-500/50 mb-6 w-24"
                         initial={{ width: 0 }}
-                        animate={{ width: 64 }}
+                        animate={{ width: 96 }}
                         transition={{ duration: 0.8, delay: 0.3 }}
                       />
                       
@@ -366,40 +335,6 @@ const TestimonialsSection = () => {
             </div>
           )}
         </div>
-        
-        {/* "View All Testimonials" link with hover effect */}
-        <motion.div 
-          className="mt-16 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Link href="/testimonials">
-            <motion.div
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/90 to-purple-600/90 text-white font-medium shadow-lg shadow-blue-900/30 group overflow-hidden relative"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {/* Animated shine effect */}
-              <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
-              
-              <span>View all testimonials</span>
-              <motion.div
-                className="relative"
-                animate={{ x: [0, 5, 0] }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  ease: "easeInOut"
-                }}
-              >
-                <ArrowRight className="h-5 w-5" />
-              </motion.div>
-            </motion.div>
-          </Link>
-        </motion.div>
       </div>
     </section>
   );
