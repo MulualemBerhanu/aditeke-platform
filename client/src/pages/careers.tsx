@@ -413,7 +413,7 @@ const CareersPage = () => {
 
       {/* Application Form Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <motion.div 
             className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -421,43 +421,104 @@ const CareersPage = () => {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold">Apply for {selectedJob.title}</h3>
-                <button 
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={() => setSelectedJob(null)}
-                >
-                  <i className="fas fa-times text-xl"></i>
-                </button>
+            <div className="relative">
+              {/* Header with gradient background */}
+              <div className="bg-gradient-to-r from-primary to-blue-600 p-6 rounded-t-xl">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-bold text-white">Apply for {selectedJob?.title}</h3>
+                  <button 
+                    className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full h-8 w-8 flex items-center justify-center transition-colors"
+                    onClick={() => setSelectedJob(null)}
+                    aria-label="Close"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 6 6 18"></path>
+                      <path d="m6 6 12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+                <p className="text-blue-100 mt-2">
+                  Fill out the form below to apply for this position
+                </p>
               </div>
               
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-6">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                       control={form.control}
-                      name="email"
+                      name="fullName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Email *</FormLabel>
+                          <FormLabel className="text-gray-700">Full Name *</FormLabel>
                           <FormControl>
-                            <Input placeholder="john@example.com" type="email" {...field} />
+                            <Input 
+                              placeholder="John Doe" 
+                              className="border-gray-300 focus:border-primary/50 focus:ring focus:ring-primary/20" 
+                              {...field} 
+                            />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700">Email *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="john@example.com" 
+                                type="email" 
+                                className="border-gray-300 focus:border-primary/50 focus:ring focus:ring-primary/20" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-gray-700">Phone *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="+1 (555) 123-4567" 
+                                className="border-gray-300 focus:border-primary/50 focus:ring focus:ring-primary/20" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="resumeLink"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-700">Resume/CV Link *</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="https://drive.google.com/your-resume" 
+                              type="url"
+                              className="border-gray-300 focus:border-primary/50 focus:ring focus:ring-primary/20"  
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription className="text-gray-500 text-sm">
+                            Please provide a link to your resume (Google Drive, Dropbox, etc.)
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -465,72 +526,41 @@ const CareersPage = () => {
                     
                     <FormField
                       control={form.control}
-                      name="phone"
+                      name="coverLetter"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone *</FormLabel>
+                          <FormLabel className="text-gray-700">Cover Letter *</FormLabel>
                           <FormControl>
-                            <Input placeholder="+1 (555) 123-4567" {...field} />
+                            <Textarea 
+                              placeholder="Tell us why you're interested in this position and what skills and experience you bring to the table..." 
+                              className="min-h-[150px] border-gray-300 focus:border-primary/50 focus:ring focus:ring-primary/20 resize-y"
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="resumeLink"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Resume/CV Link *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="https://drive.google.com/your-resume" 
-                            type="url" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Please provide a link to your resume (Google Drive, Dropbox, etc.)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="coverLetter"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cover Letter *</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Tell us why you're interested in this position and why you'd be a good fit..." 
-                            rows={6}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-end gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setSelectedJob(null)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="bg-primary text-white">
-                      Submit Application
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+                    
+                    <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-gray-100">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        onClick={() => setSelectedJob(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-primary hover:bg-primary/90 text-white transition-colors"
+                      >
+                        Submit Application
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
             </div>
           </motion.div>
         </div>
