@@ -200,14 +200,23 @@ export const contactMessages = pgTable("contact_messages", {
   message: text("message").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   isResolved: boolean("is_resolved").notNull().default(false),
+  agreement: boolean("agreement").default(true),
 });
 
-export const insertContactMessageSchema = createInsertSchema(contactMessages).pick({
-  name: true,
-  email: true,
-  phone: true,
-  subject: true,
-  message: true,
+export const insertContactMessageSchema = createInsertSchema(contactMessages)
+  .pick({
+    name: true,
+    email: true,
+    phone: true,
+    subject: true,
+    message: true,
+    agreement: true,
+  })
+  .extend({
+    // Set default value for agreement field if not provided
+    agreement: z.boolean().default(true),
+    // Set default value for subject if not provided
+    subject: z.string().default("general"),
 });
 
 // Newsletter subscriber schema

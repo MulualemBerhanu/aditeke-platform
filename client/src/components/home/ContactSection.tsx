@@ -95,8 +95,9 @@ const ContactSection = () => {
         name: contactData.name?.toString() || '',
         email: contactData.email?.toString() || '',
         phone: contactData.phone?.toString() || '',
-        subject: contactData.subject?.toString() || '',
-        message: contactData.message?.toString() || ''
+        subject: contactData.subject?.toString() || 'general',
+        message: contactData.message?.toString() || '',
+        agreement: !!contactData.agreement // Convert to boolean
       };
       
       console.log('Sanitized contact data:', sanitizedData);
