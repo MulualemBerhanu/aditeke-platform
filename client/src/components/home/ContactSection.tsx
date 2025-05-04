@@ -86,7 +86,22 @@ const ContactSection = () => {
     mutationFn: async (data: ContactFormValues) => {
       // Remove agreement field as it's not part of the API model
       const { agreement, ...contactData } = data;
-      const response = await apiRequest('POST', '/api/public/contact', contactData);
+      
+      // Log the exact data being sent for debugging
+      console.log('Submitting contact form with data:', contactData);
+      
+      // Make sure all required fields are strings and not undefined
+      const sanitizedData = {
+        name: contactData.name?.toString() || '',
+        email: contactData.email?.toString() || '',
+        phone: contactData.phone?.toString() || '',
+        subject: contactData.subject?.toString() || '',
+        message: contactData.message?.toString() || ''
+      };
+      
+      console.log('Sanitized contact data:', sanitizedData);
+      
+      const response = await apiRequest('POST', '/api/public/contact', sanitizedData);
       return await response.json();
     },
     onSuccess: () => {

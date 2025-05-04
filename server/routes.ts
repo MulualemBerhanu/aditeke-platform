@@ -936,6 +936,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a public contact form endpoint (without authentication)
   app.post("/api/public/contact", async (req, res) => {
     try {
+      console.log("Contact form submission received:", {
+        hasBody: !!req.body,
+        contentType: req.get('Content-Type'),
+        bodyKeys: req.body ? Object.keys(req.body) : [],
+        name: req.body?.name,
+        email: req.body?.email,
+        subject: req.body?.subject,
+        messageLength: req.body?.message?.length,
+      });
+      
       const messageData = insertContactMessageSchema.parse(req.body);
       
       // Save message to database
