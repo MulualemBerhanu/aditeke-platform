@@ -97,7 +97,7 @@ const ContactSection = () => {
         phone: contactData.phone?.toString() || '',
         subject: contactData.subject?.toString() || 'general',
         message: contactData.message?.toString() || '',
-        agreement: !!contactData.agreement // Convert to boolean
+        agreement: true // Agreement is already validated by the form
       };
       
       console.log('Sanitized contact data:', sanitizedData);
@@ -394,7 +394,10 @@ const ContactSection = () => {
                       <h4 className="text-xl font-bold text-white mb-2">Message Sent Successfully!</h4>
                       <p className="text-slate-300 mb-6">Thank you for reaching out. We'll get back to you as soon as possible.</p>
                       <Button
-                        onClick={() => form.reset()}
+                        onClick={() => {
+                          form.reset();
+                          mutation.reset(); // Reset the mutation state to show the form again
+                        }}
                         variant="outline"
                         className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-white"
                       >
