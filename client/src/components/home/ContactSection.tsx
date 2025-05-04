@@ -54,7 +54,7 @@ const ContactSection = () => {
       name: '',
       email: '',
       phone: '',
-      subject: '',
+      subject: 'general', // Set a valid default subject rather than empty string
       message: '',
       agreement: false
     }
@@ -465,11 +465,12 @@ const ContactSection = () => {
                                   <FormLabel className="text-slate-300">Subject *</FormLabel>
                                   <Select 
                                     onValueChange={field.onChange} 
-                                    defaultValue={field.value}
+                                    value={field.value}
+                                    defaultValue="general"
                                   >
                                     <FormControl>
                                       <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white focus:border-indigo-500/50 focus:ring-indigo-500/20">
-                                        <SelectValue placeholder="Select a subject" />
+                                        <SelectValue placeholder="Choose inquiry type" />
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="bg-slate-800 border-slate-700 text-white">
@@ -477,7 +478,6 @@ const ContactSection = () => {
                                         <SelectItem 
                                           key={index} 
                                           value={subject.value}
-                                          disabled={subject.disabled}
                                           className="focus:bg-indigo-500/20 data-[highlighted]:bg-indigo-900/30"
                                         >
                                           {subject.label}

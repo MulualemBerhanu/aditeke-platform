@@ -86,7 +86,7 @@ export const CONTACT_INFO = {
 
 // Form subjects
 export const CONTACT_SUBJECTS = [
-  { label: "Select a subject", value: "select", disabled: true },
+  // Removed the disabled option to prevent it from being selected accidentally
   { label: "General Inquiry", value: "general" },
   { label: "Request a Quote", value: "quote" },
   { label: "Technical Support", value: "support" },
