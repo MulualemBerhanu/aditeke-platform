@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/components/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { UserCog, Building2, UsersRound, LogIn, Mail, Key, Eye, EyeOff } from 'lucide-react';
+import { 
+  UserCog, 
+  Building2, 
+  UsersRound, 
+  LogIn, 
+  Mail, 
+  Key, 
+  Eye, 
+  EyeOff, 
+  Lock, 
+  ShieldCheck, 
+  Rocket,
+  Award,
+  CheckCircle,
+  ChevronRight
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -363,238 +379,429 @@ export default function LoginPage() {
     setIsRoleDialogOpen(false);
   };
   
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1, 
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      } 
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.6 }
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left side: Auth form */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
-        <Card className="w-full max-w-md">
-          <CardHeader className="pb-4 text-center">
-            <div className="mx-auto h-24 w-24 rounded-full bg-primary/10 mb-4 flex items-center justify-center">
-              {currentRole.icon}
-            </div>
-            <CardTitle className="text-2xl">Welcome!</CardTitle>
-            <CardDescription>
-              Sign in as {currentRole.name}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Role selection info */}
-            <div className="bg-muted/50 p-3 rounded-lg flex items-center">
-              <div className="text-primary mr-3">{currentRole.icon}</div>
-              <div>
-                <h3 className="font-medium">{currentRole.name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {currentRole.description}
-                </p>
+    <div className="min-h-screen">
+      {/* Navy Hero Section */}
+      <section className="relative py-28 overflow-hidden bg-gradient-to-b from-primary to-blue-800 text-white">
+        {/* Background patterns */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.05),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.05),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10 text-center mb-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="max-w-3xl mx-auto"
+          >
+            <div className="inline-block mb-4">
+              <div className="flex items-center justify-center mb-4">
+                <div className="h-px w-8 bg-blue-300/50"></div>
+                <div className="mx-2 text-blue-300 text-lg">🔐</div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-auto"
-                onClick={() => setIsRoleDialogOpen(true)}
-              >
-                Change
-              </Button>
             </div>
-            
-            {/* Role selection dialog */}
-            {isRoleDialogOpen && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <Card className="w-full max-w-md mx-4">
-                  <CardHeader>
-                    <CardTitle>Select User Role</CardTitle>
-                    <CardDescription>Choose a role to continue</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {USER_ROLES.map((role) => (
-                      <div 
-                        key={role.id}
-                        className="p-4 border rounded-lg hover:bg-muted cursor-pointer flex items-center"
-                        onClick={() => handleRoleSelect(role)}
-                      >
-                        <div className="text-primary mr-4">{role.icon}</div>
-                        <div>
-                          <h3 className="font-medium">{role.name}</h3>
-                          <p className="text-sm text-muted-foreground">{role.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                  <CardFooter>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => setIsRoleDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            )}
-            
-            {/* Authentication method toggle */}
-            <div className="flex rounded-md overflow-hidden">
-              <Button
-                type="button"
-                variant={authMethod === 'password' ? 'default' : 'outline'}
-                className="flex-1 rounded-none"
-                onClick={() => setAuthMethod('password')}
-              >
-                <Key className="h-4 w-4 mr-2" />
-                Password
-              </Button>
-              <Button
-                type="button"
-                variant={authMethod === 'google' ? 'default' : 'outline'}
-                className="flex-1 rounded-none"
-                onClick={() => setAuthMethod('google')}
-              >
-                <svg className="h-4 w-4 mr-2" viewBox="0 0 18 18">
-                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
-                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
-                  <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
-                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
-                </svg>
-                Google
-              </Button>
-            </div>
-            
-            {authMethod === 'password' ? (
-              /* Password Login Form */
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter your username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Password</FormLabel>
-                          <a 
-                            href="/forgot-password" 
-                            className="text-xs text-primary hover:underline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setLocation('/forgot-password');
-                            }}
-                          >
-                            Forgot password?
-                          </a>
-                        </div>
-                        <FormControl>
-                          <div className="relative">
-                            <Input 
-                              type={showPassword ? "text" : "password"} 
-                              placeholder="Enter your password" 
-                              {...field} 
-                            />
-                            <button 
-                              type="button"
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <Button 
-                    type="submit"
-                    className="w-full mt-2" 
-                    disabled={isLoading || authLoading}
-                  >
-                    {isLoading ? 'Signing in...' : 'Sign In'}
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              /* Google Login Button */
-              <Button 
-                onClick={handleLoginWithGoogle}
-                className="w-full h-12 flex items-center justify-center gap-2"
-                disabled={isLoading || authLoading}
-              >
-                <svg width="18" height="18" viewBox="0 0 18 18">
-                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
-                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
-                  <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
-                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
-                </svg>
-                {isLoading ? 'Signing in...' : 'Continue with Google'}
-              </Button>
-            )}
-            
-            <Separator className="my-4" />
-          </CardContent>
-          <CardFooter className="flex flex-col items-center justify-between">
-            <div className="w-full my-2">
-              <Separator />
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              By signing in, you agree to our Terms of Service and Privacy Policy
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">Secure Login</h1>
+            <p className="text-xl md:text-2xl text-blue-100/90 mb-10 max-w-2xl mx-auto">
+              Sign in to access your dashboard and manage your projects
             </p>
-          </CardFooter>
-        </Card>
-      </div>
-      
-      {/* Right side: Hero banner */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-500 to-indigo-700 text-white">
-        <div className="flex flex-col justify-center px-12 max-w-xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">AdiTeke Software Solutions</h1>
-          <p className="text-lg mb-6">
-            Advanced Software Development Company providing cutting-edge technology solutions for businesses of all sizes.
-          </p>
-          <ul className="space-y-3">
-            <li className="flex items-center">
-              <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>Professional Web & Mobile Applications</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>AI-powered Business Solutions</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>Custom Software Development</span>
-            </li>
-            <li className="flex items-center">
-              <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>24/7 Technical Support</span>
-            </li>
-          </ul>
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      {/* White Login Form Section */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-full h-20 bg-gradient-to-r from-transparent via-primary/5 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-r from-transparent via-primary/5 to-transparent"></div>
+        
+        <div className="container mx-auto px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col lg:flex-row gap-10 items-center">
+              {/* Left Side: Login Form Card */}
+              <motion.div 
+                className="w-full lg:w-1/2"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7 }}
+              >
+                <Card className="w-full shadow-xl border border-primary/10 overflow-hidden">
+                  {/* Card Header with Gradient */}
+                  <div className="bg-gradient-to-r from-primary to-blue-600 p-6 text-white text-center">
+                    <div className="mx-auto h-24 w-24 rounded-full bg-white/10 mb-4 flex items-center justify-center">
+                      {currentRole.name === 'Admin' ? (
+                        <UserCog className="h-12 w-12" />
+                      ) : currentRole.name === 'Manager' ? (
+                        <Building2 className="h-12 w-12" />
+                      ) : (
+                        <UsersRound className="h-12 w-12" />
+                      )}
+                    </div>
+                    <CardTitle className="text-2xl mb-2">Welcome!</CardTitle>
+                    <p className="text-blue-100">
+                      Sign in as <span className="font-bold">{currentRole.name}</span>
+                    </p>
+                  </div>
+                  
+                  <CardContent className="space-y-6 pt-6">
+                    {/* Role selection info */}
+                    <div className="bg-primary/5 p-4 rounded-lg flex items-center border border-primary/10">
+                      <div className="bg-gradient-to-br from-primary/20 to-blue-400/20 p-3 rounded-full text-primary mr-4">
+                        {currentRole.icon}
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-800">{currentRole.name}</h3>
+                        <p className="text-sm text-gray-600">
+                          {currentRole.description}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+                        onClick={() => setIsRoleDialogOpen(true)}
+                      >
+                        Change Role
+                      </Button>
+                    </div>
+                    
+                    {/* Role selection dialog */}
+                    {isRoleDialogOpen && (
+                      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Card className="w-full max-w-md mx-4 border border-primary/10 shadow-2xl">
+                            <div className="bg-gradient-to-r from-primary to-blue-600 p-5 text-white">
+                              <CardTitle className="mb-1">Select User Role</CardTitle>
+                              <CardDescription className="text-blue-100">
+                                Choose a role to continue
+                              </CardDescription>
+                            </div>
+                            <CardContent className="space-y-4 pt-6">
+                              {USER_ROLES.map((role) => (
+                                <motion.div 
+                                  key={role.id}
+                                  className="p-4 border border-primary/10 rounded-lg hover:bg-primary/5 cursor-pointer flex items-center transition-all"
+                                  onClick={() => handleRoleSelect(role)}
+                                  whileHover={{ y: -3, boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.1)' }}
+                                >
+                                  <div className="bg-gradient-to-br from-primary/10 to-blue-400/10 p-3 rounded-full text-primary mr-4">
+                                    {role.icon}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-medium text-gray-800">{role.name}</h3>
+                                    <p className="text-sm text-gray-600">{role.description}</p>
+                                  </div>
+                                  <ChevronRight className="ml-auto h-5 w-5 text-primary/40" />
+                                </motion.div>
+                              ))}
+                            </CardContent>
+                            <CardFooter className="flex justify-end border-t border-gray-100 pt-4">
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setIsRoleDialogOpen(false)}
+                                className="border-primary/20 hover:border-primary/40 hover:bg-primary/5"
+                              >
+                                Cancel
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </motion.div>
+                      </div>
+                    )}
+                    
+                    {/* Authentication method toggle */}
+                    <div className="flex rounded-md overflow-hidden border border-primary/20">
+                      <Button
+                        type="button"
+                        variant={authMethod === 'password' ? 'default' : 'outline'}
+                        className={`flex-1 rounded-none ${authMethod === 'password' ? 'bg-gradient-to-r from-primary to-blue-600 text-white' : 'hover:bg-primary/5'}`}
+                        onClick={() => setAuthMethod('password')}
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Password
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={authMethod === 'google' ? 'default' : 'outline'}
+                        className={`flex-1 rounded-none ${authMethod === 'google' ? 'bg-gradient-to-r from-primary to-blue-600 text-white' : 'hover:bg-primary/5'}`}
+                        onClick={() => setAuthMethod('google')}
+                      >
+                        <svg className="h-4 w-4 mr-2" viewBox="0 0 18 18">
+                          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
+                          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
+                          <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
+                          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
+                        </svg>
+                        Google
+                      </Button>
+                    </div>
+                    
+                    {authMethod === 'password' ? (
+                      /* Password Login Form */
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                            <FormField
+                              control={form.control}
+                              name="username"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-gray-700">Username</FormLabel>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Input 
+                                        placeholder="Enter your username" 
+                                        className="border-gray-300 pl-9 focus:border-primary/50 focus:ring focus:ring-primary/20" 
+                                        {...field} 
+                                      />
+                                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="password"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center justify-between">
+                                    <FormLabel className="text-gray-700">Password</FormLabel>
+                                    <a 
+                                      href="/forgot-password" 
+                                      className="text-xs text-primary hover:underline"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        setLocation('/forgot-password');
+                                      }}
+                                    >
+                                      Forgot password?
+                                    </a>
+                                  </div>
+                                  <FormControl>
+                                    <div className="relative">
+                                      <Input 
+                                        type={showPassword ? "text" : "password"} 
+                                        placeholder="Enter your password" 
+                                        className="border-gray-300 pl-9 focus:border-primary/50 focus:ring focus:ring-primary/20"
+                                        {...field} 
+                                      />
+                                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                      <button 
+                                        type="button"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                      >
+                                        {showPassword ? (
+                                          <EyeOff className="h-4 w-4" />
+                                        ) : (
+                                          <Eye className="h-4 w-4" />
+                                        )}
+                                      </button>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <motion.div
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <Button 
+                                type="submit"
+                                className="w-full h-11 bg-gradient-to-r from-primary to-blue-600 hover:opacity-90 text-white mt-3" 
+                                disabled={isLoading || authLoading}
+                              >
+                                {isLoading ? (
+                                  <div className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Signing in...
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center">
+                                    <LogIn className="mr-2 h-4 w-4" />
+                                    Sign In Securely
+                                  </div>
+                                )}
+                              </Button>
+                            </motion.div>
+                          </form>
+                        </Form>
+                      </motion.div>
+                    ) : (
+                      /* Google Login Button */
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Button 
+                          onClick={handleLoginWithGoogle}
+                          className="w-full h-12 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 shadow-sm flex items-center justify-center gap-3"
+                          disabled={isLoading || authLoading}
+                        >
+                          <svg width="20" height="20" viewBox="0 0 18 18">
+                            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path>
+                            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path>
+                            <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path>
+                            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path>
+                          </svg>
+                          {isLoading ? 'Signing in...' : 'Continue with Google'}
+                        </Button>
+                      </motion.div>
+                    )}
+                    
+                    <Separator className="my-6" />
+                    
+                    <p className="text-sm text-gray-500 text-center">
+                      By signing in, you agree to our <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              {/* Right Side: Features */}
+              <motion.div 
+                className="w-full lg:w-1/2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+              >
+                <div className="bg-gradient-to-br from-primary/5 to-blue-400/5 border border-primary/10 rounded-2xl p-8 md:p-10">
+                  <div>
+                    <h2 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-700">
+                      Welcome to AdiTeke
+                    </h2>
+                    <p className="text-gray-600 mb-8 text-lg">
+                      Access your personalized dashboard to manage your software development projects and collaborate with our team.
+                    </p>
+                    
+                    <div className="space-y-5">
+                      {[
+                        {
+                          title: "Secure Access",
+                          description: "End-to-end encrypted communication and strict access controls",
+                          icon: <ShieldCheck className="h-6 w-6 text-white" />,
+                          color: "from-green-500 to-emerald-600"
+                        },
+                        {
+                          title: "Project Management",
+                          description: "Track your project progress, timeline and resource allocation",
+                          icon: <Building2 className="h-6 w-6 text-white" />,
+                          color: "from-blue-500 to-indigo-600"
+                        },
+                        {
+                          title: "Real-time Updates",
+                          description: "Get instant notifications about project milestones and activities",
+                          icon: <Rocket className="h-6 w-6 text-white" />,
+                          color: "from-purple-500 to-indigo-600"
+                        },
+                        {
+                          title: "Premium Support",
+                          description: "Access to dedicated support team and personalized assistance",
+                          icon: <Award className="h-6 w-6 text-white" />,
+                          color: "from-amber-500 to-orange-600"
+                        }
+                      ].map((feature, index) => (
+                        <motion.div 
+                          key={index}
+                          className="flex gap-4 items-start"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+                        >
+                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-lg`}>
+                            {feature.icon}
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-1">{feature.title}</h3>
+                            <p className="text-gray-600">{feature.description}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Navy CTA Section */}
+      <section className="py-16 bg-gradient-to-b from-blue-950 to-blue-900 text-white relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_70%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div 
+            className="flex flex-col md:flex-row items-center max-w-5xl mx-auto gap-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="md:w-2/3">
+              <h2 className="text-3xl font-bold mb-4">Don't have an account yet?</h2>
+              <p className="text-blue-100/80 text-lg">
+                Contact us to set up your client portal and start managing your software development projects with AdiTeke.
+              </p>
+            </div>
+            <div className="md:w-1/3 flex justify-center md:justify-end">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  className="bg-white text-primary hover:bg-white/90 py-6 px-8 text-lg font-medium shadow-lg"
+                  onClick={() => window.location.href = '/contact'}
+                >
+                  Contact Us Now
+                </Button>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }
