@@ -54,8 +54,37 @@ app.use((req, res, next) => {
 
 // Configure JSON parser to be more permissive with content types
 app.use(express.json({
-  type: ['application/json', 'application/json; charset=utf-8', '+json', '*/json']
+  type: ['application/json', 'application/json; charset=utf-8', '+json', '*/json'],
+  limit: '10mb',
+  strict: false // Allow any JSON-like input
 }));
+
+// Add raw body parser for debugging
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.path === '/api/public/contact') {
+    let rawData = '';
+    req.setEncoding('utf8');
+    
+    req.on('data', (chunk) => {
+      rawData += chunk;
+    });
+    
+    req.on('end', () => {
+      console.log('Raw request body:', rawData);
+      try {
+        // Try to parse as JSON and attach to req.body
+        const parsedData = JSON.parse(rawData);
+        req.body = parsedData;
+        console.log('Successfully parsed raw data into JSON:', parsedData);
+      } catch (e) {
+        console.error('Failed to parse raw data as JSON:', e);
+      }
+      next();
+    });
+  } else {
+    next();
+  }
+});
 
 // Add request body logging middleware to help debug login issues
 app.use((req, res, next) => {
