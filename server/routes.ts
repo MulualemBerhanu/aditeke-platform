@@ -933,8 +933,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contact form submission
-  app.post("/api/contact", async (req, res) => {
+  // Create a public contact form endpoint (without authentication)
+  app.post("/api/public/contact", async (req, res) => {
     try {
       const messageData = insertContactMessageSchema.parse(req.body);
       

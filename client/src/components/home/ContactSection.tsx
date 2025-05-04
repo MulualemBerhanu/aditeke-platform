@@ -86,7 +86,7 @@ const ContactSection = () => {
     mutationFn: async (data: ContactFormValues) => {
       // Remove agreement field as it's not part of the API model
       const { agreement, ...contactData } = data;
-      const response = await apiRequest('POST', '/api/contact', contactData);
+      const response = await apiRequest('POST', '/api/public/contact', contactData);
       return await response.json();
     },
     onSuccess: () => {
