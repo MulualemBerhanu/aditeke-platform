@@ -43,8 +43,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Enhanced JSON parser with debugging for authentication issues
-app.use(express.json());
+// Enhanced JSON parser with debugging for API requests
+app.use((req, res, next) => {
+  // Add logging for Content-Type header to help debug parsing issues
+  if (req.path.startsWith('/api/')) {
+    console.log(`Incoming ${req.method} ${req.path} Content-Type:`, req.get('Content-Type'));
+  }
+  next();
+});
+
+// Configure JSON parser to be more permissive with content types
+app.use(express.json({
+  type: ['application/json', 'application/json; charset=utf-8', '+json', '*/json']
+}));
 
 // Add request body logging middleware to help debug login issues
 app.use((req, res, next) => {

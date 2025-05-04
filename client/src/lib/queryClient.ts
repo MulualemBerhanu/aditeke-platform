@@ -30,7 +30,7 @@ export async function apiRequest(
       const headers: Record<string, string> = {
         // Always set Content-Type for POST/PUT/PATCH requests, even if body is empty
         // This is critical for authentication endpoints
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=UTF-8",
         // Add cache control headers to prevent caching of API requests
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",

@@ -110,7 +110,16 @@ const ContactSection = () => {
         description: "We'll get back to you as soon as possible.",
         variant: "default",
       });
-      form.reset();
+      
+      // Reset the form with default values
+      form.reset({
+        name: '',
+        email: '',
+        phone: '',
+        subject: 'general',
+        message: '',
+        agreement: false
+      });
     },
     onError: (error) => {
       toast({
