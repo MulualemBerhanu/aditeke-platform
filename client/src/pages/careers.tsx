@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -30,30 +30,62 @@ const applicationSchema = z.object({
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
 const CareersPage = () => {
-  // Sample job data for testing the modal
-  const sampleJob: Job = {
-    id: 999,
-    title: "Senior Frontend Developer",
-    location: "Portland, OR",
-    employmentType: "Full-time",
-    department: "Engineering",
-    description: "We're looking for an experienced frontend developer with React expertise to join our team.",
-    requirements: "5+ years of experience with modern JavaScript frameworks, strong TypeScript skills, and experience with responsive design.",
-    postedDate: new Date(),
-    isActive: true
-  };
+  // Sample job data
+  const sampleJobs: Job[] = [
+    {
+      id: 1001,
+      title: "Senior Frontend Developer",
+      location: "Portland, OR",
+      employmentType: "Full-time",
+      department: "Engineering",
+      description: "We're looking for an experienced frontend developer with React expertise to join our team. You'll be responsible for building responsive, accessible, and performant user interfaces for our enterprise clients. You'll work closely with our UI/UX designers, backend developers, and product managers to deliver exceptional digital experiences.",
+      requirements: "• 5+ years of experience with modern JavaScript frameworks (React.js, Vue.js)\n• Strong TypeScript skills\n• Experience with CSS preprocessors and modern CSS frameworks\n• Excellent understanding of responsive design principles\n• Experience with state management solutions like Redux or Context API\n• Knowledge of web performance optimization techniques\n• Good understanding of accessibility standards (WCAG)\n• Experience with version control systems (Git)",
+      postedDate: new Date(),
+      isActive: true
+    },
+    {
+      id: 1002,
+      title: "Backend Engineer",
+      location: "Remote",
+      employmentType: "Full-time",
+      department: "Engineering",
+      description: "Join our backend engineering team and help build robust, scalable, and secure APIs and services. You'll be working on designing and implementing RESTful APIs, database schemas, and server-side logic that powers our client solutions. This role requires strong problem-solving skills and the ability to optimize systems for performance and reliability.",
+      requirements: "• 3+ years of experience with Node.js or similar backend technologies\n• Experience with SQL and NoSQL databases\n• Understanding of RESTful API design principles\n• Knowledge of authentication and authorization mechanisms\n• Experience with cloud services (AWS, Azure, or GCP)\n• Understanding of microservices architecture\n• Familiarity with CI/CD pipelines\n• Good communication skills",
+      postedDate: new Date(),
+      isActive: true
+    },
+    {
+      id: 1003,
+      title: "DevOps Engineer",
+      location: "Portland, OR / Remote",
+      employmentType: "Full-time",
+      department: "Operations",
+      description: "We're looking for a DevOps Engineer to help us build and maintain our cloud infrastructure, automate deployment processes, and ensure the reliability and security of our systems. You'll work closely with development teams to implement CI/CD pipelines, monitor system performance, and troubleshoot infrastructure issues.",
+      requirements: "• 3+ years of experience in a DevOps or SRE role\n• Strong knowledge of AWS, Azure, or GCP services\n• Experience with containerization technologies (Docker, Kubernetes)\n• Proficiency in infrastructure as code (Terraform, CloudFormation)\n• Experience with CI/CD tools (Jenkins, GitHub Actions, CircleCI)\n• Knowledge of monitoring and observability tools\n• Scripting skills (Bash, Python)\n• Understanding of network security principles",
+      postedDate: new Date(),
+      isActive: true
+    }
+  ];
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const { toast } = useToast();
   
-  // Add this button to open the modal directly for testing
+  // Mock the API loading state
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Function to open the modal directly for testing
   const openModalForTesting = () => {
-    setSelectedJob(sampleJob);
+    setSelectedJob(sampleJobs[0]);
   };
   
-  const { data: jobs, isLoading, error } = useQuery<Job[]>({
-    queryKey: ['/api/jobs'],
-  });
+  // Simulate API loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Initialize form with react-hook-form
   const form = useForm<ApplicationFormValues>({
@@ -330,22 +362,11 @@ const CareersPage = () => {
                 </div>
               ))}
             </div>
-          ) : error ? (
-            // Show error message
-            <div className="text-center p-8 rounded-xl border border-red-200 bg-red-50 max-w-2xl mx-auto">
-              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-2xl mx-auto mb-4">
-                <i className="fas fa-exclamation-triangle"></i>
-              </div>
-              <h3 className="text-xl font-bold text-red-700 mb-2">Unable to Load Positions</h3>
-              <p className="text-red-600">
-                We're experiencing technical difficulties loading our job listings. Please try again later or contact us directly.
-              </p>
-            </div>
-          ) : jobs && jobs.length > 0 ? (
+          ) : sampleJobs && sampleJobs.length > 0 ? (
             // Show job listings
             <div className="max-w-4xl mx-auto">
               <Accordion type="single" collapsible className="space-y-6">
-                {jobs.map((job, index) => (
+                {sampleJobs.map((job, index) => (
                   <motion.div
                     key={job.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -380,7 +401,7 @@ const CareersPage = () => {
                           <p className="text-gray-700 mb-6 text-lg">{job.description}</p>
                           
                           <h4 className="text-xl font-bold mt-6 mb-3 text-gray-800">Requirements:</h4>
-                          <div className="text-gray-700 mb-8">{job.requirements}</div>
+                          <div className="text-gray-700 mb-8 whitespace-pre-line">{job.requirements}</div>
                           
                           <div className="mt-8">
                             <motion.div
