@@ -73,11 +73,6 @@ const CareersPage = () => {
   // Mock the API loading state
   const [isLoading, setIsLoading] = useState(true);
   
-  // Function to open the modal directly for testing
-  const openModalForTesting = () => {
-    setSelectedJob(sampleJobs[0]);
-  };
-  
   // Simulate API loading
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -337,14 +332,6 @@ const CareersPage = () => {
             <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-8">
               Explore our current job openings and find the perfect role for your skills and career goals.
             </p>
-            
-            {/* Test button to view application form modal */}
-            <Button 
-              onClick={openModalForTesting}
-              className="bg-gradient-to-r from-primary to-blue-600 text-white hover:opacity-90 font-medium px-6 py-3"
-            >
-              View Application Form (For Testing)
-            </Button>
           </motion.div>
           
           {isLoading ? (
