@@ -107,8 +107,12 @@ const CareersPage = () => {
       </Helmet>
 
       {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-primary/10"></div>
+      <section className="relative py-28 overflow-hidden bg-gradient-to-b from-primary to-blue-800 text-white">
+        {/* Background patterns */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.05),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.05),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20"></div>
+        
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             className="text-center max-w-3xl mx-auto"
@@ -116,22 +120,38 @@ const CareersPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Join Our Team</h1>
-            <p className="text-xl text-gray-700 mb-8">
+            <div className="inline-block mb-4">
+              <div className="flex items-center justify-center mb-4">
+                <div className="h-px w-8 bg-blue-300/50"></div>
+                <div className="mx-2 text-blue-300 text-lg">🚀</div>
+                <div className="h-px w-8 bg-blue-300/50"></div>
+              </div>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">Join Our Team</h1>
+            <p className="text-xl md:text-2xl text-blue-100/90 mb-10 max-w-2xl mx-auto">
               Build your career with us and work on exciting projects that make a difference
             </p>
-            <a 
-              href="#open-positions" 
-              className="px-8 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary/90 transition-colors inline-block"
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              View Open Positions
-            </a>
+              <a 
+                href="#open-positions" 
+                className="px-8 py-4 bg-white text-primary font-medium rounded-md hover:bg-white/90 transition-colors inline-block shadow-lg"
+              >
+                View Open Positions
+              </a>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Culture Section */}
-      <section className="py-20 bg-white">
+      <section className="py-24 bg-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-full h-20 bg-gradient-to-r from-transparent via-primary/5 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-r from-transparent via-primary/5 to-transparent"></div>
+        
         <div className="container mx-auto px-4">
           <motion.div 
             className="text-center mb-16"
@@ -140,8 +160,15 @@ const CareersPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Culture</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <div className="inline-block mb-4">
+              <div className="flex items-center justify-center mb-2">
+                <div className="h-px w-6 bg-primary/30"></div>
+                <div className="mx-2 text-primary text-lg">✨</div>
+                <div className="h-px w-6 bg-primary/30"></div>
+              </div>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-700">Our Culture</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               At AdiTeke, we believe in creating an environment where talented individuals can thrive, innovate, and grow together.
             </p>
           </motion.div>
@@ -150,17 +177,17 @@ const CareersPage = () => {
             {cultureValues.map((value, index) => (
               <motion.div 
                 key={index}
-                className="bg-light p-8 rounded-xl shadow-md text-center"
+                className="bg-white border border-primary/10 p-8 rounded-xl shadow-md text-center hover:shadow-lg transition-all"
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
+                whileHover={{ y: -5, borderColor: "rgba(59, 130, 246, 0.3)" }}
               >
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl mx-auto mb-6">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-blue-400/10 flex items-center justify-center text-primary text-2xl mx-auto mb-6 shadow-inner">
                   <i className={`fas ${value.icon}`}></i>
                 </div>
-                <h3 className="text-xl font-bold mb-3">{value.title}</h3>
+                <h3 className="text-xl font-bold mb-3 text-gray-800">{value.title}</h3>
                 <p className="text-gray-600">{value.description}</p>
               </motion.div>
             ))}
@@ -169,8 +196,13 @@ const CareersPage = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-light">
-        <div className="container mx-auto px-4">
+      <section className="py-24 bg-gradient-to-b from-blue-950 to-blue-900 text-white relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_70%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.03),transparent_25%)]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:64px_64px] opacity-20"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
               className="lg:w-1/2"
@@ -179,9 +211,16 @@ const CareersPage = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Benefits & Perks</h2>
-              <p className="text-gray-700 mb-8">
-                We value our team members and offer a range of benefits to ensure their well-being and professional growth.
+              <div className="inline-block mb-4">
+                <div className="flex items-center mb-2">
+                  <div className="h-px w-8 bg-blue-300/50"></div>
+                  <div className="mx-2 text-blue-300 text-lg">🎁</div>
+                  <div className="h-px w-8 bg-blue-300/50"></div>
+                </div>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Benefits & Perks</h2>
+              <p className="text-blue-100/80 mb-8 text-lg">
+                We value our team members and offer a comprehensive range of benefits to ensure their well-being and professional growth.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -194,10 +233,10 @@ const CareersPage = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: 0.1 * index }}
                   >
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-blue-200 mr-4 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
                       <i className={`fas ${benefit.icon}`}></i>
                     </div>
-                    <span className="font-medium">{benefit.title}</span>
+                    <span className="font-medium text-white">{benefit.title}</span>
                   </motion.div>
                 ))}
               </div>
@@ -210,19 +249,26 @@ const CareersPage = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <img 
-                src="https://images.unsplash.com/photo-1522071901873-411886a10004?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
-                alt="Team collaboration" 
-                className="rounded-lg shadow-lg w-full"
-              />
+              <div className="rounded-xl overflow-hidden shadow-xl border border-white/10 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent mix-blend-overlay"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1522071901873-411886a10004?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
+                  alt="Team collaboration" 
+                  className="w-full"
+                />
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Open Positions Section */}
-      <section id="open-positions" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section id="open-positions" className="py-24 bg-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-primary/5 to-transparent"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             className="text-center mb-16"
             initial={{ opacity: 0, y: 50 }}
@@ -230,93 +276,137 @@ const CareersPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Open Positions</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <div className="inline-block mb-4">
+              <div className="flex items-center justify-center mb-2">
+                <div className="h-px w-6 bg-primary/30"></div>
+                <div className="mx-2 text-primary text-lg">💼</div>
+                <div className="h-px w-6 bg-primary/30"></div>
+              </div>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-700">Open Positions</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               Explore our current job openings and find the perfect role for your skills and career goals.
             </p>
           </motion.div>
           
           {isLoading ? (
             // Show skeleton loaders while loading
-            <div className="space-y-4">
+            <div className="space-y-6 max-w-4xl mx-auto">
               {Array(3).fill(null).map((_, index) => (
-                <div key={index} className="bg-light rounded-xl p-6 animate-pulse">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-4 w-full"></div>
+                <div key={index} className="bg-white border border-gray-200/60 rounded-xl p-6 animate-pulse shadow-sm">
+                  <div className="h-7 bg-gray-200 rounded-md w-1/3 mb-4"></div>
+                  <div className="h-4 bg-gray-100 rounded-md mb-4 w-full"></div>
                   <div className="flex gap-4 mb-4">
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    <div className="h-4 bg-gray-100 rounded-md w-24"></div>
+                    <div className="h-4 bg-gray-100 rounded-md w-24"></div>
                   </div>
-                  <div className="h-10 bg-gray-200 rounded w-32"></div>
+                  <div className="h-10 bg-primary/20 rounded-md w-32"></div>
                 </div>
               ))}
             </div>
           ) : error ? (
             // Show error message
-            <div className="text-center text-red-500">
-              <p>Failed to load job listings. Please try again later.</p>
+            <div className="text-center p-8 rounded-xl border border-red-200 bg-red-50 max-w-2xl mx-auto">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-2xl mx-auto mb-4">
+                <i className="fas fa-exclamation-triangle"></i>
+              </div>
+              <h3 className="text-xl font-bold text-red-700 mb-2">Unable to Load Positions</h3>
+              <p className="text-red-600">
+                We're experiencing technical difficulties loading our job listings. Please try again later or contact us directly.
+              </p>
             </div>
           ) : jobs && jobs.length > 0 ? (
             // Show job listings
-            <Accordion type="single" collapsible className="space-y-4">
-              {jobs.map((job) => (
-                <AccordionItem 
-                  key={job.id} 
-                  value={job.id.toString()}
-                  className="bg-light rounded-xl overflow-hidden shadow-sm border-none"
-                >
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between w-full text-left">
-                      <div>
-                        <h3 className="text-xl font-bold">{job.title}</h3>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          <span className="text-sm text-gray-600">
-                            <i className="fas fa-map-marker-alt mr-1"></i> {job.location}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            <i className="fas fa-briefcase mr-1"></i> {job.employmentType}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            <i className="fas fa-users mr-1"></i> {job.department}
-                          </span>
+            <div className="max-w-4xl mx-auto">
+              <Accordion type="single" collapsible className="space-y-6">
+                {jobs.map((job, index) => (
+                  <motion.div
+                    key={job.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <AccordionItem 
+                      value={job.id.toString()}
+                      className="border border-primary/10 bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+                    >
+                      <AccordionTrigger className="px-6 py-5 hover:no-underline hover:bg-primary/5 transition-colors">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between w-full text-left gap-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-800">{job.title}</h3>
+                            <div className="flex flex-wrap gap-3 mt-2">
+                              <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                                <i className="fas fa-map-marker-alt mr-1"></i> {job.location}
+                              </span>
+                              <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                                <i className="fas fa-briefcase mr-1"></i> {job.employmentType}
+                              </span>
+                              <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                                <i className="fas fa-users mr-1"></i> {job.department}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6">
-                    <div className="prose max-w-none">
-                      <p className="text-gray-700 mb-4">{job.description}</p>
-                      
-                      <h4 className="text-lg font-bold mt-4 mb-2">Requirements:</h4>
-                      <div className="text-gray-700">{job.requirements}</div>
-                      
-                      <div className="mt-6">
-                        <Button 
-                          className="bg-primary text-white"
-                          onClick={() => setSelectedJob(job)}
-                        >
-                          Apply Now
-                        </Button>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-6 py-6 border-t border-gray-100">
+                        <div className="prose max-w-none">
+                          <p className="text-gray-700 mb-6 text-lg">{job.description}</p>
+                          
+                          <h4 className="text-xl font-bold mt-6 mb-3 text-gray-800">Requirements:</h4>
+                          <div className="text-gray-700 mb-8">{job.requirements}</div>
+                          
+                          <div className="mt-8">
+                            <motion.div
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.97 }}
+                            >
+                              <Button 
+                                className="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-5 text-lg shadow-md"
+                                onClick={() => setSelectedJob(job)}
+                              >
+                                Apply for this Position
+                              </Button>
+                            </motion.div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </motion.div>
+                ))}
+              </Accordion>
+            </div>
           ) : (
             // Show no jobs message
-            <div className="text-center bg-light p-8 rounded-xl">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-3xl mx-auto mb-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="text-center bg-white border border-primary/10 p-10 rounded-xl shadow-md max-w-2xl mx-auto"
+            >
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-blue-400/10 flex items-center justify-center text-primary text-3xl mx-auto mb-6 shadow-inner">
                 <i className="fas fa-briefcase"></i>
               </div>
-              <h3 className="text-xl font-bold mb-2">No Open Positions</h3>
-              <p className="text-gray-600 mb-4">
-                We don't have any open positions at the moment, but we're always looking for talent!
+              <h3 className="text-2xl font-bold mb-3 text-gray-800">No Open Positions</h3>
+              <p className="text-gray-600 mb-6 text-lg">
+                We don't have any open positions at the moment, but we're always looking for talented individuals to join our team!
               </p>
-              <p className="text-gray-600">
-                Send your resume to <a href="mailto:careers@aditeke.com" className="text-primary">careers@aditeke.com</a> and we'll keep you in mind for future opportunities.
-              </p>
-            </div>
+              <div className="p-6 bg-primary/5 rounded-lg border border-primary/10 inline-block">
+                <p className="text-gray-700 font-medium mb-2">
+                  Send your resume to:
+                </p>
+                <a 
+                  href="mailto:careers@aditeke.com" 
+                  className="text-primary hover:text-primary/80 text-lg font-semibold transition-colors"
+                >
+                  careers@aditeke.com
+                </a>
+                <p className="text-gray-600 mt-2 text-sm">
+                  We'll keep you in mind for future opportunities
+                </p>
+              </div>
+            </motion.div>
           )}
         </div>
       </section>
