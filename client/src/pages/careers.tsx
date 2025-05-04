@@ -30,8 +30,26 @@ const applicationSchema = z.object({
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
 const CareersPage = () => {
+  // Sample job data for testing the modal
+  const sampleJob: Job = {
+    id: 999,
+    title: "Senior Frontend Developer",
+    location: "Portland, OR",
+    employmentType: "Full-time",
+    department: "Engineering",
+    description: "We're looking for an experienced frontend developer with React expertise to join our team.",
+    requirements: "5+ years of experience with modern JavaScript frameworks, strong TypeScript skills, and experience with responsive design.",
+    postedDate: new Date(),
+    isActive: true
+  };
+
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const { toast } = useToast();
+  
+  // Add this button to open the modal directly for testing
+  const openModalForTesting = () => {
+    setSelectedJob(sampleJob);
+  };
   
   const { data: jobs, isLoading, error } = useQuery<Job[]>({
     queryKey: ['/api/jobs'],
@@ -284,9 +302,17 @@ const CareersPage = () => {
               </div>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-700">Open Positions</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-8">
               Explore our current job openings and find the perfect role for your skills and career goals.
             </p>
+            
+            {/* Test button to view application form modal */}
+            <Button 
+              onClick={openModalForTesting}
+              className="bg-gradient-to-r from-primary to-blue-600 text-white hover:opacity-90 font-medium px-6 py-3"
+            >
+              View Application Form (For Testing)
+            </Button>
           </motion.div>
           
           {isLoading ? (
