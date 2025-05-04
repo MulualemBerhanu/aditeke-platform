@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/components/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -20,7 +19,6 @@ import {
   ShieldCheck, 
   Rocket,
   Award,
-  CheckCircle,
   ChevronRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -122,7 +120,7 @@ export default function LoginPage() {
     }
   }, [form]);
 
-  // Handle form submission with wouter navigation
+  // Handle form submission
   const onSubmit = async (data: LoginFormValues) => {
     // Auto select admin role if no role is selected
     if (!selectedRole) {
@@ -246,7 +244,6 @@ export default function LoginPage() {
       }
       
       // Use a simpler, more consistent approach: just use the dashboard path
-      // This will handle all redirection logic in one place
       let redirectUrl = '/dashboard';
       
       // Convert roleId to a numeric value for consistency
@@ -334,15 +331,11 @@ export default function LoginPage() {
       // The user's authentication status will be determined by the server
       // upon their return from the Google OAuth flow
       
-      // We don't need to do anything else here
-      // The Firebase auth handler will manage the process
       toast({
         title: "Google Authentication",
         description: "Redirecting to Google for authentication...",
       });
       
-      // Don't use setTimeout or manual redirects
-      // The googleLogin() function should handle all redirections
     } catch (error) {
       toast({
         title: "Login failed",
@@ -366,9 +359,6 @@ export default function LoginPage() {
       }
     }
   }, []);
-
-  // Set default role to Admin if none selected
-  const currentRole = selectedRole || USER_ROLES[0];
   
   // Function to handle role selection
   const handleRoleSelect = (role: UserRole) => {
@@ -378,19 +368,12 @@ export default function LoginPage() {
     // Close the dialog
     setIsRoleDialogOpen(false);
   };
+
+  // Get the current role (with admin as default)
+  const currentRole = selectedRole || USER_ROLES[0];
   
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { 
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      } 
-    }
-  };
-  
-  const itemVariants = {
+  // Animation variants
+  const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 
@@ -402,7 +385,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen">
       {/* Navy Hero Section */}
-      <section className="relative py-28 overflow-hidden bg-gradient-to-b from-primary to-blue-800 text-white">
+      <section className="relative py-24 overflow-hidden bg-gradient-to-b from-primary to-blue-800 text-white">
         {/* Background patterns */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.05),transparent_25%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.05),transparent_25%)]"></div>
@@ -423,7 +406,7 @@ export default function LoginPage() {
               </div>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">Secure Login</h1>
-            <p className="text-xl md:text-2xl text-blue-100/90 mb-10 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-blue-100/90 mb-6 max-w-2xl mx-auto">
               Sign in to access your dashboard and manage your projects
             </p>
           </motion.div>
