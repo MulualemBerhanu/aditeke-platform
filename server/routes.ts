@@ -934,38 +934,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a public contact form endpoint (without authentication)
-  app.post("/api/public/contact", async (req, res) => {
+  app.post("/api/public/contact", express.json({ strict: false }), express.urlencoded({ extended: true }), async (req, res) => {
     try {
-      console.log("Contact form submission received:", {
-        hasBody: !!req.body,
-        contentType: req.get('Content-Type'),
-        bodyKeys: req.body ? Object.keys(req.body) : [],
-        name: req.body?.name,
-        email: req.body?.email,
+      console.log("Contact form submission received - Raw body:", req.body);
+      
+      // Create a contact object with defaults for any missing fields
+      const contactData = {
+        name: req.body?.name || '',
+        email: req.body?.email || '',
+        phone: req.body?.phone || '',
         subject: req.body?.subject || 'general',
-        messageLength: req.body?.message?.length,
-        agreement: req.body?.agreement,
-      });
+        message: req.body?.message || '',
+        agreement: typeof req.body?.agreement === 'boolean' 
+          ? req.body.agreement 
+          : req.body?.agreement === 'true' || req.body?.agreement === '1' || true
+      };
       
-      // Handle missing subject field by setting it to "general"
-      if (!req.body.subject) {
-        req.body.subject = 'general';
-      }
+      console.log("Normalized contact data:", contactData);
       
-      // Ensure agreement field is properly handled
-      if (req.body.agreement === undefined) {
-        req.body.agreement = true; // Default to true if missing
-      } else if (typeof req.body.agreement === 'string') {
-        // Convert string representation to boolean
-        req.body.agreement = req.body.agreement === 'true' || req.body.agreement === '1';
-      }
-      
-      console.log("Normalized contact form data:", {
-        subject: req.body.subject,
-        agreement: req.body.agreement
-      });
-      
-      const messageData = insertContactMessageSchema.parse(req.body);
+      // Validate the data
+      const messageData = insertContactMessageSchema.parse(contactData);
       
       // Save message to database
       const message = await storage.saveContactMessage(messageData);
