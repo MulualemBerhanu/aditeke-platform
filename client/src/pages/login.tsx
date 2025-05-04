@@ -100,18 +100,36 @@ export default function LoginPage() {
 
   // Set role from URL parameter if available
   useEffect(() => {
+    // First check URL path for role indicators (e.g., /login?role=manager or /login/manager)
+    const pathname = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
     const roleParam = urlParams.get('role');
     
-    if (roleParam) {
+    // Check if URL path contains role information
+    let roleFromPath = null;
+    if (pathname.includes('/manager')) {
+      roleFromPath = 'manager';
+    } else if (pathname.includes('/client')) {
+      roleFromPath = 'client';
+    } else if (pathname.includes('/admin')) {
+      roleFromPath = 'admin';
+    }
+    
+    // Use path role first, then query param
+    const roleToUse = roleFromPath || roleParam;
+    
+    if (roleToUse) {
+      console.log('Role detected from URL:', roleToUse);
+      
       // Try different ways to match the role
       const foundRole = USER_ROLES.find(role => 
-        role.name.toLowerCase() === roleParam.toLowerCase() || 
-        `role=${role.id}` === roleParam.toLowerCase() ||
-        String(role.id) === roleParam
+        role.name.toLowerCase() === roleToUse.toLowerCase() || 
+        `role=${role.id}` === roleToUse.toLowerCase() ||
+        String(role.id) === roleToUse
       );
       
       if (foundRole) {
+        console.log('Setting role to:', foundRole.name);
         setSelectedRole(foundRole);
         
         // Save to localStorage for persistence
@@ -346,19 +364,35 @@ export default function LoginPage() {
     }
   };
 
-  // Instead of showing a separate message screen, automatically set the admin role
+  // Only set default admin role if no role has been selected yet and path doesn't specify a role
   useEffect(() => {
     if (!selectedRole) {
-      // Default to admin role for instant access
-      const adminRole = USER_ROLES.find(role => role.name === 'Admin');
-      if (adminRole) {
-        setSelectedRole(adminRole);
+      // Check URL path for role indicators
+      const pathname = window.location.pathname;
+      
+      // Determine which role to select based on URL
+      let roleToUse = 'admin'; // Default to admin
+      
+      if (pathname.includes('/manager')) {
+        roleToUse = 'manager';
+      } else if (pathname.includes('/client')) {
+        roleToUse = 'client';
+      }
+      
+      // Find the matching role
+      const roleToSelect = USER_ROLES.find(role => 
+        role.name.toLowerCase() === roleToUse.toLowerCase()
+      );
+      
+      if (roleToSelect) {
+        console.log('Auto-selecting role based on path:', roleToSelect.name);
+        setSelectedRole(roleToSelect);
         
         // Store it in localStorage for persistence
-        localStorage.setItem('selectedRole', JSON.stringify(adminRole));
+        localStorage.setItem('selectedRole', JSON.stringify(roleToSelect));
       }
     }
-  }, []);
+  }, [selectedRole]);
   
   // Function to handle role selection
   const handleRoleSelect = (role: UserRole) => {
