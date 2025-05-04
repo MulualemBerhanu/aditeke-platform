@@ -203,20 +203,13 @@ export const contactMessages = pgTable("contact_messages", {
   agreement: boolean("agreement").default(true),
 });
 
-export const insertContactMessageSchema = createInsertSchema(contactMessages)
-  .pick({
-    name: true,
-    email: true,
-    phone: true,
-    subject: true,
-    message: true,
-    agreement: true,
-  })
-  .extend({
-    // Set default value for agreement field if not provided
-    agreement: z.boolean().default(true),
-    // Set default value for subject if not provided
+export const insertContactMessageSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Valid email is required"),
+    phone: z.string().optional(),
     subject: z.string().default("general"),
+    message: z.string().min(1, "Message is required"),
+    agreement: z.boolean().default(true),
 });
 
 // Newsletter subscriber schema

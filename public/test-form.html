@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Form Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .form-container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #333;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .checkbox-container input {
+      width: auto;
+      margin-right: 10px;
+    }
+    button {
+      background-color: #0040A1;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #002d73;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+    }
+    .success {
+      background-color: #e8f5e9;
+      border-color: #c8e6c9;
+    }
+    .error {
+      background-color: #ffebee;
+      border-color: #ffcdd2;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background-color: #f0f0f0;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    h1 {
+      color: #0040A1;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contact Form Test</h1>
+  
+  <div class="form-container">
+    <form id="contactForm">
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Phone (optional):</label>
+        <input type="text" id="phone" name="phone">
+      </div>
+      
+      <div class="form-group">
+        <label for="subject">Subject:</label>
+        <select id="subject" name="subject" required>
+          <option value="">Select a subject</option>
+          <option value="general">General Inquiry</option>
+          <option value="quote">Request a Quote</option>
+          <option value="support">Technical Support</option>
+          <option value="partnership">Partnership Opportunity</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="5" required></textarea>
+      </div>
+      
+      <div class="checkbox-container">
+        <input type="checkbox" id="agreement" name="agreement" checked>
+        <label for="agreement" style="font-weight: normal;">I agree to the terms and conditions</label>
+      </div>
+      
+      <button type="submit">Send Message</button>
+    </form>
+  </div>
+  
+  <div id="result" class="result" style="display: none;">
+    <h3>Response:</h3>
+    <pre id="response"></pre>
+  </div>
+  
+  <script>
+    // Helper to show the request details
+    function appendRequestDetails(formData, headers) {
+      const requestDetails = document.createElement('div');
+      requestDetails.innerHTML = `
+        <h4>Request Details:</h4>
+        <pre>${JSON.stringify({
+          url: '/api/public/contact',
+          method: 'POST',
+          headers: headers,
+          body: formData
+        }, null, 2)}</pre>
+      `;
+      document.getElementById('result').appendChild(requestDetails);
+    }
+  
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value || '',
+        subject: document.getElementById('subject').value || 'general',
+        message: document.getElementById('message').value,
+        agreement: document.getElementById('agreement').checked
+      };
+      
+      console.log('Sending form data:', formData);
+      
+      const resultDiv = document.getElementById('result');
+      const responseElem = document.getElementById('response');
+      
+      // Show the result div with loading state
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'result';
+      responseElem.textContent = 'Sending request...';
+      
+      try {
+        // Create headers
+        const headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        };
+        
+        // Add CSRF token if available
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken && csrfToken !== '__CSRF_TOKEN__') {
+          headers['X-CSRF-Token'] = csrfToken;
+        }
+        
+        // Display request details
+        appendRequestDetails(formData, headers);
+        
+        // Send to the public endpoint
+        const response = await fetch('/api/public/contact', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(formData)
+        });
+        
+        let responseText;
+        try {
+          // Try to parse as JSON
+          const data = await response.json();
+          responseText = JSON.stringify(data, null, 2);
+        } catch (jsonError) {
+          // Fallback to text if not JSON
+          responseText = await response.text();
+        }
+        
+        // Display result
+        responseElem.textContent = responseText;
+        
+        if (response.ok) {
+          resultDiv.className = 'result success';
+          document.getElementById('contactForm').reset();
+        } else {
+          resultDiv.className = 'result error';
+        }
+      } catch (error) {
+        resultDiv.className = 'result error';
+        responseElem.textContent = `Error: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
