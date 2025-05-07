@@ -752,6 +752,109 @@ export class MemStorage implements IStorage {
     return updatedInvoice;
   }
 
+  // User Notification Settings methods
+  async getUserNotificationSettings(userId: number): Promise<UserNotificationSettings | undefined> {
+    // Find settings by userId
+    return Array.from(this.userNotificationSettings.values()).find(
+      settings => settings.userId === userId
+    );
+  }
+
+  async createUserNotificationSettings(settings: InsertUserNotificationSettings): Promise<UserNotificationSettings> {
+    const id = this.userNotificationSettingsIdCounter++;
+    const updatedAt = new Date();
+    
+    const notificationSettings: UserNotificationSettings = {
+      ...settings,
+      id,
+      updatedAt
+    };
+    
+    this.userNotificationSettings.set(id, notificationSettings);
+    return notificationSettings;
+  }
+
+  async updateUserNotificationSettings(userId: number, settings: Partial<InsertUserNotificationSettings>): Promise<UserNotificationSettings> {
+    // Find settings by userId
+    const existingSettings = Array.from(this.userNotificationSettings.values()).find(
+      s => s.userId === userId
+    );
+    
+    if (!existingSettings) {
+      // If no settings exist for this user, create new settings
+      return this.createUserNotificationSettings({
+        userId,
+        ...settings,
+        emailNotifications: settings.emailNotifications ?? true,
+        projectUpdates: settings.projectUpdates ?? true,
+        documentUploads: settings.documentUploads ?? true,
+        invoiceReminders: settings.invoiceReminders ?? true,
+        marketingEmails: settings.marketingEmails ?? false,
+        smsNotifications: settings.smsNotifications ?? false,
+        browserNotifications: settings.browserNotifications ?? true
+      });
+    }
+    
+    const updatedSettings: UserNotificationSettings = {
+      ...existingSettings,
+      ...settings,
+      updatedAt: new Date()
+    };
+    
+    this.userNotificationSettings.set(existingSettings.id, updatedSettings);
+    return updatedSettings;
+  }
+
+  // User Security Settings methods
+  async getUserSecuritySettings(userId: number): Promise<UserSecuritySettings | undefined> {
+    // Find settings by userId
+    return Array.from(this.userSecuritySettings.values()).find(
+      settings => settings.userId === userId
+    );
+  }
+
+  async createUserSecuritySettings(settings: InsertUserSecuritySettings): Promise<UserSecuritySettings> {
+    const id = this.userSecuritySettingsIdCounter++;
+    const updatedAt = new Date();
+    
+    const securitySettings: UserSecuritySettings = {
+      ...settings,
+      id,
+      updatedAt
+    };
+    
+    this.userSecuritySettings.set(id, securitySettings);
+    return securitySettings;
+  }
+
+  async updateUserSecuritySettings(userId: number, settings: Partial<InsertUserSecuritySettings>): Promise<UserSecuritySettings> {
+    // Find settings by userId
+    const existingSettings = Array.from(this.userSecuritySettings.values()).find(
+      s => s.userId === userId
+    );
+    
+    if (!existingSettings) {
+      // If no settings exist for this user, create new settings
+      return this.createUserSecuritySettings({
+        userId,
+        ...settings,
+        twoFactorEnabled: settings.twoFactorEnabled ?? false,
+        loginAlerts: settings.loginAlerts ?? true,
+        allowMultipleSessions: settings.allowMultipleSessions ?? true,
+        sessionTimeout: settings.sessionTimeout ?? 60
+      });
+    }
+    
+    const updatedSettings: UserSecuritySettings = {
+      ...existingSettings,
+      ...settings,
+      updatedAt: new Date()
+    };
+    
+    this.userSecuritySettings.set(existingSettings.id, updatedSettings);
+    return updatedSettings;
+  }
+
   // Initialize sample data methods
   private async initializeRolesAndPermissions() {
     // Create roles
