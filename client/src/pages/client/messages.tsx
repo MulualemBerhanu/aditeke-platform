@@ -26,17 +26,19 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistance } from 'date-fns';
 
-// Interface for message data
+// Interface for message data that matches our schema
 interface Message {
   id: number;
-  senderId: number;
-  recipientId: number;
-  subject: string;
-  content: string;
+  clientId: number;
+  managerId: number;
+  message: string;
   createdAt: string;
-  read: boolean;
-  senderName?: string;
-  senderRole?: string;
+  isRead: boolean;
+  subject: string | null;
+  type: string;
+  attachments?: any;
+  senderName?: string; // UI-only field, populated from user data
+  senderRole?: string; // UI-only field, populated from role data
 }
 
 const ClientMessages = () => {
@@ -214,12 +216,15 @@ const ClientMessages = () => {
     }
     
     // Send to manager (hardcoded manager ID 1000 for now)
+    // We use the clientCommunications schema format now
     sendMessageMutation.mutate({
-      senderId: clientId,
-      recipientId: 1000, // Manager ID
+      clientId: clientId,
+      managerId: 1000, // Manager ID (hardcoded for now)
       subject: newMessage.urgent ? `[URGENT] ${newMessage.subject}` : newMessage.subject,
-      content: newMessage.content,
-      read: false
+      message: newMessage.content,
+      type: newMessage.urgent ? 'urgent' : 'standard',
+      isRead: false,
+      attachments: {} // Empty attachments for now
     });
   };
 
@@ -230,7 +235,7 @@ const ClientMessages = () => {
     const message = messages?.find((m: Message) => m.id === messageId);
     
     // If message is unread, mark it as read
-    if (message && !message.read) {
+    if (message && !message.isRead) {
       markAsReadMutation.mutate(messageId);
     }
   };
@@ -239,9 +244,12 @@ const ClientMessages = () => {
     return messages?.find((m: Message) => m.id === activeMessageId);
   };
 
-  // Filter messages by unread/read
-  const unreadMessages = messages?.filter((m: Message) => !m.read) || [];
-  const readMessages = messages?.filter((m: Message) => m.read) || [];
+  // Filter messages by unread/read using isRead property
+  const unreadMessages = messages?.filter((m: Message) => !m.isRead) || [];
+  const readMessages = messages?.filter((m: Message) => m.isRead) || [];
+  
+  // Sent messages would be from client to manager (not implemented yet)
+  const sentMessages = [] // Will implement this with real data when available
   
   if (error) {
     toast({
@@ -391,11 +399,11 @@ const ClientMessages = () => {
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
                                       <p className="font-medium text-sm truncate">
-                                        {message.subject}
+                                        {message.subject || 'No Subject'}
                                       </p>
                                       <AlertCircle className="h-3 w-3 text-indigo-600 flex-shrink-0" />
                                     </div>
-                                    <p className="text-xs text-slate-500 truncate">{message.content}</p>
+                                    <p className="text-xs text-slate-500 truncate">{message.message}</p>
                                     <p className="text-xs text-slate-400 mt-1">
                                       {formatDistance(new Date(message.createdAt), new Date(), { addSuffix: true })}
                                     </p>
@@ -432,14 +440,14 @@ const ClientMessages = () => {
                                   </Avatar>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
-                                      <p className={`text-sm truncate ${message.read ? 'font-normal' : 'font-medium'}`}>
-                                        {message.subject}
+                                      <p className={`text-sm truncate ${message.isRead ? 'font-normal' : 'font-medium'}`}>
+                                        {message.subject || 'No Subject'}
                                       </p>
-                                      {!message.read && (
+                                      {!message.isRead && (
                                         <AlertCircle className="h-3 w-3 text-indigo-600 flex-shrink-0" />
                                       )}
                                     </div>
-                                    <p className="text-xs text-slate-500 truncate">{message.content}</p>
+                                    <p className="text-xs text-slate-500 truncate">{message.message}</p>
                                     <p className="text-xs text-slate-400 mt-1">
                                       {formatDistance(new Date(message.createdAt), new Date(), { addSuffix: true })}
                                     </p>
@@ -485,7 +493,7 @@ const ClientMessages = () => {
                     </CardHeader>
                     <CardContent className="pt-4">
                       <div className="prose max-w-none">
-                        <p>{getActiveMessage()?.content}</p>
+                        <p>{getActiveMessage()?.message}</p>
                       </div>
                     </CardContent>
                     <CardFooter className="border-t pt-4 flex justify-between">
@@ -495,7 +503,7 @@ const ClientMessages = () => {
                       </Button>
                       <div className="text-xs text-slate-500 flex items-center">
                         <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
-                        {getActiveMessage()?.read ? 'Read' : 'Marked as read'}
+                        {getActiveMessage()?.isRead ? 'Read' : 'Marked as read'}
                       </div>
                     </CardFooter>
                   </>
