@@ -303,6 +303,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Client Support Tickets endpoints
+  app.get("/api/client-support-tickets/:clientId", authenticateJWT, async (req, res) => {
+    try {
+      // Convert clientId parameter to number
+      const clientId = parseInt(req.params.clientId, 10);
+      
+      // Check if the user is requesting their own tickets or has manager/admin permissions
+      if (req.user?.id !== clientId && req.user?.roleId !== 1000 && req.user?.roleId !== 1002) {
+        // 1000 is manager role, 1002 is admin role
+        return res.status(403).json({ error: "Unauthorized to access these tickets" });
+      }
+      
+      console.log(`Fetching support tickets for client ID: ${clientId}`);
+      const tickets = await storage.getClientSupportTickets(clientId);
+      
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching client support tickets:", error);
+      res.status(500).json({ error: "Failed to fetch support tickets" });
+    }
+  });
+  
+  app.get("/api/support-tickets/:id", authenticateJWT, async (req, res) => {
+    try {
+      // Convert ticket id parameter to number
+      const ticketId = parseInt(req.params.id, 10);
+      
+      const ticket = await storage.getSupportTicket(ticketId);
+      
+      if (!ticket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // Check if the user is the ticket owner, assigned to the ticket, or has manager/admin permissions
+      if (req.user?.id !== ticket.clientId && 
+          req.user?.id !== ticket.assignedToId && 
+          req.user?.roleId !== 1000 && 
+          req.user?.roleId !== 1002) {
+        return res.status(403).json({ error: "Unauthorized to access this ticket" });
+      }
+      
+      res.json(ticket);
+    } catch (error) {
+      console.error("Error fetching support ticket:", error);
+      res.status(500).json({ error: "Failed to fetch support ticket" });
+    }
+  });
+  
+  app.post("/api/support-tickets", authenticateJWT, async (req, res) => {
+    try {
+      // Parse request body
+      const ticketData = {
+        ...req.body,
+        createdAt: new Date()
+      };
+      
+      // If the client is creating the ticket, ensure clientId matches authenticated user
+      if (req.user?.roleId === 1001 && ticketData.clientId !== req.user.id) {
+        return res.status(403).json({ 
+          error: "You can only create tickets for yourself"
+        });
+      }
+      
+      console.log("Creating new support ticket:", ticketData);
+      const ticket = await storage.createSupportTicket(ticketData);
+      
+      res.status(201).json(ticket);
+    } catch (error) {
+      console.error("Error creating support ticket:", error);
+      res.status(500).json({ error: "Failed to create support ticket" });
+    }
+  });
+  
+  app.put("/api/support-tickets/:id", authenticateJWT, async (req, res) => {
+    try {
+      // Convert ticket id parameter to number
+      const ticketId = parseInt(req.params.id, 10);
+      
+      // Get existing ticket
+      const existingTicket = await storage.getSupportTicket(ticketId);
+      
+      if (!existingTicket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // Check permissions based on role and ticket ownership
+      const isClient = req.user?.roleId === 1001;
+      const isManager = req.user?.roleId === 1000;
+      const isAdmin = req.user?.roleId === 1002;
+      const isTicketOwner = req.user?.id === existingTicket.clientId;
+      const isAssignedTo = req.user?.id === existingTicket.assignedToId;
+      
+      // Clients can only update their own tickets and cannot change status to 'closed'
+      if (isClient && !isTicketOwner) {
+        return res.status(403).json({ error: "You can only update your own tickets" });
+      }
+      
+      // Clients can't change certain fields
+      if (isClient && (
+        req.body.assignedToId !== existingTicket.assignedToId ||
+        (req.body.status === 'closed' || req.body.status === 'resolved')
+      )) {
+        return res.status(403).json({ 
+          error: "Clients cannot assign tickets or change status to closed/resolved" 
+        });
+      }
+      
+      // Only managers, admins or assigned staff can update status to resolved or closed
+      if (req.body.status && 
+          (req.body.status === 'resolved' || req.body.status === 'closed') && 
+          !isManager && !isAdmin && !isAssignedTo) {
+        return res.status(403).json({ 
+          error: "Only managers, admins or assigned staff can resolve or close tickets" 
+        });
+      }
+      
+      // Process the update
+      const ticketData = {
+        ...req.body,
+        updatedAt: new Date()
+      };
+      
+      console.log(`Updating support ticket ${ticketId}:`, ticketData);
+      const updatedTicket = await storage.updateSupportTicket(ticketId, ticketData);
+      
+      res.json(updatedTicket);
+    } catch (error) {
+      console.error("Error updating support ticket:", error);
+      res.status(500).json({ error: "Failed to update support ticket" });
+    }
+  });
+  
   // Endpoint to get clients for project forms from the database
   app.get("/api/clients/list", async (req, res) => {
     try {

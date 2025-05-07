@@ -135,7 +135,7 @@ const ClientSupport = () => {
       const token = localStorage.getItem('token');
       
       try {
-        // This endpoint is a placeholder - it would need to be implemented on the backend
+        // Use the implemented API endpoint
         const response = await fetch(`/api/client-support-tickets/${clientId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -143,21 +143,20 @@ const ClientSupport = () => {
         });
         
         if (!response.ok) {
-          console.log('Support tickets API not yet implemented, returning empty array');
-          return [];
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch support tickets');
         }
         
         const data = await response.json();
         console.log('Support tickets fetched:', data);
         return data;
       } catch (error) {
-        console.log('Error fetching support tickets, endpoint might not be implemented yet:', error);
-        // Return empty array instead of throwing to prevent infinite re-rendering
-        return [];
+        console.error('Error fetching support tickets:', error);
+        throw error;
       }
     },
     enabled: !!clientId,
-    retry: false, // Disable retries to prevent infinite loops
+    retry: 1, // Allow one retry
   });
 
   // Create ticket mutation
@@ -166,8 +165,8 @@ const ClientSupport = () => {
       const token = localStorage.getItem('token');
       
       try {
-        // This endpoint is a placeholder - it would need to be implemented on the backend
-        const response = await fetch('/api/client-support-tickets', {
+        // Use the implemented API endpoint
+        const response = await fetch('/api/support-tickets', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -177,26 +176,14 @@ const ClientSupport = () => {
         });
         
         if (!response.ok) {
-          console.log('Support ticket create API not yet implemented, simulating success');
-          // Return mock success to prevent UI errors
-          return { 
-            id: Date.now(), 
-            ...ticketData,
-            success: true,
-            message: 'Support ticket created successfully'
-          };
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create support ticket');
         }
         
         return await response.json();
       } catch (error) {
-        console.log('Error creating support ticket, endpoint might not exist yet:', error);
-        // Return mock success to prevent UI errors in demo
-        return { 
-          id: Date.now(), 
-          ...ticketData,
-          success: true,
-          message: 'Support ticket created successfully (simulated)'
-        };
+        console.error('Error creating support ticket:', error);
+        throw error;
       }
     },
     onSuccess: () => {
@@ -253,12 +240,44 @@ const ClientSupport = () => {
     });
   };
 
+  // Fetch individual support ticket details
+  const { data: activeTicketData, isLoading: isLoadingTicket } = useQuery({
+    queryKey: ['/api/support-tickets', activeTicketId],
+    queryFn: async () => {
+      if (!activeTicketId) return null;
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`/api/support-tickets/${activeTicketId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch ticket details');
+        }
+        
+        const data = await response.json();
+        console.log('Ticket details fetched:', data);
+        return data;
+      } catch (error) {
+        console.error('Error fetching ticket details:', error);
+        throw error;
+      }
+    },
+    enabled: !!activeTicketId,
+  });
+
   const handleTicketClick = (ticketId: number) => {
     setActiveTicketId(ticketId);
   };
 
   const getActiveTicket = () => {
-    return tickets?.find((t: SupportTicket) => t.id === activeTicketId);
+    // Use the fetched ticket data if available, otherwise fall back to the ticket from the list
+    return activeTicketData || tickets?.find((t: SupportTicket) => t.id === activeTicketId);
   };
 
   const filteredFaqs = faqData.filter(faq => 
