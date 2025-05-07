@@ -739,7 +739,11 @@ const ClientSupport = () => {
                             <p className="text-sm text-slate-500 mt-1">
                               Chat with our support team in real-time during business hours
                             </p>
-                            <Button variant="link" className="text-indigo-600 p-0 h-auto mt-1 font-medium">
+                            <Button 
+                              variant="link" 
+                              className="text-indigo-600 p-0 h-auto mt-1 font-medium"
+                              onClick={() => window.location.href = '/client/messages'}
+                            >
                               Start Chat <ChevronRight className="h-4 w-4 ml-1" />
                             </Button>
                           </div>
@@ -756,7 +760,11 @@ const ClientSupport = () => {
                             <p className="text-sm text-slate-500 mt-1">
                               Browse our comprehensive documentation and guides
                             </p>
-                            <Button variant="link" className="text-indigo-600 p-0 h-auto mt-1 font-medium">
+                            <Button 
+                              variant="link" 
+                              className="text-indigo-600 p-0 h-auto mt-1 font-medium"
+                              onClick={() => window.location.href = '/client/documents'}
+                            >
                               View Docs <ExternalLink className="h-4 w-4 ml-1" />
                             </Button>
                           </div>
@@ -805,7 +813,14 @@ const ClientSupport = () => {
                     <div className="text-xs text-slate-500">
                       <p>Our support team typically responds within 24 hours during business days.</p>
                     </div>
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button 
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                      onClick={() => {
+                        const subject = (document.getElementById('subject') as HTMLInputElement)?.value || 'Support Request';
+                        const message = (document.getElementById('message') as HTMLTextAreaElement)?.value || '';
+                        window.location.href = `mailto:support@aditeke.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+                      }}
+                    >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Send Message
                     </Button>
