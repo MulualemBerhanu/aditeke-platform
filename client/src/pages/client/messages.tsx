@@ -74,71 +74,62 @@ const ClientMessages = () => {
     }
   }, [user]);
 
-  // Fetch client messages
+  // Fetch client messages using our standardized queryClient
   const { data: messages, isLoading, error } = useQuery({
     queryKey: ['/api/client-communications', clientId],
-    queryFn: async () => {
+    queryFn: async ({ queryKey }) => {
       if (!clientId) return [];
       console.log(`Fetching messages for client ID: ${clientId}`);
       
-      // Get the authentication token
-      const token = localStorage.getItem('token');
-      
       try {
-        const response = await fetch(`/api/client-communications/${clientId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('GET', `/api/client-communications/${clientId}`);
         
         if (!response.ok) {
-          console.log('Messages API not yet implemented, returning empty array');
-          return [];
+          throw new Error(`Error fetching messages: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
-        console.log('Messages fetched:', data);
+        console.log('Messages fetched successfully:', data);
         return data;
       } catch (error) {
-        console.log('Error fetching messages, endpoint might not be implemented yet:', error);
-        // Return empty array instead of throwing to prevent infinite re-rendering
+        console.error('Error fetching messages:', error);
+        // Return empty array instead of throwing to prevent UI issues
         return [];
       }
     },
     enabled: !!clientId,
-    retry: false, // Disable retries to prevent infinite loops
+    retry: 1, // Allow one retry for potential authentication issues
   });
 
   // Mark message as read
   const markAsReadMutation = useMutation({
     mutationFn: async (messageId: number) => {
-      const token = localStorage.getItem('token');
-      
       try {
-        const response = await fetch(`/api/client-communications/${messageId}/read`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('PUT', `/api/client-communications/${messageId}/read`);
         
         if (!response.ok) {
-          console.log('API endpoint not implemented yet, simulating success');
-          return { success: true, id: messageId };
+          throw new Error(`Error marking message as read: ${response.status} ${response.statusText}`);
         }
         
         return await response.json();
       } catch (error) {
-        console.log('Error with mark as read, endpoint might not exist yet:', error);
-        // Return mock success to prevent errors
-        return { success: true, id: messageId };
+        console.error('Error marking message as read:', error);
+        throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/client-communications', clientId] });
+      toast({
+        title: 'Success',
+        description: 'Message marked as read',
+      });
     },
     onError: (error) => {
+      console.error('Mutation error:', error);
       toast({
         title: 'Error',
         description: 'Failed to mark message as read',
@@ -150,28 +141,19 @@ const ClientMessages = () => {
   // Send new message
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: any) => {
-      const token = localStorage.getItem('token');
-      
       try {
-        const response = await fetch('/api/client-communications', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(messageData)
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('POST', '/api/client-communications', messageData);
         
         if (!response.ok) {
-          console.log('API endpoint not implemented yet, simulating success');
-          return { success: true, ...messageData, id: Date.now() };
+          throw new Error(`Error sending message: ${response.status} ${response.statusText}`);
         }
         
         return await response.json();
       } catch (error) {
-        console.log('Error sending message, endpoint might not exist yet:', error);
-        // Return mock success to prevent errors in the UI
-        return { success: true, ...messageData, id: Date.now() };
+        console.error('Error sending message:', error);
+        throw error;
       }
     },
     onSuccess: () => {
@@ -188,6 +170,7 @@ const ClientMessages = () => {
       });
     },
     onError: (error) => {
+      console.error('Send message error:', error);
       toast({
         title: 'Error',
         description: 'Failed to send message. Please try again.',
@@ -215,11 +198,11 @@ const ClientMessages = () => {
       return;
     }
     
-    // Send to manager (hardcoded manager ID 1000 for now)
+    // Send to manager (using manager ID 50000 as found in database)
     // We use the clientCommunications schema format now
     sendMessageMutation.mutate({
       clientId: clientId,
-      managerId: 1000, // Manager ID (hardcoded for now)
+      managerId: 50000, // Manager ID from our database
       subject: newMessage.urgent ? `[URGENT] ${newMessage.subject}` : newMessage.subject,
       message: newMessage.content,
       type: newMessage.urgent ? 'urgent' : 'standard',
