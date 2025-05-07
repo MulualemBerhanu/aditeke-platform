@@ -333,6 +333,34 @@ export const insertClientDocumentSchema = createInsertSchema(clientDocuments).pi
   projectId: true,
 });
 
+// Client Support Tickets schema
+export const clientSupportTickets = pgTable("client_support_tickets", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  assignedToId: integer("assigned_to_id").references(() => users.id),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("open"), // open, in-progress, closed, on-hold
+  priority: text("priority").notNull().default("medium"), // low, medium, high, urgent
+  category: text("category").notNull(), // billing, technical, feature-request, etc.
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at"),
+  closedAt: timestamp("closed_at"),
+  attachments: json("attachments"), // JSON array of attachment URLs
+  resolution: text("resolution"),
+});
+
+export const insertClientSupportTicketSchema = createInsertSchema(clientSupportTickets).pick({
+  clientId: true,
+  assignedToId: true,
+  subject: true,
+  description: true,
+  status: true,
+  priority: true,
+  category: true,
+  attachments: true,
+});
+
 // Client Invoices schema
 export const clientInvoices = pgTable("client_invoices", {
   id: serial("id").primaryKey(),
@@ -418,6 +446,9 @@ export type InsertClientContract = z.infer<typeof insertClientContractSchema>;
 
 export type ClientInvoice = typeof clientInvoices.$inferSelect;
 export type InsertClientInvoice = z.infer<typeof insertClientInvoiceSchema>;
+
+export type ClientSupportTicket = typeof clientSupportTickets.$inferSelect;
+export type InsertClientSupportTicket = z.infer<typeof insertClientSupportTicketSchema>;
 
 // Password Reset Tokens schema
 export const passwordResetTokens = pgTable("password_reset_tokens", {

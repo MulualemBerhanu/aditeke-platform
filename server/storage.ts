@@ -17,6 +17,7 @@ import {
   clientCommunications, type ClientCommunication, type InsertClientCommunication,
   clientDocuments, type ClientDocument, type InsertClientDocument,
   clientInvoices, type ClientInvoice, type InsertClientInvoice,
+  clientSupportTickets, type ClientSupportTicket, type InsertClientSupportTicket,
   userNotificationSettings, type UserNotificationSettings, type InsertUserNotificationSettings,
   userSecuritySettings, type UserSecuritySettings, type InsertUserSecuritySettings
 } from "@shared/schema";
@@ -114,6 +115,12 @@ export interface IStorage {
   getUserSecuritySettings(userId: number): Promise<UserSecuritySettings | undefined>;
   createUserSecuritySettings(settings: InsertUserSecuritySettings): Promise<UserSecuritySettings>;
   updateUserSecuritySettings(userId: number, settings: Partial<InsertUserSecuritySettings>): Promise<UserSecuritySettings>;
+  
+  // Client Support Tickets methods
+  getClientSupportTickets(clientId: number): Promise<ClientSupportTicket[]>;
+  getSupportTicket(id: number): Promise<ClientSupportTicket | undefined>;
+  createSupportTicket(ticket: InsertClientSupportTicket): Promise<ClientSupportTicket>;
+  updateSupportTicket(id: number, ticketData: Partial<InsertClientSupportTicket>): Promise<ClientSupportTicket>;
 }
 
 export class MemStorage implements IStorage {
@@ -133,6 +140,7 @@ export class MemStorage implements IStorage {
   private clientInvoices: Map<number, ClientInvoice>;
   private userNotificationSettings: Map<number, UserNotificationSettings>;
   private userSecuritySettings: Map<number, UserSecuritySettings>;
+  private clientSupportTickets: Map<number, ClientSupportTicket>;
   
   private userIdCounter: number;
   private roleIdCounter: number;
@@ -150,6 +158,7 @@ export class MemStorage implements IStorage {
   private clientInvoiceIdCounter: number;
   private userNotificationSettingsIdCounter: number;
   private userSecuritySettingsIdCounter: number;
+  private clientSupportTicketIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -168,6 +177,7 @@ export class MemStorage implements IStorage {
     this.clientInvoices = new Map();
     this.userNotificationSettings = new Map();
     this.userSecuritySettings = new Map();
+    this.clientSupportTickets = new Map();
     
     this.userIdCounter = 1;
     this.roleIdCounter = 1;
@@ -185,6 +195,7 @@ export class MemStorage implements IStorage {
     this.clientInvoiceIdCounter = 1;
     this.userNotificationSettingsIdCounter = 1;
     this.userSecuritySettingsIdCounter = 1;
+    this.clientSupportTicketIdCounter = 1;
 
     // Add initial demo data
     try {
