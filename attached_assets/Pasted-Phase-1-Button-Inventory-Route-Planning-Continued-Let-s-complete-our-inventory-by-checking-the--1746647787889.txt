@@ -1,0 +1,114 @@
+Phase 1: Button Inventory & Route Planning (Continued)
+Let's complete our inventory by checking the client layout for additional buttons:
+
+
+Opened client/src/components/client/ClientLayout.tsx
+Let's also check the API routes to identify all existing client-related endpoints:
+
+
+Opened server/routes.ts
+Let's check for client-related endpoints:
+
+
+Executed grep -n "client" server/routes.ts | grep -i "app.get\|app.post\|app.put\|app.delete" | head -20
+Great! I can now see all the client-related endpoints and the data being loaded on the client dashboard. Let's complete our button inventory based on this information.
+
+Phase 1: Button Inventory & Route Planning Results
+Based on my analysis, here's a complete inventory of the buttons on the client dashboard that need implementation:
+
+Main Dashboard Buttons:
+"View Projects" button - Navigate to projects list
+
+Current: Links to static page
+Required: Link to /client/projects route
+"Contact Manager" button - Contact form/dialogue
+
+Current: No implementation
+Required: Open contact form modal or navigate to messaging page
+"Start Conversation" button - Start messaging thread
+
+Current: No implementation
+Required: Initialize chat session with manager
+"Configure" button (for email notifications)
+
+Current: No implementation
+Required: Open notification preferences modal
+Project Card Buttons:
+"Download Invoice #X" buttons - Invoice download
+Current: Partial implementation with token-based authentication
+Required: Secure PDF download functionality
+Sidebar Navigation Buttons:
+Security Center button - Security settings page
+
+Current: Links to non-implemented page
+Required: Implement security settings page
+Help & Resources button - Help documentation
+
+Current: Links to non-implemented page
+Required: Implement help center page
+Logout button - Log out user
+
+Current: Implemented with logout function
+Status: Working as expected
+Header Navigation Buttons:
+Profile Settings dropdown menu item - Edit profile
+
+Current: Links to non-implemented page
+Required: Implement profile settings page
+Contact Support dropdown menu item - Support ticket
+
+Current: Links to non-implemented page
+Required: Implement support contact form
+Sidebar Navigation Links (not buttons but clickable):
+Dashboard (implemented)
+My Projects (needs implementation)
+Messages (needs implementation)
+Documents (needs implementation)
+Support (needs implementation)
+Downloads (needs implementation)
+Settings (needs implementation)
+API Endpoints Inventory:
+Currently Implemented Client Endpoints:
+GET /api/public/client-projects/:clientId - List client projects
+GET /api/public/client-invoices/:clientId - List client invoices
+GET /api/public/client-documents/:clientId - List client documents
+GET /api/public/client-contracts/:clientId - List client contracts
+GET /api/client-communications/:clientId - Get client messages (authenticated)
+POST /api/client-communications - Create client message (authenticated)
+PUT /api/client-communications/:id/read - Mark message as read (authenticated)
+GET /api/client-documents/:clientId - Get client documents (authenticated)
+POST /api/client-documents - Upload client document (authenticated)
+GET /api/client-documents/download/:id - Download client document (authenticated)
+DELETE /api/client-documents/:id - Delete client document (authenticated)
+Required New Endpoints:
+POST /api/client/contact-manager - Send message to manager
+GET /api/client/notification-preferences - Get notification settings
+PUT /api/client/notification-preferences - Update notification settings
+GET /api/client/security-settings - Get security settings
+PUT /api/client/security-settings - Update security settings
+Authentication & Authorization Assessment:
+The application uses both JWT token authentication and localStorage fallback
+Most client-specific data endpoints are publicly accessible with clientId parameter
+Some endpoints require authentication with the authenticateJWT middleware
+The client dashboard verifies the user has roleId 1001 (client role)
+Development Plan for Button Implementation:
+Phase 1: Core Navigation Implementation
+
+Implement routing for all client sidebar links first:
+/client/projects
+/client/messages
+/client/documents
+/client/support
+/client/downloads
+/client/settings
+Phase 2: Basic Form Actions
+
+Implement "Contact Manager" and "Start Conversation" buttons with proper forms and API calls
+Phase 3: Settings & Preferences
+
+Implement configuration buttons for email notifications
+Implement security center functionality
+Phase 4: Document Management
+
+Enhance document download functionality with proper security
+Implement document upload functionality
