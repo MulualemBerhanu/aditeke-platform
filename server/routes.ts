@@ -2371,7 +2371,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid client ID" });
       }
       
+      // Check if the user is requesting their own communications or has manager/admin permissions
+      // Client role = 1001, Manager role = 1000, Admin role = 1002
+      console.log(`User requesting communications: ${req.user?.id} (role: ${req.user?.roleId}) for client ID: ${clientId}`);
+      if (req.user?.id !== clientId && req.user?.roleId !== 1000 && req.user?.roleId !== 1002) {
+        console.warn(`User ${req.user?.id} with role ${req.user?.roleId} attempted to access communications for client ${clientId}`);
+        return res.status(403).json({ error: "Unauthorized to access these messages" });
+      }
+      
       const communications = await storage.getClientCommunications(clientId);
+      console.log(`Found ${communications.length} communications for client ${clientId}`);
       res.json(communications);
     } catch (error) {
       console.error("Error fetching client communications:", error);
@@ -2382,7 +2391,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/client-communications', authenticateJWT, async (req, res) => {
     try {
       const newCommunication = req.body;
+      
+      // Validate that the user can create communications for this client
+      // Either the user is the client or has manager/admin privileges
+      if (req.user?.id !== newCommunication.clientId && req.user?.roleId !== 1000 && req.user?.roleId !== 1002) {
+        console.warn(`User ${req.user?.id} with role ${req.user?.roleId} attempted to create communication for client ${newCommunication.clientId}`);
+        return res.status(403).json({ error: "Unauthorized to create messages for this client" });
+      }
+      
       const communication = await storage.createClientCommunication(newCommunication);
+      console.log(`Created new communication: ${communication.id} for client ${communication.clientId}`);
       res.status(201).json(communication);
     } catch (error) {
       console.error("Error creating client communication:", error);
@@ -2397,7 +2415,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid communication ID" });
       }
       
+      // First get the communication to check authorization
+      // This prevents marking communications as read without proper permissions
+      const existingComm = await storage.getClientCommunication(id);
+      if (!existingComm) {
+        return res.status(404).json({ error: "Communication not found" });
+      }
+      
+      // Check if user is authorized (client, recipient manager, or admin)
+      if (req.user?.id !== existingComm.clientId && 
+          req.user?.id !== existingComm.managerId &&
+          req.user?.roleId !== 1002) {
+        console.warn(`User ${req.user?.id} with role ${req.user?.roleId} attempted to mark communication ${id} as read`);
+        return res.status(403).json({ error: "Unauthorized to update this message" });
+      }
+      
       const communication = await storage.markCommunicationAsRead(id);
+      console.log(`Marked communication ${id} as read`);
       res.json(communication);
     } catch (error) {
       console.error("Error marking communication as read:", error);

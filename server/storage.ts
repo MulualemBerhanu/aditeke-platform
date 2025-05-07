@@ -1778,6 +1778,11 @@ export class PostgresStorage implements IStorage {
     return await this.db.select().from(clientCommunications).where(eq(clientCommunications.clientId, clientId));
   }
   
+  async getClientCommunication(id: number): Promise<ClientCommunication | undefined> {
+    const result = await this.db.select().from(clientCommunications).where(eq(clientCommunications.id, id)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  }
+  
   async createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication> {
     const result = await this.db.insert(clientCommunications).values({
       ...communication,
