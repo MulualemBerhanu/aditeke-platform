@@ -1001,12 +1001,14 @@ const ClientSettings = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 When you delete your account, all of your data, including projects, documents, and files will be permanently removed. This action cannot be undone.
               </p>
+              <Button 
+                variant="destructive" 
+                onClick={() => setDeleteAccountDialogOpen(true)}
+              >
+                Delete Account
+              </Button>
+              
               <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    Delete Account
-                  </Button>
-                </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
