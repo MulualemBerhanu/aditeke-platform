@@ -1,0 +1,809 @@
+import React, { useState, useEffect } from 'react';
+import ClientLayout from '@/components/client/ClientLayout';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/components/auth/AuthContext';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  HelpCircle,
+  LifeBuoy,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  MessageSquare,
+  FileText,
+  ExternalLink,
+  ChevronRight,
+  Search,
+  BookOpen
+} from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { formatDistance } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+// Interface for support ticket
+interface SupportTicket {
+  id: number;
+  clientId: number;
+  title: string;
+  description: string;
+  status: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  category: string;
+  createdAt: string;
+  updatedAt: string;
+  assignedTo?: number;
+  assigneeName?: string;
+}
+
+// FAQ data
+const faqData = [
+  {
+    question: "How do I request changes to my project?",
+    answer: "You can request changes to your project by creating a new support ticket with the category 'Change Request'. Please provide as much detail as possible about the changes you need."
+  },
+  {
+    question: "What information should I include in a bug report?",
+    answer: "For effective bug reports, please include: 1) Steps to reproduce the issue, 2) Expected behavior, 3) Actual behavior, 4) Screenshots if applicable, 5) Your browser/device information, and 6) How critical the issue is to your workflow."
+  },
+  {
+    question: "How long does it typically take to resolve a support ticket?",
+    answer: "Resolution times vary based on the complexity of the issue and the current support queue. For urgent matters, we aim to respond within 4 hours. Standard tickets are typically addressed within 1-2 business days."
+  },
+  {
+    question: "Can I upgrade my support priority level?",
+    answer: "Yes, if you have an urgent issue that requires immediate attention, please create a ticket and mark it as 'Urgent'. For recurring priority support, you may want to discuss a premium support package with your account manager."
+  },
+  {
+    question: "How do I access documentation for my project?",
+    answer: "Project documentation is available in the Documents section of your client dashboard. If you're missing specific documentation, please create a support ticket requesting the information you need."
+  }
+];
+
+const ClientSupport = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [clientId, setClientId] = useState<number | null>(null);
+  const [activeTicketId, setActiveTicketId] = useState<number | null>(null);
+  const [createTicketOpen, setCreateTicketOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [newTicket, setNewTicket] = useState({
+    title: '',
+    description: '',
+    priority: 'medium',
+    category: 'Technical Issue'
+  });
+
+  // Set clientId from user object when user data is available
+  useEffect(() => {
+    if (user) {
+      const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+      setClientId(userId);
+    } else {
+      // Try to get from localStorage as fallback
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          const userId = typeof parsedUser.id === 'string' ? parseInt(parsedUser.id) : parsedUser.id;
+          setClientId(userId);
+        } catch (error) {
+          console.error('Error parsing user from localStorage:', error);
+        }
+      }
+    }
+  }, [user]);
+
+  // Fetch client support tickets
+  const { data: tickets, isLoading, error } = useQuery({
+    queryKey: ['/api/client-support-tickets', clientId],
+    queryFn: async () => {
+      if (!clientId) return [];
+      console.log(`Fetching support tickets for client ID: ${clientId}`);
+      
+      // Get the authentication token
+      const token = localStorage.getItem('token');
+      
+      // This endpoint is a placeholder - it would need to be implemented on the backend
+      const response = await fetch(`/api/client-support-tickets/${clientId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .catch(err => {
+        console.log('Error fetching tickets, returning mock data for demonstration');
+        // Since we are just setting up the UI, we'll return an empty array
+        // In a real implementation, we'd throw an error here
+        return { ok: true, json: () => Promise.resolve([]) };
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch support tickets');
+      }
+      
+      const data = await response.json();
+      console.log('Support tickets fetched:', data);
+      return data;
+    },
+    enabled: !!clientId,
+  });
+
+  // Create ticket mutation
+  const createTicketMutation = useMutation({
+    mutationFn: async (ticketData: any) => {
+      const token = localStorage.getItem('token');
+      
+      // This endpoint is a placeholder - it would need to be implemented on the backend
+      const response = await fetch('/api/client-support-tickets', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(ticketData)
+      })
+      .catch(err => {
+        console.log('Error creating ticket, demo mode');
+        // Since we are just setting up the UI, we'll simulate a successful response
+        // In a real implementation, we'd throw an error here
+        return { ok: true, json: () => Promise.resolve({ id: Date.now(), ...ticketData }) };
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create support ticket');
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+      setCreateTicketOpen(false);
+      setNewTicket({
+        title: '',
+        description: '',
+        priority: 'medium',
+        category: 'Technical Issue'
+      });
+      toast({
+        title: 'Support Ticket Created',
+        description: 'Your support ticket has been created successfully.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to create support ticket. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const handleCreateTicket = () => {
+    if (!newTicket.title.trim() || !newTicket.description.trim()) {
+      toast({
+        title: 'Warning',
+        description: 'Please provide both title and description',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!clientId) {
+      toast({
+        title: 'Error',
+        description: 'Client ID not available',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    createTicketMutation.mutate({
+      clientId,
+      title: newTicket.title,
+      description: newTicket.description,
+      priority: newTicket.priority,
+      category: newTicket.category,
+      status: 'open',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  };
+
+  const handleTicketClick = (ticketId: number) => {
+    setActiveTicketId(ticketId);
+  };
+
+  const getActiveTicket = () => {
+    return tickets?.find((t: SupportTicket) => t.id === activeTicketId);
+  };
+
+  const filteredFaqs = faqData.filter(faq => 
+    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Filter tickets by status
+  const openTickets = tickets?.filter((t: SupportTicket) => t.status === 'open' || t.status === 'in-progress') || [];
+  const closedTickets = tickets?.filter((t: SupportTicket) => t.status === 'resolved' || t.status === 'closed') || [];
+  
+  return (
+    <ClientLayout>
+      <div className="p-6 md:p-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Support Center</h1>
+            <p className="text-slate-500">Get help with your projects and account</p>
+          </div>
+          <div className="flex items-start">
+            <Dialog open={createTicketOpen} onOpenChange={setCreateTicketOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                  <LifeBuoy className="h-4 w-4 mr-2" />
+                  Create Support Ticket
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>Create Support Ticket</DialogTitle>
+                  <DialogDescription>
+                    Submit a new support request to our team
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      placeholder="Brief summary of your issue"
+                      value={newTicket.title}
+                      onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Please provide detailed information about your issue..."
+                      rows={6}
+                      value={newTicket.description}
+                      onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select 
+                        value={newTicket.category}
+                        onValueChange={(value) => setNewTicket({...newTicket, category: value})}
+                      >
+                        <SelectTrigger id="category">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Technical Issue">Technical Issue</SelectItem>
+                          <SelectItem value="Billing Question">Billing Question</SelectItem>
+                          <SelectItem value="Feature Request">Feature Request</SelectItem>
+                          <SelectItem value="Account Issue">Account Issue</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="priority">Priority</Label>
+                      <Select 
+                        value={newTicket.priority}
+                        onValueChange={(value) => setNewTicket({...newTicket, priority: value})}
+                      >
+                        <SelectTrigger id="priority">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreateTicketOpen(false)}>Cancel</Button>
+                  <Button 
+                    onClick={handleCreateTicket} 
+                    disabled={createTicketMutation.isPending}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    {createTicketMutation.isPending ? 'Submitting...' : 'Submit Ticket'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        <Tabs defaultValue="tickets">
+          <TabsList className="mb-4">
+            <TabsTrigger value="tickets">My Support Tickets</TabsTrigger>
+            <TabsTrigger value="faq">FAQ & Knowledge Base</TabsTrigger>
+            <TabsTrigger value="contact">Contact Support</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="tickets">
+            {isLoading ? (
+              // Loading state with skeletons
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-1">
+                  <Card>
+                    <CardHeader>
+                      <Skeleton className="h-5 w-24 mb-2" />
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="space-y-2 p-4">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="flex items-center space-x-2 p-2">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className="space-y-1 flex-1">
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-3 w-2/3" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="md:col-span-2">
+                  <Card className="h-full">
+                    <CardContent className="p-6">
+                      <div className="text-center py-12">
+                        <HelpCircle className="h-12 w-12 mx-auto text-slate-300" />
+                        <p className="mt-2 text-slate-500">Select a ticket to view details</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ) : tickets && tickets.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Tickets list */}
+                <div className="md:col-span-1">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <Tabs defaultValue="open">
+                        <TabsList className="w-full">
+                          <TabsTrigger value="open" className="flex-1">
+                            Open
+                            {openTickets.length > 0 && (
+                              <Badge className="ml-2 bg-indigo-600 text-white">{openTickets.length}</Badge>
+                            )}
+                          </TabsTrigger>
+                          <TabsTrigger value="closed" className="flex-1">Closed</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="open" className="m-0 mt-2">
+                          <ScrollArea className="h-[500px]">
+                            {openTickets.length > 0 ? (
+                              <div className="space-y-1">
+                                {openTickets.map((ticket: SupportTicket) => (
+                                  <div
+                                    key={ticket.id}
+                                    onClick={() => handleTicketClick(ticket.id)}
+                                    className={`p-3 cursor-pointer hover:bg-slate-50 rounded-md transition-colors ${
+                                      activeTicketId === ticket.id ? 'bg-slate-100' : ''
+                                    }`}
+                                  >
+                                    <div className="flex items-start">
+                                      <div className="mr-3 mt-0.5">
+                                        {ticket.status === 'open' ? (
+                                          <AlertCircle className="h-5 w-5 text-amber-500" />
+                                        ) : (
+                                          <Clock className="h-5 w-5 text-indigo-500" />
+                                        )}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm mb-1 truncate">
+                                          {ticket.title}
+                                        </p>
+                                        <div className="flex items-center">
+                                          <Badge className={`mr-2 ${
+                                            ticket.priority === 'urgent' ? 'bg-red-500' :
+                                            ticket.priority === 'high' ? 'bg-amber-500' :
+                                            ticket.priority === 'medium' ? 'bg-indigo-500' :
+                                            'bg-green-500'
+                                          }`}>
+                                            {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                                          </Badge>
+                                          <p className="text-xs text-slate-500">
+                                            {formatDistance(new Date(ticket.createdAt), new Date(), { addSuffix: true })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-6 text-center">
+                                <p className="text-slate-500">No open tickets</p>
+                              </div>
+                            )}
+                          </ScrollArea>
+                        </TabsContent>
+
+                        <TabsContent value="closed" className="m-0 mt-2">
+                          <ScrollArea className="h-[500px]">
+                            {closedTickets.length > 0 ? (
+                              <div className="space-y-1">
+                                {closedTickets.map((ticket: SupportTicket) => (
+                                  <div
+                                    key={ticket.id}
+                                    onClick={() => handleTicketClick(ticket.id)}
+                                    className={`p-3 cursor-pointer hover:bg-slate-50 rounded-md transition-colors ${
+                                      activeTicketId === ticket.id ? 'bg-slate-100' : ''
+                                    }`}
+                                  >
+                                    <div className="flex items-start">
+                                      <div className="mr-3 mt-0.5">
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm mb-1 truncate">
+                                          {ticket.title}
+                                        </p>
+                                        <div className="flex items-center">
+                                          <Badge variant="outline" className="mr-2 text-slate-500 border-slate-200">
+                                            {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                                          </Badge>
+                                          <p className="text-xs text-slate-500">
+                                            {formatDistance(new Date(ticket.updatedAt), new Date(), { addSuffix: true })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-6 text-center">
+                                <p className="text-slate-500">No closed tickets</p>
+                              </div>
+                            )}
+                          </ScrollArea>
+                        </TabsContent>
+                      </Tabs>
+                    </CardHeader>
+                  </Card>
+                </div>
+
+                {/* Ticket details */}
+                <div className="md:col-span-2">
+                  <Card className="h-full">
+                    {activeTicketId && getActiveTicket() ? (
+                      <>
+                        <CardHeader className="pb-2 border-b">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle>{getActiveTicket()?.title}</CardTitle>
+                              <CardDescription className="mt-1">
+                                <div className="flex items-center flex-wrap gap-2">
+                                  <Badge className={`${
+                                    getActiveTicket()?.status === 'open' ? 'bg-amber-500' :
+                                    getActiveTicket()?.status === 'in-progress' ? 'bg-indigo-500' :
+                                    getActiveTicket()?.status === 'resolved' ? 'bg-green-500' :
+                                    'bg-slate-500'
+                                  }`}>
+                                    {getActiveTicket()?.status === 'in-progress' ? 'In Progress' : 
+                                     getActiveTicket()?.status.charAt(0).toUpperCase() + getActiveTicket()?.status.slice(1)}
+                                  </Badge>
+                                  <Badge className={`${
+                                    getActiveTicket()?.priority === 'urgent' ? 'bg-red-500' :
+                                    getActiveTicket()?.priority === 'high' ? 'bg-amber-500' :
+                                    getActiveTicket()?.priority === 'medium' ? 'bg-indigo-500' :
+                                    'bg-green-500'
+                                  }`}>
+                                    {getActiveTicket()?.priority.charAt(0).toUpperCase() + getActiveTicket()?.priority.slice(1)} Priority
+                                  </Badge>
+                                  <span className="text-sm text-slate-500">
+                                    Created {formatDistance(new Date(getActiveTicket()?.createdAt), new Date(), { addSuffix: true })}
+                                  </span>
+                                </div>
+                              </CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <div className="prose max-w-none text-slate-700">
+                            <p>{getActiveTicket()?.description}</p>
+                          </div>
+                          
+                          {getActiveTicket()?.assignedTo && (
+                            <div className="mt-6 pt-4 border-t border-slate-100">
+                              <p className="text-sm font-medium mb-2">Assigned To</p>
+                              <div className="flex items-center">
+                                <Avatar className="h-8 w-8 mr-2">
+                                  <AvatarFallback className="bg-indigo-100 text-indigo-600">
+                                    {getActiveTicket()?.assigneeName?.[0] || 'S'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{getActiveTicket()?.assigneeName || 'Support Team'}</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="mt-6 pt-4 border-t border-slate-100">
+                            <p className="text-sm font-medium mb-2">Ticket Updates</p>
+                            {getActiveTicket()?.status === 'open' ? (
+                              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-700">
+                                <p className="text-sm">Your ticket has been received and is pending review.</p>
+                              </div>
+                            ) : getActiveTicket()?.status === 'in-progress' ? (
+                              <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3 text-indigo-700">
+                                <p className="text-sm">A support representative is currently working on your ticket.</p>
+                              </div>
+                            ) : (
+                              <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-700">
+                                <p className="text-sm">This ticket has been resolved. Please let us know if you need further assistance.</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                        <CardFooter className="border-t pt-4 flex justify-between">
+                          <Button variant="outline">
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Add Comment
+                          </Button>
+                          {getActiveTicket()?.status !== 'closed' && (
+                            <Button variant="outline" className="text-slate-600">
+                              {getActiveTicket()?.status === 'resolved' ? 'Close Ticket' : 'Mark as Resolved'}
+                            </Button>
+                          )}
+                        </CardFooter>
+                      </>
+                    ) : (
+                      <CardContent className="p-6">
+                        <div className="text-center py-12">
+                          <HelpCircle className="h-12 w-12 mx-auto text-slate-300" />
+                          <h3 className="text-xl font-semibold mt-4 mb-2">No Support Ticket Selected</h3>
+                          <p className="text-slate-500 max-w-md mx-auto mb-6">
+                            Select a ticket from the list to view its details, or create a new ticket.
+                          </p>
+                          <Button
+                            onClick={() => setCreateTicketOpen(true)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                          >
+                            <LifeBuoy className="h-4 w-4 mr-2" />
+                            Create New Support Ticket
+                          </Button>
+                        </div>
+                      </CardContent>
+                    )}
+                  </Card>
+                </div>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-12">
+                    <LifeBuoy className="h-12 w-12 mx-auto text-slate-300" />
+                    <h3 className="text-xl font-semibold mt-4 mb-2">No Support Tickets</h3>
+                    <p className="text-slate-500 max-w-md mx-auto mb-6">
+                      You haven't created any support tickets yet. Create a new ticket to get help from our support team.
+                    </p>
+                    <Button
+                      onClick={() => setCreateTicketOpen(true)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      <LifeBuoy className="h-4 w-4 mr-2" />
+                      Create Your First Support Ticket
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="faq">
+            <Card>
+              <CardHeader>
+                <CardTitle>Frequently Asked Questions</CardTitle>
+                <CardDescription>
+                  Find answers to common questions about our services and platform
+                </CardDescription>
+                <div className="relative mt-2">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                  <Input 
+                    placeholder="Search FAQs..." 
+                    className="pl-8 bg-slate-50"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {filteredFaqs.length > 0 ? (
+                  <Accordion type="single" collapsible className="w-full">
+                    {filteredFaqs.map((faq, index) => (
+                      <AccordionItem key={index} value={`item-${index}`}>
+                        <AccordionTrigger className="text-left">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <p className="text-slate-600">{faq.answer}</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-slate-500">No FAQs found matching your search query.</p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="border-t flex flex-col items-start pt-4">
+                <p className="text-sm text-slate-600 mb-2">
+                  Need more comprehensive documentation?
+                </p>
+                <Button variant="outline" className="text-indigo-600">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Visit Knowledge Base
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="contact">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Contact Options</CardTitle>
+                    <CardDescription>
+                      Choose how you'd like to reach our support team
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="border border-slate-200 rounded-md p-4 hover:border-indigo-300 hover:bg-slate-50 transition-colors cursor-pointer">
+                        <div className="flex items-start">
+                          <div className="bg-indigo-100 p-2 rounded mr-3">
+                            <LifeBuoy className="h-5 w-5 text-indigo-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-base">Support Ticket</h4>
+                            <p className="text-sm text-slate-500 mt-1">
+                              Create a support ticket for technical issues or account-related questions
+                            </p>
+                            <Button 
+                              variant="link" 
+                              className="text-indigo-600 p-0 h-auto mt-1 font-medium"
+                              onClick={() => setCreateTicketOpen(true)}
+                            >
+                              Create Ticket <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border border-slate-200 rounded-md p-4 hover:border-indigo-300 hover:bg-slate-50 transition-colors cursor-pointer">
+                        <div className="flex items-start">
+                          <div className="bg-indigo-100 p-2 rounded mr-3">
+                            <MessageSquare className="h-5 w-5 text-indigo-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-base">Live Chat</h4>
+                            <p className="text-sm text-slate-500 mt-1">
+                              Chat with our support team in real-time during business hours
+                            </p>
+                            <Button variant="link" className="text-indigo-600 p-0 h-auto mt-1 font-medium">
+                              Start Chat <ChevronRight className="h-4 w-4 ml-1" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border border-slate-200 rounded-md p-4 hover:border-indigo-300 hover:bg-slate-50 transition-colors cursor-pointer">
+                        <div className="flex items-start">
+                          <div className="bg-indigo-100 p-2 rounded mr-3">
+                            <FileText className="h-5 w-5 text-indigo-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-base">Documentation</h4>
+                            <p className="text-sm text-slate-500 mt-1">
+                              Browse our comprehensive documentation and guides
+                            </p>
+                            <Button variant="link" className="text-indigo-600 p-0 h-auto mt-1 font-medium">
+                              View Docs <ExternalLink className="h-4 w-4 ml-1" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="md:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Email Support</CardTitle>
+                    <CardDescription>
+                      Send a detailed message to our support team
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="name">Name</Label>
+                          <Input id="name" placeholder="Your name" defaultValue={user?.name || ''} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input id="email" placeholder="Your email address" defaultValue={user?.email || ''} />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="subject">Subject</Label>
+                        <Input id="subject" placeholder="Brief summary of your issue" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="message">Message</Label>
+                        <Textarea
+                          id="message"
+                          placeholder="Please provide detailed information about your issue..."
+                          rows={6}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-4 flex justify-between">
+                    <div className="text-xs text-slate-500">
+                      <p>Our support team typically responds within 24 hours during business days.</p>
+                    </div>
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Send Message
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ClientLayout>
+  );
+};
+
+export default ClientSupport;

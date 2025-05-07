@@ -44,6 +44,12 @@ import AddClientPage from "./pages/manager/add-client";
 
 // Client pages
 import ClientDashboard from "./pages/client/dashboard";
+import ClientProjects from "./pages/client/projects";
+import ClientMessages from "./pages/client/messages";
+import ClientDocuments from "./pages/client/documents";
+import ClientSupport from "./pages/client/support";
+import ClientDownloads from "./pages/client/downloads";
+import ClientSettings from "./pages/client/settings";
 import ContractViewPage from "./pages/contracts/view";
 
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -157,6 +163,42 @@ function Router() {
       <Route path="/client/dashboard">
         <ProtectedRoute requiredRole="client">
           <ClientDashboard />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/projects">
+        <ProtectedRoute requiredRole="client">
+          <ClientProjects />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/messages">
+        <ProtectedRoute requiredRole="client">
+          <ClientMessages />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/documents">
+        <ProtectedRoute requiredRole="client">
+          <ClientDocuments />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/support">
+        <ProtectedRoute requiredRole="client">
+          <ClientSupport />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/downloads">
+        <ProtectedRoute requiredRole="client">
+          <ClientDownloads />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/client/settings">
+        <ProtectedRoute requiredRole="client">
+          <ClientSettings />
         </ProtectedRoute>
       </Route>
       
