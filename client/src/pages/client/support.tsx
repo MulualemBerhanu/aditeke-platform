@@ -159,6 +159,49 @@ const ClientSupport = () => {
     retry: 1, // Allow one retry
   });
 
+  // Update ticket mutation
+  const updateTicketMutation = useMutation({
+    mutationFn: async ({ ticketId, updateData }: { ticketId: number, updateData: any }) => {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`/api/support-tickets/${ticketId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update support ticket');
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('Error updating support ticket:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
+      toast({
+        title: 'Support Ticket Updated',
+        description: 'Your support ticket has been updated successfully.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update support ticket. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
   // Create ticket mutation
   const createTicketMutation = useMutation({
     mutationFn: async (ticketData: any) => {
@@ -599,6 +642,26 @@ const ClientSupport = () => {
                             {getActiveTicket()?.status === 'open' ? (
                               <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-700">
                                 <p className="text-sm">Your ticket has been received and is pending review.</p>
+                                <div className="mt-3 flex space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="text-amber-700 border-amber-300 hover:bg-amber-100"
+                                    onClick={() => {
+                                      if (!activeTicketId) return;
+                                      updateTicketMutation.mutate({ 
+                                        ticketId: activeTicketId, 
+                                        updateData: { 
+                                          status: 'closed',
+                                          updatedAt: new Date().toISOString()
+                                        } 
+                                      });
+                                    }}
+                                    disabled={updateTicketMutation.isPending}
+                                  >
+                                    {updateTicketMutation.isPending ? 'Updating...' : 'Cancel Ticket'}
+                                  </Button>
+                                </div>
                               </div>
                             ) : getActiveTicket()?.status === 'in-progress' ? (
                               <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3 text-indigo-700">
@@ -617,8 +680,36 @@ const ClientSupport = () => {
                             Add Comment
                           </Button>
                           {getActiveTicket()?.status !== 'closed' && (
-                            <Button variant="outline" className="text-slate-600">
-                              {getActiveTicket()?.status === 'resolved' ? 'Close Ticket' : 'Mark as Resolved'}
+                            <Button 
+                              variant="outline" 
+                              className={`${
+                                getActiveTicket()?.status === 'resolved' 
+                                  ? 'text-green-600 hover:bg-green-50' 
+                                  : 'text-indigo-600 hover:bg-indigo-50'
+                              }`}
+                              onClick={() => {
+                                if (!activeTicketId) return;
+                                
+                                const newStatus = getActiveTicket()?.status === 'resolved' 
+                                  ? 'closed' 
+                                  : 'resolved';
+                                
+                                updateTicketMutation.mutate({ 
+                                  ticketId: activeTicketId, 
+                                  updateData: { 
+                                    status: newStatus,
+                                    updatedAt: new Date().toISOString()
+                                  } 
+                                });
+                              }}
+                              disabled={updateTicketMutation.isPending}
+                            >
+                              {updateTicketMutation.isPending 
+                                ? 'Updating...' 
+                                : getActiveTicket()?.status === 'resolved' 
+                                  ? 'Close Ticket' 
+                                  : 'Mark as Resolved'
+                              }
                             </Button>
                           )}
                         </CardFooter>
