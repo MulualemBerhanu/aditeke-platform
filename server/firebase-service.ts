@@ -405,6 +405,22 @@ export class FirebaseStorage implements IStorage {
     }
   }
   
+  async getClientCommunication(id: number): Promise<ClientCommunication | undefined> {
+    try {
+      const commRef = this.db.collection('client_communications').where('id', '==', id);
+      const snapshot = await commRef.get();
+      
+      if (snapshot.empty) {
+        return undefined;
+      }
+      
+      return snapshot.docs[0].data() as ClientCommunication;
+    } catch (error) {
+      console.error(`Error getting client communication with ID ${id} from Firestore:`, error);
+      throw error;
+    }
+  }
+  
   async createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication> {
     try {
       const id = Date.now();

@@ -91,6 +91,7 @@ export interface IStorage {
   
   // Client Communications methods
   getClientCommunications(clientId: number): Promise<ClientCommunication[]>;
+  getClientCommunication(id: number): Promise<ClientCommunication | undefined>;
   createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication>;
   markCommunicationAsRead(id: number): Promise<ClientCommunication>;
   
@@ -659,6 +660,10 @@ export class MemStorage implements IStorage {
     return Array.from(this.clientCommunications.values())
       .filter(comm => comm.clientId === clientId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  
+  async getClientCommunication(id: number): Promise<ClientCommunication | undefined> {
+    return this.clientCommunications.get(id);
   }
   
   async createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication> {
