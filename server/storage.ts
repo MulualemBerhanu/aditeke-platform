@@ -865,6 +865,67 @@ export class MemStorage implements IStorage {
     this.userSecuritySettings.set(existingSettings.id, updatedSettings);
     return updatedSettings;
   }
+  
+  // Client Support Ticket methods
+  async getClientSupportTickets(clientId: number): Promise<ClientSupportTicket[]> {
+    return Array.from(this.clientSupportTickets.values())
+      .filter(ticket => ticket.clientId === clientId)
+      .sort((a, b) => {
+        // Sort by status first (open tickets first)
+        if (a.status !== b.status) {
+          return a.status === 'open' ? -1 : 1;
+        }
+        // Then sort by priority (high priority first)
+        if (a.priority !== b.priority) {
+          const priorityOrder = { high: 0, medium: 1, low: 2 };
+          return priorityOrder[a.priority as keyof typeof priorityOrder] - 
+                 priorityOrder[b.priority as keyof typeof priorityOrder];
+        }
+        // Then sort by date (newest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+  }
+  
+  async getSupportTicket(id: number): Promise<ClientSupportTicket | undefined> {
+    return this.clientSupportTickets.get(id);
+  }
+  
+  async createSupportTicket(insertTicket: InsertClientSupportTicket): Promise<ClientSupportTicket> {
+    const id = this.clientSupportTicketIdCounter++;
+    const createdAt = new Date();
+    const ticket: ClientSupportTicket = {
+      ...insertTicket,
+      id,
+      createdAt,
+      updatedAt: null,
+      status: insertTicket.status || 'open',
+      priority: insertTicket.priority || 'medium',
+      assignedToId: insertTicket.assignedToId || null,
+      resolvedAt: null
+    };
+    this.clientSupportTickets.set(id, ticket);
+    return ticket;
+  }
+  
+  async updateSupportTicket(id: number, ticketData: Partial<InsertClientSupportTicket>): Promise<ClientSupportTicket> {
+    const ticket = this.clientSupportTickets.get(id);
+    if (!ticket) {
+      throw new Error(`Support ticket with id ${id} not found`);
+    }
+    
+    const updatedTicket: ClientSupportTicket = {
+      ...ticket,
+      ...ticketData,
+      updatedAt: new Date(),
+      // If status is being changed to 'resolved', set resolvedAt
+      resolvedAt: ticketData.status === 'resolved' && ticket.status !== 'resolved' 
+        ? new Date() 
+        : ticket.resolvedAt
+    };
+    
+    this.clientSupportTickets.set(id, updatedTicket);
+    return updatedTicket;
+  }
 
   // Initialize sample data methods
   private async initializeRolesAndPermissions() {
