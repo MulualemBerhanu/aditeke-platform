@@ -67,6 +67,70 @@ const ClientDownloads = () => {
     }
   }, [user]);
 
+  // Sample downloadable files for demo purposes
+  const demoDownloads: DownloadItem[] = [
+    {
+      id: 1,
+      title: 'AdiTeke CRM User Manual',
+      description: 'Comprehensive guide on how to use the AdiTeke CRM system efficiently',
+      fileSize: 3_500_000,
+      fileType: 'application/pdf',
+      version: '1.2.0',
+      category: 'Documentation',
+      releaseDate: '2025-04-15',
+      downloadUrl: '/downloads/aditeke-crm-manual.pdf',
+      platform: 'all'
+    },
+    {
+      id: 2,
+      title: 'Project Management Dashboard Setup',
+      description: 'Installation and configuration instructions for the project management dashboard',
+      fileSize: 2_100_000,
+      fileType: 'application/pdf',
+      version: '1.0.1',
+      category: 'Documentation',
+      releaseDate: '2025-04-02',
+      downloadUrl: '/downloads/pm-dashboard-setup.pdf',
+      platform: 'all'
+    },
+    {
+      id: 3,
+      title: 'AdiTeke Mobile App',
+      description: 'Mobile application for accessing your projects on the go',
+      fileSize: 45_000_000,
+      fileType: 'application/zip',
+      version: '2.1.3',
+      category: 'Software',
+      releaseDate: '2025-05-01',
+      downloadUrl: '/downloads/aditeke-mobile.zip',
+      platform: 'android'
+    },
+    {
+      id: 4,
+      title: 'Database Structure Overview',
+      description: 'Visual guide to the structure of your project database',
+      fileSize: 1_500_000,
+      fileType: 'application/pdf',
+      version: '1.0.0',
+      category: 'Technical',
+      releaseDate: '2025-04-10',
+      downloadUrl: '/downloads/database-overview.pdf',
+      platform: 'all'
+    },
+    {
+      id: 5,
+      title: 'Desktop Client Installer',
+      description: 'Windows desktop application for enhanced project management',
+      fileSize: 85_000_000,
+      fileType: 'application/exe',
+      version: '3.0.2',
+      category: 'Software',
+      releaseDate: '2025-04-28',
+      downloadUrl: '/downloads/desktop-client.exe',
+      platform: 'windows'
+    }
+  ];
+
   // Fetch downloads
   const { data: downloads, isLoading, error } = useQuery({
     queryKey: ['/api/client-downloads', clientId],
@@ -74,29 +138,18 @@ const ClientDownloads = () => {
       if (!clientId) return [];
       console.log(`Fetching downloads for client ID: ${clientId}`);
       
-      // Get the authentication token
-      const token = localStorage.getItem('token');
-      
-      // This endpoint is a placeholder - it would need to be implemented on the backend
-      const response = await fetch(`/api/client-downloads/${clientId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .catch(err => {
-        console.log('Error fetching downloads, returning mock data for demonstration');
-        // Since we are just setting up the UI, we'll return an empty array
-        // In a real implementation, we'd throw an error here
-        return { ok: true, json: () => Promise.resolve([]) };
-      });
-      
-      if (!response.ok) {
+      try {
+        // Get the authentication token
+        const token = localStorage.getItem('token');
+        
+        // This endpoint is a placeholder - it would need to be implemented on the backend
+        // For now, return demo downloads after a small delay to simulate API call
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return demoDownloads;
+      } catch (err) {
+        console.error('Error fetching downloads:', err);
         throw new Error('Failed to fetch downloads');
       }
-      
-      const data = await response.json();
-      console.log('Downloads fetched:', data);
-      return data;
     },
     enabled: !!clientId,
   });
@@ -114,13 +167,24 @@ const ClientDownloads = () => {
     // Get the authentication token
     const token = localStorage.getItem('token');
     
-    // Open download in new tab
-    window.open(`${downloadItem.downloadUrl}?token=${token}`, '_blank');
-    
+    // Show download starting toast with proper file type indicator
     toast({
       title: 'Download Started',
-      description: `Downloading ${downloadItem.title}`,
+      description: `Downloading ${downloadItem.title} (${formatFileSize(downloadItem.fileSize)})`,
+      variant: 'default',
     });
+    
+    // Simulate download process
+    setTimeout(() => {
+      toast({
+        title: 'Download Complete',
+        description: `${downloadItem.title} has been downloaded successfully.`,
+      });
+    }, 2000);
+    
+    // In a real implementation, we would initialize the download
+    // For demo purposes, we'll just simulate it
+    console.log(`Download initiated for: ${downloadItem.title}`);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -141,11 +205,11 @@ const ClientDownloads = () => {
   }, {});
 
   // Filter downloads based on search query
-  const filteredDownloads = downloads?.filter((item: DownloadItem) => 
+  const filteredDownloads = downloads ? downloads.filter((item: DownloadItem) => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
