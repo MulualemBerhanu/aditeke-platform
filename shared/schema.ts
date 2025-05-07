@@ -439,3 +439,44 @@ export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTo
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
+
+// User Notification Settings schema
+export const userNotificationSettings = pgTable("user_notification_settings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  emailNotifications: boolean("email_notifications").notNull().default(true),
+  projectUpdates: boolean("project_updates").notNull().default(true),
+  documentUploads: boolean("document_uploads").notNull().default(true),
+  invoiceReminders: boolean("invoice_reminders").notNull().default(true),
+  marketingEmails: boolean("marketing_emails").notNull().default(false),
+  smsNotifications: boolean("sms_notifications").notNull().default(false),
+  browserNotifications: boolean("browser_notifications").notNull().default(true),
+  updatedAt: timestamp("updated_at"),
+});
+
+export const insertUserNotificationSettingsSchema = createInsertSchema(userNotificationSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type UserNotificationSettings = typeof userNotificationSettings.$inferSelect;
+export type InsertUserNotificationSettings = z.infer<typeof insertUserNotificationSettingsSchema>;
+
+// User Security Settings schema
+export const userSecuritySettings = pgTable("user_security_settings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
+  loginAlerts: boolean("login_alerts").notNull().default(true),
+  allowMultipleSessions: boolean("allow_multiple_sessions").notNull().default(true),
+  sessionTimeout: integer("session_timeout").notNull().default(60), // In minutes
+  updatedAt: timestamp("updated_at"),
+});
+
+export const insertUserSecuritySettingsSchema = createInsertSchema(userSecuritySettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type UserSecuritySettings = typeof userSecuritySettings.$inferSelect;
+export type InsertUserSecuritySettings = z.infer<typeof insertUserSecuritySettingsSchema>;
