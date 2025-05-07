@@ -1650,6 +1650,82 @@ export class PostgresStorage implements IStorage {
       
     return result[0];
   }
+  
+  // Client Support Tickets methods
+  async getClientSupportTickets(clientId: number): Promise<ClientSupportTicket[]> {
+    const result = await this.db.select()
+      .from(clientSupportTickets)
+      .where(eq(clientSupportTickets.clientId, clientId));
+    
+    // Sort by priority and date
+    const priorityOrder = {
+      'urgent': 0,
+      'high': 1,
+      'medium': 2,
+      'low': 3
+    };
+    
+    return result.sort((a, b) => {
+      // First sort by priority (higher priority first)
+      if (a.priority !== b.priority) {
+        return priorityOrder[a.priority as keyof typeof priorityOrder] - 
+               priorityOrder[b.priority as keyof typeof priorityOrder];
+      }
+      // Then sort by date (newest first)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
+  
+  async getSupportTicket(id: number): Promise<ClientSupportTicket | undefined> {
+    const result = await this.db.select()
+      .from(clientSupportTickets)
+      .where(eq(clientSupportTickets.id, id));
+    
+    return result.length > 0 ? result[0] : undefined;
+  }
+  
+  async createSupportTicket(ticket: InsertClientSupportTicket): Promise<ClientSupportTicket> {
+    const result = await this.db.insert(clientSupportTickets)
+      .values({
+        ...ticket,
+        status: ticket.status || 'open',
+        priority: ticket.priority || 'medium',
+        createdAt: new Date()
+      })
+      .returning();
+    
+    return result[0];
+  }
+  
+  async updateSupportTicket(id: number, ticketData: Partial<InsertClientSupportTicket>): Promise<ClientSupportTicket> {
+    // Get the current ticket to check status changes
+    const currentTicket = await this.getSupportTicket(id);
+    
+    if (!currentTicket) {
+      throw new Error(`Support ticket with id ${id} not found`);
+    }
+    
+    const updateData = {
+      ...ticketData,
+      updatedAt: new Date()
+    };
+    
+    // If status is being changed to 'closed', set closedAt
+    if (ticketData.status === 'closed' && currentTicket.status !== 'closed') {
+      updateData.closedAt = new Date();
+    }
+    
+    const result = await this.db.update(clientSupportTickets)
+      .set(updateData)
+      .where(eq(clientSupportTickets.id, id))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error(`Support ticket with id ${id} not found`);
+    }
+    
+    return result[0];
+  }
 
   // Newsletter methods
   async addNewsletterSubscriber(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
