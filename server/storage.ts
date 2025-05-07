@@ -1482,6 +1482,103 @@ export class PostgresStorage implements IStorage {
     return result[0];
   }
 
+  // User Notification Settings methods
+  async getUserNotificationSettings(userId: number): Promise<UserNotificationSettings | undefined> {
+    const result = await this.db.select()
+      .from(userNotificationSettings)
+      .where(eq(userNotificationSettings.userId, userId));
+    
+    return result.length > 0 ? result[0] : undefined;
+  }
+
+  async createUserNotificationSettings(settings: InsertUserNotificationSettings): Promise<UserNotificationSettings> {
+    const result = await this.db.insert(userNotificationSettings)
+      .values(settings)
+      .returning();
+    
+    return result[0];
+  }
+
+  async updateUserNotificationSettings(userId: number, settings: Partial<InsertUserNotificationSettings>): Promise<UserNotificationSettings> {
+    // First check if settings exist for this user
+    const existingSettings = await this.getUserNotificationSettings(userId);
+    
+    if (!existingSettings) {
+      // Create default settings with overrides from the settings parameter
+      return this.createUserNotificationSettings({
+        userId,
+        emailNotifications: settings.emailNotifications ?? true,
+        projectUpdates: settings.projectUpdates ?? true,
+        documentUploads: settings.documentUploads ?? true,
+        invoiceReminders: settings.invoiceReminders ?? true,
+        marketingEmails: settings.marketingEmails ?? false,
+        smsNotifications: settings.smsNotifications ?? false,
+        browserNotifications: settings.browserNotifications ?? true,
+        ...settings
+      });
+    }
+    
+    // Update existing settings
+    const updateData = {
+      ...settings,
+      updatedAt: new Date()
+    };
+    
+    const result = await this.db.update(userNotificationSettings)
+      .set(updateData)
+      .where(eq(userNotificationSettings.userId, userId))
+      .returning();
+      
+    return result[0];
+  }
+
+  // User Security Settings methods
+  async getUserSecuritySettings(userId: number): Promise<UserSecuritySettings | undefined> {
+    const result = await this.db.select()
+      .from(userSecuritySettings)
+      .where(eq(userSecuritySettings.userId, userId));
+    
+    return result.length > 0 ? result[0] : undefined;
+  }
+
+  async createUserSecuritySettings(settings: InsertUserSecuritySettings): Promise<UserSecuritySettings> {
+    const result = await this.db.insert(userSecuritySettings)
+      .values(settings)
+      .returning();
+    
+    return result[0];
+  }
+
+  async updateUserSecuritySettings(userId: number, settings: Partial<InsertUserSecuritySettings>): Promise<UserSecuritySettings> {
+    // First check if settings exist for this user
+    const existingSettings = await this.getUserSecuritySettings(userId);
+    
+    if (!existingSettings) {
+      // Create default settings with overrides from the settings parameter
+      return this.createUserSecuritySettings({
+        userId,
+        twoFactorEnabled: settings.twoFactorEnabled ?? false,
+        loginAlerts: settings.loginAlerts ?? true,
+        allowMultipleSessions: settings.allowMultipleSessions ?? true,
+        sessionTimeout: settings.sessionTimeout ?? 60,
+        ...settings
+      });
+    }
+    
+    // Update existing settings
+    const updateData = {
+      ...settings,
+      updatedAt: new Date()
+    };
+    
+    const result = await this.db.update(userSecuritySettings)
+      .set(updateData)
+      .where(eq(userSecuritySettings.userId, userId))
+      .returning();
+      
+    return result[0];
+  }
+
   // Newsletter methods
   async addNewsletterSubscriber(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
     // Check if subscriber already exists
