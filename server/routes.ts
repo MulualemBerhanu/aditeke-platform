@@ -21,8 +21,10 @@ import {
   insertProjectSchema,
   insertBlogPostSchema,
   insertJobSchema,
+  insertClientSupportTicketSchema,
   clientDocuments,
-  clientContracts
+  clientContracts,
+  clientSupportTickets
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
