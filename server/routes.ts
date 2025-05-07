@@ -188,6 +188,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // User notification settings endpoints
+  app.get("/api/users/:userId/notification-settings", authenticateJWT, async (req, res) => {
+    try {
+      // Convert userId parameter to number
+      const userId = parseInt(req.params.userId, 10);
+      
+      // Check if the user is requesting their own settings or has admin permissions
+      if (req.user?.id !== userId && req.user?.roleId !== 1002) { // 1002 is admin role
+        return res.status(403).json({ error: "Unauthorized to access these settings" });
+      }
+      
+      const settings = await storage.getUserNotificationSettings(userId);
+      
+      if (!settings) {
+        // Return default settings if none exist
+        return res.json({
+          userId,
+          emailNotifications: true,
+          projectUpdates: true,
+          documentUploads: true,
+          invoiceReminders: true,
+          marketingEmails: false,
+          smsNotifications: false,
+          browserNotifications: true
+        });
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching notification settings:", error);
+      res.status(500).json({ error: "Failed to fetch notification settings" });
+    }
+  });
+  
+  app.post("/api/users/:userId/notification-settings", authenticateJWT, async (req, res) => {
+    try {
+      // Convert userId parameter to number
+      const userId = parseInt(req.params.userId, 10);
+      
+      // Check if the user is updating their own settings or has admin permissions
+      if (req.user?.id !== userId && req.user?.roleId !== 1002) { // 1002 is admin role
+        return res.status(403).json({ error: "Unauthorized to modify these settings" });
+      }
+      
+      const settingsData = {
+        userId,
+        ...req.body
+      };
+      
+      const settings = await storage.updateUserNotificationSettings(userId, settingsData);
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating notification settings:", error);
+      res.status(500).json({ error: "Failed to update notification settings" });
+    }
+  });
+  
+  // User security settings endpoints
+  app.get("/api/users/:userId/security-settings", authenticateJWT, async (req, res) => {
+    try {
+      // Convert userId parameter to number
+      const userId = parseInt(req.params.userId, 10);
+      
+      // Check if the user is requesting their own settings or has admin permissions
+      if (req.user?.id !== userId && req.user?.roleId !== 1002) { // 1002 is admin role
+        return res.status(403).json({ error: "Unauthorized to access these settings" });
+      }
+      
+      const settings = await storage.getUserSecuritySettings(userId);
+      
+      if (!settings) {
+        // Return default settings if none exist
+        return res.json({
+          userId,
+          twoFactorEnabled: false,
+          loginAlerts: true,
+          allowMultipleSessions: true,
+          sessionTimeout: 60
+        });
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching security settings:", error);
+      res.status(500).json({ error: "Failed to fetch security settings" });
+    }
+  });
+  
+  app.post("/api/users/:userId/security-settings", authenticateJWT, async (req, res) => {
+    try {
+      // Convert userId parameter to number
+      const userId = parseInt(req.params.userId, 10);
+      
+      // Check if the user is updating their own settings or has admin permissions
+      if (req.user?.id !== userId && req.user?.roleId !== 1002) { // 1002 is admin role
+        return res.status(403).json({ error: "Unauthorized to modify these settings" });
+      }
+      
+      const settingsData = {
+        userId,
+        ...req.body
+      };
+      
+      const settings = await storage.updateUserSecuritySettings(userId, settingsData);
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating security settings:", error);
+      res.status(500).json({ error: "Failed to update security settings" });
+    }
+  });
+  
   // Endpoint to get clients for project forms from the database
   app.get("/api/clients/list", async (req, res) => {
     try {

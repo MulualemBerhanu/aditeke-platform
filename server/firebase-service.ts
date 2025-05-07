@@ -4,7 +4,8 @@ import {
   User, Role, Permission, Project, Testimonial, Service, BlogPost, 
   ContactMessage, NewsletterSubscriber, Job, ClientCommunication, 
   ClientDocument, ClientInvoice, InsertClientCommunication, 
-  InsertClientDocument, InsertClientInvoice 
+  InsertClientDocument, InsertClientInvoice, UserNotificationSettings,
+  InsertUserNotificationSettings, UserSecuritySettings, InsertUserSecuritySettings
 } from '@shared/schema';
 
 /**
@@ -62,6 +63,17 @@ export class FirebaseStorage implements IStorage {
       console.error("Error getting user from Firestore:", error);
       throw error;
     }
+  }
+
+  // Required methods to fulfill the interface
+  async createUserNotificationSettings(settings: InsertUserNotificationSettings): Promise<UserNotificationSettings> {
+    // This method is used in the interface definition but is essentially just a wrapper around updateUserNotificationSettings
+    return this.updateUserNotificationSettings(settings.userId, settings);
+  }
+  
+  async createUserSecuritySettings(settings: InsertUserSecuritySettings): Promise<UserSecuritySettings> {
+    // This method is used in the interface definition but is essentially just a wrapper around updateUserSecuritySettings
+    return this.updateUserSecuritySettings(settings.userId, settings);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
@@ -235,6 +247,145 @@ export class FirebaseStorage implements IStorage {
   // Implement all other methods required by IStorage interface
   // Project methods, Testimonial methods, etc.
   // These would follow a similar pattern as the user and role methods above
+  
+  // User Notification Settings methods
+  async getUserNotificationSettings(userId: number): Promise<UserNotificationSettings | undefined> {
+    try {
+      console.log(`Looking for notification settings for user ID: ${userId}`);
+      const settingsRef = this.db.collection('user_notification_settings').where('userId', '==', userId);
+      const snapshot = await settingsRef.get();
+      
+      if (snapshot.empty) {
+        console.log(`No notification settings found for user ID: ${userId}`);
+        return undefined;
+      }
+      
+      const settingsData = snapshot.docs[0].data();
+      console.log(`Found notification settings for user ID: ${userId}`);
+      return settingsData as UserNotificationSettings;
+    } catch (error) {
+      console.error("Error getting notification settings from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async updateUserNotificationSettings(userId: number, settings: Partial<InsertUserNotificationSettings>): Promise<UserNotificationSettings> {
+    try {
+      // Check if settings already exist
+      const existingSettings = await this.getUserNotificationSettings(userId);
+      
+      if (existingSettings) {
+        // Update existing settings
+        const settingsRef = this.db.collection('user_notification_settings').where('userId', '==', userId);
+        const snapshot = await settingsRef.get();
+        
+        if (snapshot.empty) {
+          throw new Error(`Settings not found for user ID: ${userId}`);
+        }
+        
+        const docId = snapshot.docs[0].id;
+        const updatedSettings = {
+          ...existingSettings,
+          ...settings,
+          updatedAt: new Date()
+        };
+        
+        await this.db.collection('user_notification_settings').doc(docId).update(updatedSettings);
+        return updatedSettings as UserNotificationSettings;
+      } else {
+        // Create new settings
+        const id = Date.now();
+        const now = new Date();
+        const newSettings: UserNotificationSettings = {
+          id,
+          userId,
+          updatedAt: now,
+          // Set defaults for required fields
+          emailNotifications: settings.emailNotifications ?? true,
+          projectUpdates: settings.projectUpdates ?? true,
+          documentUploads: settings.documentUploads ?? true,
+          invoiceReminders: settings.invoiceReminders ?? true,
+          marketingEmails: settings.marketingEmails ?? false,
+          smsNotifications: settings.smsNotifications ?? false,
+          browserNotifications: settings.browserNotifications ?? true
+        };
+        
+        await this.db.collection('user_notification_settings').add(newSettings);
+        return newSettings;
+      }
+    } catch (error) {
+      console.error("Error updating notification settings in Firestore:", error);
+      throw error;
+    }
+  }
+  
+  // User Security Settings methods
+  async getUserSecuritySettings(userId: number): Promise<UserSecuritySettings | undefined> {
+    try {
+      console.log(`Looking for security settings for user ID: ${userId}`);
+      const settingsRef = this.db.collection('user_security_settings').where('userId', '==', userId);
+      const snapshot = await settingsRef.get();
+      
+      if (snapshot.empty) {
+        console.log(`No security settings found for user ID: ${userId}`);
+        return undefined;
+      }
+      
+      const settingsData = snapshot.docs[0].data();
+      console.log(`Found security settings for user ID: ${userId}`);
+      return settingsData as UserSecuritySettings;
+    } catch (error) {
+      console.error("Error getting security settings from Firestore:", error);
+      throw error;
+    }
+  }
+  
+  async updateUserSecuritySettings(userId: number, settings: Partial<InsertUserSecuritySettings>): Promise<UserSecuritySettings> {
+    try {
+      // Check if settings already exist
+      const existingSettings = await this.getUserSecuritySettings(userId);
+      
+      if (existingSettings) {
+        // Update existing settings
+        const settingsRef = this.db.collection('user_security_settings').where('userId', '==', userId);
+        const snapshot = await settingsRef.get();
+        
+        if (snapshot.empty) {
+          throw new Error(`Security settings not found for user ID: ${userId}`);
+        }
+        
+        const docId = snapshot.docs[0].id;
+        const updatedSettings = {
+          ...existingSettings,
+          ...settings,
+          updatedAt: new Date()
+        };
+        
+        await this.db.collection('user_security_settings').doc(docId).update(updatedSettings);
+        return updatedSettings as UserSecuritySettings;
+      } else {
+        // Create new settings
+        const id = Date.now();
+        const now = new Date();
+        const newSettings: UserSecuritySettings = {
+          id,
+          userId,
+          updatedAt: now,
+          // Set defaults for required fields
+          twoFactorEnabled: settings.twoFactorEnabled ?? false,
+          loginAlerts: settings.loginAlerts ?? true,
+          allowMultipleSessions: settings.allowMultipleSessions ?? true,
+          sessionTimeout: settings.sessionTimeout ?? 60
+        };
+        
+        await this.db.collection('user_security_settings').add(newSettings);
+        return newSettings;
+      }
+    } catch (error) {
+      console.error("Error updating security settings in Firestore:", error);
+      throw error;
+    }
+  }
 
   // Client Communications methods
   async getClientCommunications(clientId: number): Promise<ClientCommunication[]> {
