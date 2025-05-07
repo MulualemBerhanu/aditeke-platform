@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import {
   User,
   Lock,
@@ -106,6 +107,8 @@ const ClientSettings = () => {
     country: '',
     profilePicture: ''
   });
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null);
+  const [securitySettings, setSecuritySettings] = useState<SecuritySettings | null>(null);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -171,8 +174,22 @@ const ClientSettings = () => {
     }
   }, [user]);
 
+  // Set notification settings when data is fetched
+  useEffect(() => {
+    if (fetchedNotificationSettings) {
+      setNotificationSettings(fetchedNotificationSettings);
+    }
+  }, [fetchedNotificationSettings]);
+
+  // Set security settings when data is fetched
+  useEffect(() => {
+    if (fetchedSecuritySettings) {
+      setSecuritySettings(fetchedSecuritySettings);
+    }
+  }, [fetchedSecuritySettings]);
+
   // Fetch notification settings
-  const { data: notificationSettings, isLoading: loadingNotifications } = useQuery({
+  const { data: fetchedNotificationSettings, isLoading: loadingNotifications } = useQuery({
     queryKey: ['/api/client-notification-settings', clientId],
     queryFn: async () => {
       if (!clientId) return null;
@@ -217,7 +234,7 @@ const ClientSettings = () => {
   });
 
   // Fetch security settings
-  const { data: securitySettings, isLoading: loadingSecurity } = useQuery({
+  const { data: fetchedSecuritySettings, isLoading: loadingSecurity } = useQuery({
     queryKey: ['/api/client-security-settings', clientId],
     queryFn: async () => {
       if (!clientId) return null;
