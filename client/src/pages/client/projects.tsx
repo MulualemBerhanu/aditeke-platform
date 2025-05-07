@@ -155,12 +155,19 @@ const ClientProjects = () => {
                       <FileText className="h-4 w-4 mr-2" />
                       View Details
                     </Button>
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.location.href = '/client/messages'}
+                    >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Discuss
                     </Button>
                     {project.website_url && (
-                      <Button variant="ghost" className="text-indigo-600">
+                      <Button 
+                        variant="ghost" 
+                        className="text-indigo-600"
+                        onClick={() => window.open(project.website_url, '_blank')}
+                      >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Visit Site
                       </Button>
@@ -177,7 +184,10 @@ const ClientProjects = () => {
               <p className="text-slate-500 mb-4">
                 You don't have any active projects at the moment. Your projects will appear here once they are created.
               </p>
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={() => window.location.href = '/client/messages'}
+              >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Contact Manager
               </Button>

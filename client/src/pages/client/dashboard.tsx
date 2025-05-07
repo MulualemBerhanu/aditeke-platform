@@ -925,8 +925,8 @@ export default function ClientDashboard() {
                       <div className="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden">
                         <div 
                           className={`h-full rounded-full ${
-                            project.progress >= 75 ? 'bg-green-500' :
-                            project.progress >= 25 ? 'bg-amber-500' :
+                            (project.progress || 0) >= 75 ? 'bg-green-500' :
+                            (project.progress || 0) >= 25 ? 'bg-amber-500' :
                             'bg-indigo-500'
                           }`}
                           style={{ width: `${project.progress || 0}%` }}
@@ -981,7 +981,11 @@ export default function ClientDashboard() {
                   <CardDescription>Send us an email with your questions</CardDescription>
                 </CardHeader>
                 <CardFooter className="flex justify-center">
-                  <Button variant="outline" className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300">
+                  <Button 
+                    variant="outline" 
+                    className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+                    onClick={() => window.location.href = 'mailto:support@aditeke.com?subject=Support%20Request%20from%20Client%20Portal'}
+                  >
                     Contact via Email
                   </Button>
                 </CardFooter>
