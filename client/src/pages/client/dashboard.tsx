@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   MessageSquare, FileText, Clock, CheckCircle2, 
   AlertCircle, ExternalLink, Download, Calendar, Loader2,
-  Receipt, DollarSign, CreditCard, FolderKanban 
+  Receipt, DollarSign, CreditCard, FolderKanban, Mail
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Project } from '@shared/schema';
