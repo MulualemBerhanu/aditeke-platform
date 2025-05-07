@@ -231,11 +231,18 @@ export default function ClientDashboard() {
             </div>
             
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                onClick={() => window.location.href = '/client/projects'}
+              >
                 <FolderKanban className="h-4 w-4 mr-2" />
                 View Projects
               </Button>
-              <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white">
+              <Button 
+                variant="outline" 
+                className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
+                onClick={() => window.location.href = '/client/messages'}
+              >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Contact Manager
               </Button>
@@ -956,7 +963,12 @@ export default function ClientDashboard() {
                   <CardDescription>Connect with our support team via live chat</CardDescription>
                 </CardHeader>
                 <CardFooter className="flex justify-center">
-                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">Start Conversation</Button>
+                  <Button 
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    onClick={() => window.location.href = '/client/messages'}
+                  >
+                    Start Conversation
+                  </Button>
                 </CardFooter>
               </Card>
               
