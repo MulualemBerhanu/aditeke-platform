@@ -2390,16 +2390,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post('/api/client-communications', authenticateJWT, async (req, res) => {
     try {
-      let newCommunication = req.body;
+      // Log the raw request body
+      console.log('RAW client communication request body:', req.body);
       
-      // Ensure communication has valid clientId
-      if (!newCommunication.clientId) {
-        // If no clientId provided, use the authenticated user's ID
-        console.log(`No clientId provided in communication request, using authenticated user ID: ${req.user?.id}`);
-        newCommunication = {
-          ...newCommunication,
-          clientId: req.user?.id
-        };
+      // Get authenticated user ID from req.user
+      const userId = req.user?.id;
+      console.log('Authenticated user ID:', userId);
+      
+      // Create a deep copy of the request body to avoid side effects
+      let newCommunication = JSON.parse(JSON.stringify(req.body));
+      
+      // Force set clientId to authenticated user ID (for client role)
+      if (req.user?.roleId === 1001) { // Client role
+        console.log(`User has client role, setting clientId to authenticated user ID: ${userId}`);
+        newCommunication.clientId = userId;
       }
       
       // Ensure clientId is a number
@@ -2407,20 +2411,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newCommunication.clientId = parseInt(newCommunication.clientId);
       }
       
-      // Log the communication data we're processing
-      console.log(`Processing communication request:`, {
-        clientId: newCommunication.clientId,
-        managerId: newCommunication.managerId,
-        subject: newCommunication.subject
-      });
+      // We'll bypass the authorization check if user is a client and has proper role
+      if (req.user?.roleId === 1001) {
+        console.log(`Client user ${userId} is authorized to send messages as themselves`);
+        
+        // Log the processed message data
+        console.log('Processed message data:', newCommunication);
+        
+        const communication = await storage.createClientCommunication(newCommunication);
+        console.log(`Created new communication: ${communication.id} for client ${communication.clientId}`);
+        return res.status(201).json(communication);
+      }
       
-      // Validate that the user can create communications for this client
-      // Either the user is the client or has manager/admin privileges
+      // For non-client roles, use the original authorization logic
       if (req.user?.id !== newCommunication.clientId && req.user?.roleId !== 1000 && req.user?.roleId !== 1002) {
         console.warn(`User ${req.user?.id} with role ${req.user?.roleId} attempted to create communication for client ${newCommunication.clientId}`);
         return res.status(403).json({ error: "Unauthorized to create messages for this client" });
       }
       
+      // If we get here, the user is authorized (manager or admin)
       const communication = await storage.createClientCommunication(newCommunication);
       console.log(`Created new communication: ${communication.id} for client ${communication.clientId}`);
       res.status(201).json(communication);
