@@ -185,85 +185,154 @@ const ClientSupport = () => {
     retry: 2, // Increase retries for authentication issues
   });
 
+  // Helper function to try multiple approaches for ticket status updates
+  const tryUpdateTicketStatus = async (ticketId: number, status: string) => {
+    console.log(`Attempting to update ticket ${ticketId} to status ${status} with multiple approaches`);
+    
+    // Prepare the status data
+    const statusData = { status };
+    
+    // Collection of error messages for better debugging
+    const errors: string[] = [];
+    
+    // 1. Try the POST endpoint first with direct fetch
+    try {
+      console.log(`📤 Approach 1: POST to /api/ticket-status-update/${ticketId}`);
+      console.log(`POST request data: ${JSON.stringify(statusData)}`);
+      
+      const postResponse = await fetch(`/api/ticket-status-update/${ticketId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+        },
+        body: JSON.stringify(statusData),
+        credentials: 'include'
+      });
+      
+      if (postResponse.ok) {
+        console.log(`✅ Successfully updated ticket ${ticketId} using POST endpoint`);
+        return await postResponse.json();
+      } else {
+        const errorText = await postResponse.text();
+        errors.push(`POST approach failed: ${postResponse.status} - ${errorText}`);
+        console.warn(`⚠️ POST approach failed: ${postResponse.status}`, errorText);
+      }
+    } catch (error) {
+      errors.push(`POST approach error: ${error.message}`);
+      console.warn(`⚠️ POST approach error:`, error);
+    }
+    
+    // 2. Try the PUT endpoint as a fallback
+    try {
+      console.log(`📤 Approach 2: PUT to /api/client-ticket-status/${ticketId}`);
+      
+      const putResponse = await fetch(`/api/client-ticket-status/${ticketId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+        },
+        body: JSON.stringify(statusData),
+        credentials: 'include'
+      });
+      
+      if (putResponse.ok) {
+        console.log(`✅ Successfully updated ticket ${ticketId} using PUT endpoint`);
+        return await putResponse.json();
+      } else {
+        const errorText = await putResponse.text();
+        errors.push(`PUT approach failed: ${putResponse.status} - ${errorText}`);
+        console.warn(`⚠️ PUT approach failed: ${putResponse.status}`, errorText);
+      }
+    } catch (error) {
+      errors.push(`PUT approach error: ${error.message}`);
+      console.warn(`⚠️ PUT approach error:`, error);
+    }
+    
+    // 3. Try the GET endpoint as last resort
+    try {
+      console.log(`📤 Approach 3: GET to /api/simple-resolve-ticket/${ticketId}/${status}`);
+      
+      const getResponse = await fetch(`/api/simple-resolve-ticket/${ticketId}/${status}`);
+      
+      if (getResponse.ok) {
+        console.log(`✅ Successfully updated ticket ${ticketId} using GET endpoint`);
+        return await getResponse.json();
+      } else {
+        const errorText = await getResponse.text();
+        errors.push(`GET approach failed: ${getResponse.status} - ${errorText}`);
+        console.warn(`⚠️ GET approach failed: ${getResponse.status}`, errorText);
+      }
+    } catch (error) {
+      errors.push(`GET approach error: ${error.message}`);
+      console.warn(`⚠️ GET approach error:`, error);
+    }
+    
+    // 4. Try our new minimal endpoint that's specially designed to be extremely robust
+    try {
+      console.log(`📤 Approach 4: POST to /api/minimal-ticket-update/${ticketId}/${status}`);
+      
+      const minimalResponse = await fetch(`/api/minimal-ticket-update/${ticketId}/${status}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+        },
+        credentials: 'include'
+      });
+      
+      if (minimalResponse.ok) {
+        console.log(`✅ Successfully updated ticket ${ticketId} using minimal endpoint`);
+        return await minimalResponse.json();
+      } else {
+        const errorText = await minimalResponse.text();
+        errors.push(`Minimal endpoint approach failed: ${minimalResponse.status} - ${errorText}`);
+        console.warn(`⚠️ Minimal endpoint approach failed: ${minimalResponse.status}`, errorText);
+      }
+    } catch (error) {
+      errors.push(`Minimal endpoint approach error: ${error.message}`);
+      console.warn(`⚠️ Minimal endpoint approach error:`, error);
+    }
+    
+    // 5. Try direct query parameter approach
+    try {
+      console.log(`📤 Approach 5: POST with query params to /api/ticket-status-update/${ticketId}?status=${status}`);
+      
+      const queryResponse = await fetch(`/api/ticket-status-update/${ticketId}?status=${status}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+        },
+        credentials: 'include'
+      });
+      
+      if (queryResponse.ok) {
+        console.log(`✅ Successfully updated ticket ${ticketId} using query parameter approach`);
+        return await queryResponse.json();
+      } else {
+        const errorText = await queryResponse.text();
+        errors.push(`Query param approach failed: ${queryResponse.status} - ${errorText}`);
+        console.warn(`⚠️ Query param approach failed: ${queryResponse.status}`, errorText);
+      }
+    } catch (error) {
+      errors.push(`Query param approach error: ${error.message}`);
+      console.warn(`⚠️ Query param approach error:`, error);
+    }
+    
+    // If all approaches failed, throw a comprehensive error
+    throw new Error(`All update approaches failed: ${errors.join('; ')}`);
+  };
+
   // Update ticket mutation using dedicated client endpoint for status updates
   const updateTicketMutation = useMutation({
     mutationFn: async ({ ticketId, updateData }: { ticketId: number, updateData: any }) => {
       try {
-        // Use the apiRequest helper which handles authentication properly
-        const { apiRequest } = await import('@/lib/queryClient');
-        
-        // Try multiple approaches for better reliability
-        // 1. First try the new POST-based endpoint
-        const postEndpoint = `/api/ticket-status-update/${ticketId}`;
-        
-        console.log(`Attempting to update ticket ${ticketId} using POST endpoint: ${postEndpoint}`);
-        console.log('Update data:', updateData);
-        
-        // Only send the status field to ensure we're sending minimal data
-        const statusData = { status: updateData.status };
-        console.log(`Sending status data: ${JSON.stringify(statusData)}`);
-        
-        try {
-          // Use direct fetch with explicit JSON content for most reliable operation
-          console.log(`POST request data: ${JSON.stringify(statusData)}`);
-          
-          const postResponse = await fetch(postEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-              'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
-            },
-            body: JSON.stringify(statusData),
-            credentials: 'include'
-          });
-          
-          if (postResponse.ok) {
-            console.log(`Successfully updated ticket ${ticketId} using POST endpoint`);
-            return await postResponse.json();
-          }
-          
-          console.warn(`POST update failed with status ${postResponse.status}, trying fallback approaches...`);
-        } catch (postError) {
-          console.warn('POST update failed:', postError);
-        }
-        
-        // 2. Try the PUT endpoint as a fallback with explicit content-type
-        const putEndpoint = `/api/client-ticket-status/${ticketId}`;
-        
-        console.log(`Trying fallback PUT endpoint: ${putEndpoint}`);
-        console.log(`PUT request data: ${JSON.stringify(statusData)}`);
-        
-        // Make sure we're sending the right content format
-        const putResponse = await fetch(putEndpoint, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-            'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
-          },
-          body: JSON.stringify(statusData),
-          credentials: 'include'
-        });
-        
-        if (putResponse.ok) {
-          console.log(`Successfully updated ticket ${ticketId} using PUT endpoint`);
-          return await putResponse.json();
-        }
-        
-        // 3. Last resort: simple GET endpoint
-        const getEndpoint = `/api/simple-resolve-ticket/${ticketId}/${updateData.status}`;
-        
-        console.log(`Trying simple GET endpoint as last resort: ${getEndpoint}`);
-        const getResponse = await fetch(getEndpoint);
-        
-        if (getResponse.ok) {
-          console.log(`Successfully updated ticket ${ticketId} using simple GET endpoint`);
-          return await getResponse.json();
-        }
-        
-        // If we get here, all approaches failed
-        throw new Error('All update attempts failed');
+        console.log(`Updating ticket ${ticketId} with data:`, updateData);
+        return await tryUpdateTicketStatus(ticketId, updateData.status);
       } catch (error) {
         console.error('Error updating support ticket:', error);
         throw error;

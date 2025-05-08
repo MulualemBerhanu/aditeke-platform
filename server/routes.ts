@@ -85,28 +85,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // NEW POST endpoint for ticket status updates (more reliable than PUT)
+  // Super simple status update endpoint that accepts any format of data
+  app.post("/api/minimal-ticket-update/:id/:status", async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id, 10);
+      const status = req.params.status;
+      
+      console.log(`MINIMAL-TICKET-UPDATE: Simple update for ticket ${ticketId} to status ${status}`);
+      
+      if (!ticketId || isNaN(ticketId)) {
+        return res.status(400).json({ error: "Invalid ticket ID" });
+      }
+      
+      if (!status || !['resolved', 'closed', 'open', 'in-progress'].includes(status)) {
+        return res.status(400).json({ 
+          error: `Invalid status: ${status}. Must be 'open', 'in-progress', 'resolved' or 'closed'` 
+        });
+      }
+      
+      // Get existing ticket
+      const existingTicket = await storage.getSupportTicket(ticketId);
+      
+      if (!existingTicket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // Update the ticket with minimal data
+      const updateObj = { 
+        status,
+        updatedAt: new Date() 
+      };
+      
+      const updatedTicket = await storage.updateSupportTicket(ticketId, updateObj);
+      
+      console.log(`MINIMAL-TICKET-UPDATE: Successfully updated ticket ${ticketId} to status ${status}`);
+      return res.status(200).json(updatedTicket);
+    } catch (error) {
+      console.error("MINIMAL-TICKET-UPDATE: Error updating ticket:", error);
+      return res.status(500).json({ error: "Failed to update ticket" });
+    }
+  });
+  
   app.post("/api/ticket-status-update/:id", async (req, res) => {
     try {
       const ticketId = parseInt(req.params.id, 10);
       
-      // Get status from either body, query params, or URL
+      // Get status from either body, query params, or URL 
+      // with enhanced parsing to handle various formats
       let status = null;
       
-      // Check for status in the request body
-      if (req.body && req.body.status) {
-        status = req.body.status;
-      } 
-      // Check URL query parameters
-      else if (req.query && req.query.status) {
+      console.log("Request body format:", typeof req.body, req.body);
+      console.log("Content-Type:", req.headers['content-type']);
+      
+      // Handle different body formats
+      if (req.body) {
+        // If body is a string (raw JSON), try to parse it
+        if (typeof req.body === 'string') {
+          try {
+            const parsedBody = JSON.parse(req.body);
+            if (parsedBody && parsedBody.status) {
+              status = parsedBody.status;
+            }
+          } catch (parseError) {
+            console.error("Failed to parse request body:", parseError);
+            // Continue to other checks if parsing fails
+          }
+        } 
+        // If body is already an object
+        else if (typeof req.body === 'object') {
+          if (req.body.status) {
+            status = req.body.status;
+          }
+        }
+      }
+      
+      // If status wasn't found in body, check URL query parameters
+      if (!status && req.query && req.query.status) {
         status = req.query.status as string;
       }
       
+      // If status is still not found, check URL path parameters
+      if (!status && req.params && req.params.status) {
+        status = req.params.status;
+      }
+      
       console.log(`TICKET-STATUS-UPDATE: Updating ticket ${ticketId} to status ${status}`);
-      console.log("Request details:", {
+      console.log("Full request details:", {
         body: req.body,
+        rawBody: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
         query: req.query,
         params: req.params,
-        contentType: req.headers['content-type']
+        contentType: req.headers['content-type'],
+        statusFound: !!status
       });
       
       if (!ticketId || isNaN(ticketId)) {
@@ -114,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (!status) {
-        return res.status(400).json({ error: "Status is required" });
+        return res.status(400).json({ error: "Status is required. Please provide status in request body, query parameters, or URL path." });
       }
       
       if (!['resolved', 'closed', 'open', 'in-progress'].includes(status)) {
