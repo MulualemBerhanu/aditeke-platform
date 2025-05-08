@@ -96,7 +96,13 @@ const ClientSupport = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [clientId, setClientId] = useState<number | null>(null);
-  const [activeTicketId, setActiveTicketId] = useState<number | null>(null);
+  
+  // Get ticket ID from URL parameters
+  const params = useParams();
+  const urlTicketId = params.id ? parseInt(params.id, 10) : null;
+  
+  // Use URL parameter for activeTicketId if available
+  const [activeTicketId, setActiveTicketId] = useState<number | null>(urlTicketId);
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [newTicket, setNewTicket] = useState({
@@ -125,6 +131,14 @@ const ClientSupport = () => {
       }
     }
   }, [user]);
+  
+  // Auto-select ticket from URL parameter on load
+  useEffect(() => {
+    if (urlTicketId && urlTicketId !== activeTicketId) {
+      console.log(`Setting active ticket from URL parameter: ${urlTicketId}`);
+      setActiveTicketId(urlTicketId);
+    }
+  }, [urlTicketId]);
 
   // Fetch client support tickets
   const { data: tickets, isLoading, error } = useQuery({
@@ -295,12 +309,37 @@ const ClientSupport = () => {
   });
 
   const handleTicketClick = (ticketId: number) => {
+    // Update state
     setActiveTicketId(ticketId);
+    
+    // Update URL without full page reload for better navigation
+    const newUrl = `/client/support/${ticketId}`;
+    window.history.pushState({}, '', newUrl);
   };
 
   const getActiveTicket = (): SupportTicket | null | undefined => {
     // Use the fetched ticket data if available, otherwise fall back to the ticket from the list
-    return activeTicketData || tickets?.find((t: SupportTicket) => t.id === activeTicketId);
+    const ticket = activeTicketData || tickets?.find((t: SupportTicket) => t.id === activeTicketId);
+    
+    // Ensure we return a ticket with all the expected properties even if some are missing
+    if (ticket) {
+      return {
+        id: ticket.id,
+        clientId: ticket.clientId,
+        title: ticket.title || ticket.subject || 'Support Request',
+        subject: ticket.subject || ticket.title || 'Support Request',
+        description: ticket.description || 'No description provided',
+        status: ticket.status || 'open',
+        priority: ticket.priority || 'medium',
+        category: ticket.category || 'General',
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt || null,
+        assignedTo: ticket.assignedTo || null,
+        assigneeName: ticket.assigneeName || 'Unassigned'
+      };
+    }
+    
+    return null;
   };
 
   const filteredFaqs = faqData.filter(faq => 
@@ -578,7 +617,7 @@ const ClientSupport = () => {
                         <CardHeader className="pb-2 border-b">
                           <div className="flex justify-between items-start">
                             <div>
-                              <CardTitle>{getActiveTicket()?.title || getActiveTicket()?.subject || 'Support Request'}</CardTitle>
+                              <CardTitle>{getActiveTicket()?.title}</CardTitle>
                               <CardDescription className="mt-1">
                                 <div className="flex items-center flex-wrap gap-2">
                                   <Badge className={`${
@@ -588,26 +627,21 @@ const ClientSupport = () => {
                                     'bg-slate-500'
                                   }`}>
                                     {getActiveTicket()?.status === 'in-progress' ? 'In Progress' : 
-                                     getActiveTicket()?.status && typeof getActiveTicket()?.status === 'string' 
-                                       ? getActiveTicket()?.status.charAt(0).toUpperCase() + getActiveTicket()?.status.slice(1)
-                                       : 'Open'}
+                                    (getActiveTicket()?.status ? getActiveTicket()?.status.charAt(0).toUpperCase() + getActiveTicket()?.status.slice(1) : 'Open')}
                                   </Badge>
-                                  {getActiveTicket()?.priority && (
-                                    <Badge className={`${
-                                      getActiveTicket()?.priority === 'urgent' ? 'bg-red-500' :
-                                      getActiveTicket()?.priority === 'high' ? 'bg-amber-500' :
-                                      getActiveTicket()?.priority === 'medium' ? 'bg-indigo-500' :
-                                      'bg-green-500'
-                                    }`}>
-                                      {typeof getActiveTicket()?.priority === 'string'
-                                        ? getActiveTicket()?.priority.charAt(0).toUpperCase() + getActiveTicket()?.priority.slice(1)
-                                        : 'Normal'} Priority
-                                    </Badge>
-                                  )}
+                                  <Badge className={`${
+                                    getActiveTicket()?.priority === 'urgent' ? 'bg-red-500' :
+                                    getActiveTicket()?.priority === 'high' ? 'bg-amber-500' :
+                                    getActiveTicket()?.priority === 'medium' ? 'bg-indigo-500' :
+                                    'bg-green-500'
+                                  }`}>
+                                    {getActiveTicket()?.priority ? 
+                                      getActiveTicket()?.priority.charAt(0).toUpperCase() + getActiveTicket()?.priority.slice(1) : 'Normal'} Priority
+                                  </Badge>
                                   <span className="text-sm text-slate-500">
                                     Created {getActiveTicket()?.createdAt
                                       ? formatDistance(
-                                          new Date(getActiveTicket()?.createdAt || new Date()), 
+                                          new Date(getActiveTicket()?.createdAt), 
                                           new Date(), 
                                           { addSuffix: true }
                                         )
