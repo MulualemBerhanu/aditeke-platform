@@ -2200,70 +2200,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
-    // Check if we have a token
-    const tokenExists = !!req.cookies?.csrf_token;
-    
-    // Force generate a new token for Replit environments to ensure it's always valid
-    const isReplitEnv = req.hostname.includes('replit.dev') || 
-                        req.hostname.includes('replit.app') ||
-                        process.env.NODE_ENV === 'development';
-    
-    // If no token exists or we're in Replit, generate a new one
-    if (!tokenExists || isReplitEnv) {
-      const newToken = require('crypto').randomBytes(32).toString('hex');
+    try {
+      // Check if we have a token
+      const tokenExists = !!req.cookies?.csrf_token;
       
-      // Determine cookie settings based on environment
-      const cookieSettings = {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const,
-        path: '/',
-        maxAge: 24 * 60 * 60 * 1000
-      };
+      // Force generate a new token for Replit environments to ensure it's always valid
+      const isReplitEnv = req.hostname.includes('replit.dev') || 
+                          req.hostname.includes('replit.app') ||
+                          process.env.NODE_ENV === 'development';
       
-      // Adjust for Replit environments
-      if (isReplitEnv) {
-        cookieSettings.secure = false;
-        cookieSettings.sameSite = 'lax';
+      // If no token exists or we're in Replit, generate a new one
+      if (!tokenExists || isReplitEnv) {
+        const newToken = require('crypto').randomBytes(32).toString('hex');
+        
+        // Determine cookie settings based on environment
+        const cookieSettings = {
+          httpOnly: false,
+          secure: false, // Always false for testing
+          sameSite: 'lax' as const,
+          path: '/',
+          maxAge: 24 * 60 * 60 * 1000
+        };
+        
+        res.cookie('csrf_token', newToken, cookieSettings);
+        
+        console.log('Generated new CSRF token for client:', newToken);
+        
+        return res.json({
+          message: "New CSRF token generated and set in cookie",
+          csrfToken: newToken
+        });
+      } else {
+        console.log('Using existing CSRF token from cookie:', req.cookies.csrf_token);
+        
+        return res.json({
+          message: "Using existing CSRF token from cookie",
+          csrfToken: req.cookies.csrf_token
+        });
       }
-      
-      res.cookie('csrf_token', newToken, cookieSettings);
-      
-      console.log('Generated new CSRF token for client:', newToken);
-      
-      res.json({
-        message: "New CSRF token generated and set in cookie",
-        csrfToken: newToken
-      });
-    } else {
-      console.log('Using existing CSRF token from cookie:', req.cookies.csrf_token);
-      
-      res.json({
-        message: "Using existing CSRF token from cookie",
-        csrfToken: req.cookies.csrf_token
+    } catch (error) {
+      console.error('Error in CSRF test endpoint:', error);
+      return res.status(500).json({
+        message: "Error generating CSRF token",
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });
   
   // Test endpoint that requires CSRF protection (POST) but not authentication
   app.post("/api/public/csrf-test", (req, res) => {
-    // Log CSRF token information to help debug
-    console.log('CSRF Debug Info:');
-    console.log('- Cookie token:', req.cookies?.csrf_token);
-    console.log('- Header token:', req.headers['x-csrf-token']);
-    console.log('- Request method:', req.method);
-    console.log('- Request path:', req.path);
-    
-    res.json({
-      success: true,
-      message: "CSRF protected POST request successful",
-      requestBody: req.body,
-      csrfInfo: {
-        cookieToken: req.cookies?.csrf_token || 'No cookie token',
-        headerToken: req.headers['x-csrf-token'] || 'No header token',
-        tokensMatch: req.cookies?.csrf_token === req.headers['x-csrf-token']
+    try {
+      // Log CSRF token information to help debug
+      console.log('CSRF Debug Info:');
+      console.log('- Cookie token:', req.cookies?.csrf_token);
+      console.log('- Header token:', req.headers['x-csrf-token']);
+      console.log('- Request method:', req.method);
+      console.log('- Request path:', req.path);
+      console.log('- Request body:', req.body);
+      console.log('- Raw body exists:', !!req.rawBody);
+      
+      // Parse raw body as a fallback if req.body is empty
+      let parsedBody = req.body;
+      if (req.rawBody && Object.keys(req.body || {}).length === 0) {
+        try {
+          parsedBody = JSON.parse(req.rawBody);
+          console.log('Parsed raw body as fallback:', parsedBody);
+        } catch (parseError) {
+          console.error('Failed to parse raw body:', parseError);
+        }
       }
-    });
+      
+      return res.json({
+        success: true,
+        message: "CSRF protected POST request successful",
+        requestBody: parsedBody || req.body,
+        csrfInfo: {
+          cookieToken: req.cookies?.csrf_token || 'No cookie token',
+          headerToken: req.headers['x-csrf-token'] || 'No header token',
+          tokensMatch: req.cookies?.csrf_token === req.headers['x-csrf-token']
+        }
+      });
+    } catch (error) {
+      console.error('Error in CSRF test POST endpoint:', error);
+      return res.status(500).json({
+        message: "Error processing CSRF test",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
   });
   
   // Public endpoint to get a project by ID - requires no authentication
