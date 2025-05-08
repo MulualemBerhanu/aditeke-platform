@@ -51,8 +51,37 @@ export default function ManagerDashboard() {
   const [isAssignProjectDialogOpen, setIsAssignProjectDialogOpen] = React.useState(false);
   const [clientToDelete, setClientToDelete] = React.useState<{ id: string | number, name: string } | null>(null);
   
-  // Check for force refresh flag
+  // Check for force refresh flag and handle token expiration
   useEffect(() => {
+    // Check for JWT token expiration
+    const tokenExpired = () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return true;
+      
+      try {
+        // Simple check for token format
+        const parts = token.split('.');
+        if (parts.length !== 3) return true;
+        
+        // Decode payload
+        const payload = JSON.parse(atob(parts[1]));
+        
+        // Check expiration (exp is in seconds)
+        return payload.exp && payload.exp * 1000 < Date.now();
+      } catch (e) {
+        console.error('Error checking token expiration:', e);
+        return true;
+      }
+    };
+    
+    // If token is expired, redirect to login
+    if (tokenExpired()) {
+      console.log("⚠️ Authentication token expired, redirecting to login");
+      localStorage.setItem('redirectAfterLogin', '/manager/dashboard');
+      setLocation('/login');
+      return;
+    }
+    
     const forceRefresh = localStorage.getItem('forceRefresh');
     if (forceRefresh === 'true') {
       console.log("🔄 Force refreshing manager dashboard");
@@ -1212,6 +1241,25 @@ export default function ManagerDashboard() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Support Tickets Section */}
+                  <div id="support-tickets-section" className="mt-12 pt-8 border-t">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h3 className="text-2xl font-bold">Client Support Tickets</h3>
+                        <p className="text-muted-foreground mt-1">
+                          Manage and respond to all client support inquiries
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="gap-1">
+                          <Download className="h-4 w-4" />
+                          Export
+                        </Button>
+                      </div>
+                    </div>
+                    <ManagerSupportTickets selectedClientId={null} />
+                  </div>
                 </CardContent>
               </Card>
             )}
