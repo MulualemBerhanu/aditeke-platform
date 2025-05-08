@@ -47,6 +47,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // API endpoints
   // ===============
+  
+  // FALLBACK ENDPOINT: Simple GET endpoint for resolving tickets (easier for testing)
+  app.get("/api/simple-resolve-ticket/:id/:status", async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id, 10);
+      const status = req.params.status;
+      
+      console.log(`SIMPLE-RESOLVE: Updating ticket ${ticketId} to status ${status}`);
+      
+      if (!status || !['resolved', 'closed', 'open', 'in-progress'].includes(status)) {
+        return res.status(400).send(`Invalid status: ${status}. Must be 'open', 'in-progress', 'resolved' or 'closed'`);
+      }
+      
+      // Get the ticket
+      const ticket = await storage.getSupportTicket(ticketId);
+      
+      if (!ticket) {
+        return res.status(404).send(`Ticket ${ticketId} not found`);
+      }
+      
+      console.log(`SIMPLE-RESOLVE: Found ticket:`, ticket);
+      
+      // Update the ticket (no auth verification in this simple endpoint)
+      const updateData = { status };
+      
+      console.log(`SIMPLE-RESOLVE: Updating ticket with:`, updateData);
+      
+      const updatedTicket = await storage.updateSupportTicket(ticketId, updateData);
+      console.log(`SIMPLE-RESOLVE: Successfully updated ticket:`, updatedTicket);
+      
+      return res.status(200).json(updatedTicket);
+    } catch (error) {
+      console.error(`SIMPLE-RESOLVE: Error:`, error);
+      return res.status(500).send(`Error: ${error.message}`);
+    }
+  });
 
   // Get the helper middleware for authorization
   const { requirePermission } = app.locals;

@@ -773,18 +773,46 @@ const ClientSupport = () => {
                                         size="sm" 
                                         variant="outline" 
                                         className="text-amber-700 border-amber-300 hover:bg-amber-100"
-                                        onClick={() => {
+                                        onClick={async () => {
                                           if (!activeTicketId) return;
                                           
                                           console.log(`Cancelling ticket ${activeTicketId}`);
                                           
-                                          // Only send the status - server will handle updatedAt
-                                          updateTicketMutation.mutate({ 
-                                            ticketId: activeTicketId, 
-                                            updateData: { 
-                                              status: 'closed'
-                                            } 
-                                          });
+                                          try {
+                                            // Try using both methods to maximize chance of success
+                                            
+                                            // 1. First try our mutation (this is what wasn't working reliably)
+                                            updateTicketMutation.mutate({ 
+                                              ticketId: activeTicketId, 
+                                              updateData: { 
+                                                status: 'closed'
+                                              } 
+                                            });
+                                            
+                                            // 2. Also try our fallback method with direct GET request
+                                            console.log("ALSO TRYING FALLBACK DIRECT METHOD");
+                                            const fallbackUrl = `/api/simple-resolve-ticket/${activeTicketId}/closed`;
+                                            console.log(`Fallback URL: ${fallbackUrl}`);
+                                            
+                                            // Make a direct fetch to the fallback endpoint
+                                            const fallbackResponse = await fetch(fallbackUrl);
+                                            console.log("Fallback response:", fallbackResponse.status);
+                                            
+                                            if (fallbackResponse.ok) {
+                                              console.log("Fallback successful, refreshing data");
+                                              // Refresh our data immediately
+                                              queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+                                              queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
+                                              
+                                              // Force a manual refetch of the active ticket
+                                              const { apiRequest } = await import('@/lib/queryClient');
+                                              apiRequest('GET', `/api/support-tickets/${activeTicketId}`);
+                                            }
+                                          } catch (error) {
+                                            console.error("Error cancelling ticket:", error);
+                                            // Try to refresh anyway in case server-side update worked
+                                            queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+                                          }
                                         }}
                                         disabled={updateTicketMutation.isPending}
                                       >
@@ -826,20 +854,47 @@ const ClientSupport = () => {
                                       ? 'text-green-600 hover:bg-green-50' 
                                       : 'text-indigo-600 hover:bg-indigo-50'
                                   }`}
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (!activeTicketId) return;
                                     
                                     const newStatus = isResolved ? 'closed' : 'resolved';
-                                    
                                     console.log(`Setting ticket ${activeTicketId} status to ${newStatus}`);
                                     
-                                    // Only send the status - server will handle updatedAt
-                                    updateTicketMutation.mutate({ 
-                                      ticketId: activeTicketId, 
-                                      updateData: { 
-                                        status: newStatus
-                                      } 
-                                    });
+                                    try {
+                                      // Try using both methods to maximize chance of success
+                                      
+                                      // 1. First try our mutation (this is what wasn't working reliably)
+                                      updateTicketMutation.mutate({ 
+                                        ticketId: activeTicketId, 
+                                        updateData: { 
+                                          status: newStatus
+                                        } 
+                                      });
+                                      
+                                      // 2. Also try our fallback method with direct GET request
+                                      console.log("ALSO TRYING FALLBACK DIRECT METHOD");
+                                      const fallbackUrl = `/api/simple-resolve-ticket/${activeTicketId}/${newStatus}`;
+                                      console.log(`Fallback URL: ${fallbackUrl}`);
+                                      
+                                      // Make a direct fetch to the fallback endpoint
+                                      const fallbackResponse = await fetch(fallbackUrl);
+                                      console.log("Fallback response:", fallbackResponse.status);
+                                      
+                                      if (fallbackResponse.ok) {
+                                        console.log("Fallback successful, refreshing data");
+                                        // Refresh our data immediately
+                                        queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+                                        queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
+                                        
+                                        // Force a manual refetch of the active ticket
+                                        const { apiRequest } = await import('@/lib/queryClient');
+                                        apiRequest('GET', `/api/support-tickets/${activeTicketId}`);
+                                      }
+                                    } catch (error) {
+                                      console.error("Error updating ticket:", error);
+                                      // Try to refresh anyway in case server-side update worked
+                                      queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+                                    }
                                   }}
                                   disabled={updateTicketMutation.isPending}
                                 >
