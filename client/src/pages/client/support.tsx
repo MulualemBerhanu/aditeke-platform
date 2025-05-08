@@ -679,7 +679,8 @@ const ClientSupport = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <CardTitle>{getActiveTicket()?.title}</CardTitle>
-                              <CardDescription className="mt-1">
+                              {/* Using div instead of CardDescription to avoid DOM nesting issues */}
+                              <div className="mt-1 text-sm text-muted-foreground">
                                 <div className="flex items-center flex-wrap gap-2">
                                   <Badge className={`${
                                     getActiveTicket()?.status === 'open' ? 'bg-amber-500' :
@@ -720,7 +721,7 @@ const ClientSupport = () => {
                                     })()}
                                   </span>
                                 </div>
-                              </CardDescription>
+                              </div>
                             </div>
                           </div>
                         </CardHeader>
