@@ -225,6 +225,16 @@ export default function LoginPage() {
 
         console.log('CSRF token for login request:', csrfToken ? 'Found' : 'Not found');
         
+        // Debug mode alert for developers
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname.includes('.replit.dev');
+                             
+        if (isDevelopment) {
+          console.log('⚠️ EMERGENCY LOGIN MODE - Development environment detected');
+          console.log('Username:', data.username);
+          console.log('Login role selected:', selectedRole ? selectedRole.name : 'None');
+        }
+        
         // Normal authentication flow using API
         const response = await fetch('/api/login', {
           method: 'POST',
@@ -240,10 +250,36 @@ export default function LoginPage() {
         });
         
         if (!response.ok) {
-          throw new Error('Authentication failed. Please check your credentials.');
+          // Try to get error details if available
+          let errorDetails = 'Authentication failed. Please check your credentials.';
+          try {
+            const errorData = await response.json();
+            errorDetails = errorData.message || errorDetails;
+          } catch (e) {
+            // Ignore JSON parsing error
+          }
+          
+          throw new Error(errorDetails);
         }
         
-        userData = await response.json();
+        let responseData;
+        try {
+          responseData = await response.json();
+          userData = responseData;
+        } catch (parseError) {
+          console.error('Failed to parse login response:', parseError);
+          throw new Error('Server returned invalid data format. Please try again.');
+        }
+        
+        // Log success in development mode
+        if (isDevelopment && responseData) {
+          console.log('Login successful!', {
+            userId: responseData.id,
+            username: responseData.username,
+            roleId: responseData.roleId,
+            roleName: responseData.roleName || 'unknown'
+          });
+        }
       } catch (error) {
         // Try the context login as fallback
         if (!isDeployedEnv) {
