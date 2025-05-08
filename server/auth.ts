@@ -569,8 +569,14 @@ export function setupAuth(app: Express) {
 
   // Middleware to verify token authentication for cross-domain requests
   const verifyTokenAuth = async (req: Request, res: Response, next: NextFunction) => {
-    // DEVELOPMENT BYPASS - Skip token auth in development
-    if (process.env.NODE_ENV === 'development' && req.path !== '/api/login' && req.path !== '/api/register') {
+    // ALWAYS bypass auth checks for login and registration endpoints
+    if (req.path === '/api/login' || req.path === '/api/register') {
+      console.log(`⚠️ BYPASSING TOKEN AUTH for AUTH endpoint: ${req.path}`);
+      return next();
+    }
+    
+    // DEVELOPMENT BYPASS - Skip token auth in development for non-auth endpoints
+    if (process.env.NODE_ENV === 'development') {
       console.log(`⚠️ BYPASSING TOKEN AUTH for ${req.path} (development mode)`);
       return next();
     }
