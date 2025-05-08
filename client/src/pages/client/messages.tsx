@@ -216,6 +216,50 @@ const ClientMessages = () => {
       attachments: {} // Empty attachments for now
     });
   };
+  
+  const handleReplyMessage = () => {
+    if (!replyMessage.subject.trim() || !replyMessage.content.trim()) {
+      toast({
+        title: 'Warning',
+        description: 'Please enter both subject and message content',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!clientId) {
+      toast({
+        title: 'Error',
+        description: 'Client ID not available',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const activeMessage = getActiveMessage();
+    if (!activeMessage) {
+      toast({
+        title: 'Error',
+        description: 'Original message not found',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Send reply to same manager as the original message
+    sendMessageMutation.mutate({
+      clientId: clientId,
+      managerId: activeMessage.managerId, // Reply to the same manager
+      subject: replyMessage.urgent ? `[URGENT] ${replyMessage.subject}` : replyMessage.subject,
+      message: replyMessage.content,
+      type: replyMessage.urgent ? 'urgent' : 'standard',
+      isRead: false,
+      attachments: {} // Empty attachments for now
+    });
+    
+    // Close the reply dialog after sending
+    setReplyMessageOpen(false);
+  };
 
   const handleMessageClick = (messageId: number) => {
     setActiveMessageId(messageId);
@@ -308,6 +352,57 @@ const ClientMessages = () => {
                     className="bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
+            {/* Reply Message Dialog */}
+            <Dialog open={replyMessageOpen} onOpenChange={setReplyMessageOpen}>
+              <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle>Reply to Message</DialogTitle>
+                  <DialogDescription>
+                    Send a reply to this message
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="reply-subject">Subject</Label>
+                    <Input
+                      id="reply-subject"
+                      placeholder="Message subject"
+                      value={replyMessage.subject}
+                      onChange={(e) => setReplyMessage({...replyMessage, subject: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="reply-message">Message</Label>
+                    <Textarea
+                      id="reply-message"
+                      placeholder="Type your reply here..."
+                      rows={6}
+                      value={replyMessage.content}
+                      onChange={(e) => setReplyMessage({...replyMessage, content: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="reply-urgent"
+                      checked={replyMessage.urgent}
+                      onCheckedChange={(checked) => setReplyMessage({...replyMessage, urgent: checked})}
+                    />
+                    <Label htmlFor="reply-urgent">Mark as urgent</Label>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setReplyMessageOpen(false)}>Cancel</Button>
+                  <Button 
+                    onClick={handleReplyMessage}
+                    disabled={sendMessageMutation.isPending}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    {sendMessageMutation.isPending ? 'Sending...' : 'Send Reply'}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -486,7 +581,21 @@ const ClientMessages = () => {
                       </div>
                     </CardContent>
                     <CardFooter className="border-t pt-4 flex justify-between">
-                      <Button variant="outline">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          // Populate reply form with active message subject and prepare for reply
+                          const activeMessage = getActiveMessage();
+                          if (activeMessage) {
+                            setReplyMessage({
+                              subject: activeMessage.subject ? `Re: ${activeMessage.subject.replace(/^Re: /, '')}` : '',
+                              content: '',
+                              urgent: false
+                            });
+                            setReplyMessageOpen(true);
+                          }
+                        }}
+                      >
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Reply
                       </Button>
