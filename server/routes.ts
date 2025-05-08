@@ -2390,7 +2390,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post('/api/client-communications', authenticateJWT, async (req, res) => {
     try {
-      const newCommunication = req.body;
+      let newCommunication = req.body;
+      
+      // Ensure communication has valid clientId
+      if (!newCommunication.clientId) {
+        // If no clientId provided, use the authenticated user's ID
+        console.log(`No clientId provided in communication request, using authenticated user ID: ${req.user?.id}`);
+        newCommunication = {
+          ...newCommunication,
+          clientId: req.user?.id
+        };
+      }
+      
+      // Ensure clientId is a number
+      if (typeof newCommunication.clientId === 'string') {
+        newCommunication.clientId = parseInt(newCommunication.clientId);
+      }
+      
+      // Log the communication data we're processing
+      console.log(`Processing communication request:`, {
+        clientId: newCommunication.clientId,
+        managerId: newCommunication.managerId,
+        subject: newCommunication.subject
+      });
       
       // Validate that the user can create communications for this client
       // Either the user is the client or has manager/admin privileges
