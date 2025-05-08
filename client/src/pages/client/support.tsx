@@ -140,7 +140,7 @@ const ClientSupport = () => {
     }
   }, [urlTicketId]);
 
-  // Fetch client support tickets
+  // Fetch client support tickets (using updated endpoint)
   const { data: tickets, isLoading, error } = useQuery({
     queryKey: ['/api/client-support-tickets', clientId],
     queryFn: async () => {
@@ -150,11 +150,24 @@ const ClientSupport = () => {
       try {
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
-        const response = await apiRequest('GET', `/api/client-support-tickets/${clientId}`);
+        
+        // Try the client-specific endpoint first, fall back to the direct one if needed
+        let response = await apiRequest('GET', `/api/client-support-tickets/${clientId}`);
+        let retryWithDirectEndpoint = false;
         
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to fetch support tickets');
+          console.log(`Client-specific endpoint failed, trying direct endpoint`);
+          retryWithDirectEndpoint = true;
+        }
+        
+        // If the client-specific endpoint failed, try the direct endpoint
+        if (retryWithDirectEndpoint) {
+          response = await apiRequest('GET', `/api/client-support-tickets/by-client/${clientId}`);
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch support tickets');
+          }
         }
         
         const data = await response.json();
@@ -212,7 +225,15 @@ const ClientSupport = () => {
       try {
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
-        const response = await apiRequest('POST', '/api/client-support-tickets', ticketData);
+        console.log('Sending ticket data to API:', ticketData);
+        
+        // Use the fixed endpoint instead of client-support-tickets
+        const response = await apiRequest('POST', '/api/support-tickets', {
+          ...ticketData,
+          // Ensure we're sending the right fields
+          subject: ticketData.title || ticketData.subject,
+          description: ticketData.description
+        });
         
         if (!response.ok) {
           const errorData = await response.json();
