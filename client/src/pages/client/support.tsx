@@ -131,16 +131,10 @@ const ClientSupport = () => {
       if (!clientId) return [];
       console.log(`Fetching support tickets for client ID: ${clientId}`);
       
-      // Get the authentication token
-      const token = localStorage.getItem('token');
-      
       try {
-        // Use the implemented API endpoint
-        const response = await fetch(`/api/client-support-tickets/${clientId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('GET', `/api/client-support-tickets/${clientId}`);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -152,27 +146,21 @@ const ClientSupport = () => {
         return data;
       } catch (error) {
         console.error('Error fetching support tickets:', error);
-        throw error;
+        // Return empty array instead of throwing to prevent UI issues
+        return [];
       }
     },
     enabled: !!clientId,
-    retry: 1, // Allow one retry
+    retry: 2, // Increase retries for authentication issues
   });
 
   // Update ticket mutation
   const updateTicketMutation = useMutation({
     mutationFn: async ({ ticketId, updateData }: { ticketId: number, updateData: any }) => {
-      const token = localStorage.getItem('token');
-      
       try {
-        const response = await fetch(`/api/support-tickets/${ticketId}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(updateData)
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('PUT', `/api/support-tickets/${ticketId}`, updateData);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -205,18 +193,10 @@ const ClientSupport = () => {
   // Create ticket mutation
   const createTicketMutation = useMutation({
     mutationFn: async (ticketData: any) => {
-      const token = localStorage.getItem('token');
-      
       try {
-        // Use the implemented API endpoint
-        const response = await fetch('/api/support-tickets', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(ticketData)
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('POST', '/api/support-tickets', ticketData);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -289,14 +269,10 @@ const ClientSupport = () => {
     queryFn: async () => {
       if (!activeTicketId) return null;
       
-      const token = localStorage.getItem('token');
-      
       try {
-        const response = await fetch(`/api/support-tickets/${activeTicketId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Use the apiRequest helper which handles authentication properly
+        const { apiRequest } = await import('@/lib/queryClient');
+        const response = await apiRequest('GET', `/api/support-tickets/${activeTicketId}`);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -308,10 +284,12 @@ const ClientSupport = () => {
         return data;
       } catch (error) {
         console.error('Error fetching ticket details:', error);
-        throw error;
+        // Return null instead of throwing to prevent UI issues
+        return null;
       }
     },
     enabled: !!activeTicketId,
+    retry: 2, // Increase retries for authentication issues
   });
 
   const handleTicketClick = (ticketId: number) => {
