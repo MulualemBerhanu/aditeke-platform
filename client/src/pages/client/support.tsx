@@ -775,11 +775,14 @@ const ClientSupport = () => {
                                         className="text-amber-700 border-amber-300 hover:bg-amber-100"
                                         onClick={() => {
                                           if (!activeTicketId) return;
+                                          
+                                          console.log(`Cancelling ticket ${activeTicketId}`);
+                                          
+                                          // Only send the status - server will handle updatedAt
                                           updateTicketMutation.mutate({ 
                                             ticketId: activeTicketId, 
                                             updateData: { 
-                                              status: 'closed',
-                                              updatedAt: new Date().toISOString()
+                                              status: 'closed'
                                             } 
                                           });
                                         }}
@@ -828,11 +831,13 @@ const ClientSupport = () => {
                                     
                                     const newStatus = isResolved ? 'closed' : 'resolved';
                                     
+                                    console.log(`Setting ticket ${activeTicketId} status to ${newStatus}`);
+                                    
+                                    // Only send the status - server will handle updatedAt
                                     updateTicketMutation.mutate({ 
                                       ticketId: activeTicketId, 
                                       updateData: { 
-                                        status: newStatus,
-                                        updatedAt: new Date().toISOString()
+                                        status: newStatus
                                       } 
                                     });
                                   }}
