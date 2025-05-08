@@ -7,6 +7,7 @@ import { initializeDatabase } from "./db-init";
 import { updateFirebaseIds } from "./update-id-schema";
 import { authenticateJWT } from "./utils/authMiddleware";
 import { verifyToken } from "./utils/jwt";
+import { generateSimpleCsrfToken } from "./utils/simpleCsrf";
 import PDFDocument from "pdfkit";
 import authRoutes from "./routes/auth-routes";
 import userRoutes from "./routes/user-routes";
@@ -2201,18 +2202,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
     try {
-      // Use a simpler approach for token generation to avoid issues with crypto
-      // Create a random token using Math.random (not for production-critical uses)
-      const timestamp = Date.now().toString();
-      const random = Math.random().toString(36).substring(2, 15);
-      const token = timestamp + '-' + random;
+      // Use our simplified CSRF token generator
+      const token = generateSimpleCsrfToken();
       
       // Log the process for debugging
       console.log('Generating new CSRF token for request from:', req.ip);
       
       // Set the token as a cookie that is accessible from JavaScript
-      const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-      
       res.cookie('csrf_token', token, { 
         httpOnly: false, 
         secure: false, // Allow non-secure for testing

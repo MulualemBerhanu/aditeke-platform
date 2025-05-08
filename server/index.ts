@@ -3,7 +3,8 @@ import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage, PostgresStorage } from "./storage";
-import { setCsrfToken, validateCsrfToken } from "./utils/csrf";
+// Use our simpler CSRF implementation to avoid crypto issues
+import { setSimpleCsrfToken, validateSimpleCsrfToken } from "./utils/simpleCsrf";
 import 'dotenv/config';
 
 const app = express();
@@ -128,9 +129,9 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Parse cookies for CSRF validation
 
-// Add CSRF protection
-app.use(setCsrfToken); // Inject CSRF token into HTML responses
-app.use(validateCsrfToken); // Protect against CSRF attacks
+// Add CSRF protection using our simplified implementation
+app.use(setSimpleCsrfToken); // Inject CSRF token into HTML responses
+app.use(validateSimpleCsrfToken); // Protect against CSRF attacks
 
 app.use((req, res, next) => {
   const start = Date.now();
