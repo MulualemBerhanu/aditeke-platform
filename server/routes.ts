@@ -671,41 +671,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Simple dedicated endpoint for clients to update their ticket status
   app.put("/api/client-ticket-status/:id", authenticateJWT, async (req, res) => {
+    console.log("Client ticket status update endpoint hit", {
+      body: req.body,
+      params: req.params,
+      auth: req.user ? { id: req.user.id, role: req.user.roleId } : "Not authenticated"
+    });
+    
     try {
       const ticketId = parseInt(req.params.id, 10);
       const { status } = req.body;
       
+      console.log(`CLIENT-TICKET-STATUS: Received request to update ticket ${ticketId} status to ${status}`);
+      
       if (!status) {
+        console.log("CLIENT-TICKET-STATUS: Missing status field in request");
         return res.status(400).json({ error: "Status field is required" });
+      }
+      
+      // Safety check for authentication
+      if (!req.user || !req.user.id) {
+        console.log("CLIENT-TICKET-STATUS: No authenticated user found");
+        return res.status(401).json({ error: "Authentication required" });
       }
       
       // Get existing ticket
       const existingTicket = await storage.getSupportTicket(ticketId);
       
       if (!existingTicket) {
+        console.log(`CLIENT-TICKET-STATUS: Ticket ${ticketId} not found`);
         return res.status(404).json({ error: "Support ticket not found" });
       }
       
+      console.log("CLIENT-TICKET-STATUS: Found existing ticket", existingTicket);
+      
       // Verify the client owns this ticket
       if (req.user.id !== existingTicket.clientId) {
+        console.log(`CLIENT-TICKET-STATUS: User ${req.user.id} does not own ticket ${ticketId} (owned by ${existingTicket.clientId})`);
         return res.status(403).json({ error: "You can only update your own tickets" });
       }
       
-      console.log(`Client ${req.user.id} updating ticket ${ticketId} status to ${status}`);
+      console.log(`CLIENT-TICKET-STATUS: Client ${req.user.id} updating ticket ${ticketId} status to ${status}`);
       
-      // Update the ticket status (only use status field without updatedAt)
-      const updatedTicket = await storage.updateSupportTicket(ticketId, {
-        status
-      });
+      // Prepare update object with status only
+      const updateObj = { status };
       
-      // Manually update our ticket's updatedAt field - note this is handled automatically by
-      // the updateSupportTicket method so we don't need to pass it explicitly
+      // Update the ticket status
+      const updatedTicket = await storage.updateSupportTicket(ticketId, updateObj);
       
-      console.log(`Ticket ${ticketId} status successfully updated to ${status}`);
-      res.json(updatedTicket);
+      console.log(`CLIENT-TICKET-STATUS: Ticket ${ticketId} status successfully updated to ${status}`, updatedTicket);
+      
+      // Return the updated ticket with explicit status code
+      return res.status(200).json(updatedTicket);
     } catch (error) {
-      console.error("Error updating ticket status:", error);
-      res.status(500).json({ error: "Failed to update ticket status" });
+      console.error("CLIENT-TICKET-STATUS: Error updating ticket status:", error);
+      return res.status(500).json({ error: "Failed to update ticket status" });
     }
   });
 

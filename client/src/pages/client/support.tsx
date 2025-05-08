@@ -183,23 +183,23 @@ const ClientSupport = () => {
     retry: 2, // Increase retries for authentication issues
   });
 
-  // Update ticket mutation - with client-specific endpoint for status updates
+  // Update ticket mutation using dedicated client endpoint for status updates
   const updateTicketMutation = useMutation({
     mutationFn: async ({ ticketId, updateData }: { ticketId: number, updateData: any }) => {
       try {
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
         
-        // Use our new client-specific endpoint if this is just a status update
-        const isStatusOnlyUpdate = Object.keys(updateData).length === 1 && 'status' in updateData;
-        const endpoint = isStatusOnlyUpdate 
-          ? `/api/client-ticket-status/${ticketId}`
-          : `/api/support-tickets/${ticketId}`;
+        // Always use the client-specific endpoint for ticket status updates
+        // This is a simpler approach that ensures we're using the right endpoint
+        const endpoint = `/api/client-ticket-status/${ticketId}`;
         
-        console.log(`Updating ticket ${ticketId} using endpoint: ${endpoint}`);
+        console.log(`Updating ticket ${ticketId} using new client-specific endpoint: ${endpoint}`);
         console.log('Update data:', updateData);
         
-        const response = await apiRequest('PUT', endpoint, updateData);
+        // Only send the status field to ensure we're sending minimal data
+        const statusData = { status: updateData.status };
+        const response = await apiRequest('PUT', endpoint, statusData);
         
         if (!response.ok) {
           const errorData = await response.json();
