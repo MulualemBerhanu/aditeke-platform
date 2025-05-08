@@ -673,7 +673,8 @@ export class MemStorage implements IStorage {
       ...communication,
       id,
       createdAt,
-      isRead: communication.isRead !== undefined ? communication.isRead : false
+      isRead: communication.isRead !== undefined ? communication.isRead : false,
+      fromManager: communication.fromManager !== undefined ? communication.fromManager : false
     };
     this.clientCommunications.set(id, clientCommunication);
     return clientCommunication;

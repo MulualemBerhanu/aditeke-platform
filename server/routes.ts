@@ -2432,6 +2432,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (newCommunication.isRead === undefined) newCommunication.isRead = false;
         if (!newCommunication.attachments) newCommunication.attachments = {};
         
+        // For client-sent messages, explicitly set fromManager to false
+        newCommunication.fromManager = false;
+        
         // Log the processed message data
         console.log('Processed message data:', newCommunication);
         
@@ -2447,6 +2450,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // If we get here, the user is authorized (manager or admin)
+      // For manager-sent messages, explicitly set fromManager to true
+      newCommunication.fromManager = true;
+      
       const communication = await storage.createClientCommunication(newCommunication);
       console.log(`Created new communication: ${communication.id} for client ${communication.clientId}`);
       res.status(201).json(communication);

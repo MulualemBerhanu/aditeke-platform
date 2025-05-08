@@ -433,7 +433,8 @@ export class FirebaseStorage implements IStorage {
         // Ensure required fields are not undefined
         type: communication.type || 'message',
         subject: communication.subject || null,
-        attachments: communication.attachments || {}
+        attachments: communication.attachments || {},
+        fromManager: communication.fromManager !== undefined ? communication.fromManager : false
       };
       
       await this.db.collection('client_communications').add(clientCommunication);
