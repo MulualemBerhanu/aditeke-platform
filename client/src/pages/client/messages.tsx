@@ -148,6 +148,9 @@ const ClientMessages = () => {
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: any) => {
       try {
+        // Log the message data being sent for debugging
+        console.log('Sending message data:', JSON.stringify(messageData));
+        
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
         const response = await apiRequest('POST', '/api/client-communications', messageData);

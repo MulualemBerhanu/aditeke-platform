@@ -2415,6 +2415,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.user?.roleId === 1001) {
         console.log(`Client user ${userId} is authorized to send messages as themselves`);
         
+        // Ensure all required fields are present
+        if (!newCommunication.managerId) {
+          console.error('Missing managerId in request:', newCommunication);
+          return res.status(400).json({ error: "managerId is required" });
+        }
+        
+        if (!newCommunication.message) {
+          console.error('Missing message content in request:', newCommunication);
+          return res.status(400).json({ error: "message content is required" });
+        }
+        
+        // Add default empty values for optional fields if missing
+        if (!newCommunication.subject) newCommunication.subject = '';
+        if (!newCommunication.type) newCommunication.type = 'standard';
+        if (newCommunication.isRead === undefined) newCommunication.isRead = false;
+        if (!newCommunication.attachments) newCommunication.attachments = {};
+        
         // Log the processed message data
         console.log('Processed message data:', newCommunication);
         
