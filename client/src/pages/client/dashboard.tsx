@@ -295,16 +295,62 @@ export default function ClientDashboard() {
               transition={{ delay: 0.3 }}
               className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 backdrop-blur-sm"
             >
-              <div className="flex items-start">
-                <div className="p-3 rounded-lg bg-amber-500/20 text-amber-400">
-                  <MessageSquare className="h-6 w-6" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-slate-400">Support Tickets</p>
-                  <h3 className="text-2xl font-bold">1</h3>
-                  <p className="text-xs text-amber-400 mt-1">Last updated 2h ago</p>
-                </div>
-              </div>
+              {(() => {
+                const { data: tickets = [], isLoading: isLoadingStats } = useQuery({
+                  queryKey: ['/api/client-support-tickets-count', userData?.id],
+                  queryFn: async () => {
+                    try {
+                      // Use the same query as the support tab but with a different key
+                      const token = localStorage.getItem('authToken');
+                      const headers: Record<string, string> = {
+                        'Content-Type': 'application/json',
+                      };
+                      
+                      if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                      }
+                      
+                      const res = await fetch(`/api/client-support-tickets/${userData.id}`, { headers });
+                      if (!res.ok) return [];
+                      return await res.json();
+                    } catch (error) {
+                      console.error('Error fetching tickets for stats:', error);
+                      return [];
+                    }
+                  },
+                  enabled: !!userData?.id
+                });
+                
+                const openTickets = tickets.filter((t: any) => 
+                  t.status === 'open' || t.status === 'in-progress'
+                ).length;
+                
+                return (
+                  <div className="flex items-start">
+                    <div className="p-3 rounded-lg bg-amber-500/20 text-amber-400">
+                      <MessageSquare className="h-6 w-6" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm text-slate-400">Support Tickets</p>
+                      {isLoadingStats ? (
+                        <div className="h-8 flex items-center">
+                          <div className="h-4 w-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                          <span className="text-xs text-slate-400">Loading...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <h3 className="text-2xl font-bold">{openTickets}</h3>
+                          <p className="text-xs text-amber-400 mt-1">
+                            {openTickets === 0 ? 'No open tickets' : 
+                             openTickets === 1 ? '1 ticket needs attention' : 
+                             `${openTickets} tickets need attention`}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </motion.div>
             
             <motion.div 
@@ -398,15 +444,60 @@ export default function ClientDashboard() {
                     <CardTitle className="text-sm font-medium text-amber-700">Support Tickets</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center">
-                      <div className="bg-amber-100 p-2 rounded-full">
-                        <MessageSquare className="h-5 w-5 text-amber-600" />
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-2xl font-bold text-amber-700">1</div>
-                        <div className="text-xs text-amber-500">Active ticket</div>
-                      </div>
-                    </div>
+                    {(() => {
+                      // Reuse the same support tickets data from the count query
+                      const { data: tickets = [], isLoading: isLoadingTabTickets } = useQuery({
+                        queryKey: ['/api/client-support-tickets-count', userData?.id],
+                        queryFn: async () => {
+                          try {
+                            const token = localStorage.getItem('authToken');
+                            const headers: Record<string, string> = {
+                              'Content-Type': 'application/json',
+                            };
+                            
+                            if (token) {
+                              headers['Authorization'] = `Bearer ${token}`;
+                            }
+                            
+                            const res = await fetch(`/api/client-support-tickets/${userData.id}`, { headers });
+                            if (!res.ok) return [];
+                            return await res.json();
+                          } catch (error) {
+                            console.error('Error fetching tickets for tab stats:', error);
+                            return [];
+                          }
+                        },
+                        enabled: !!userData?.id
+                      });
+                      
+                      const openTickets = tickets.filter((t: any) => 
+                        t.status === 'open' || t.status === 'in-progress'
+                      ).length;
+
+                      return (
+                        <div className="flex items-center">
+                          <div className="bg-amber-100 p-2 rounded-full">
+                            <MessageSquare className="h-5 w-5 text-amber-600" />
+                          </div>
+                          <div className="ml-3">
+                            {isLoadingTabTickets ? (
+                              <div className="h-8 flex items-center">
+                                <div className="h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="text-2xl font-bold text-amber-700">{openTickets}</div>
+                                <div className="text-xs text-amber-500">
+                                  {openTickets === 0 ? 'No open tickets' : 
+                                   openTickets === 1 ? 'Active ticket' : 
+                                   'Active tickets'}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </div>
@@ -642,52 +733,166 @@ export default function ClientDashboard() {
 
             <TabsContent value="support" className="mt-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Support Tickets</CardTitle>
-                  <CardDescription>Manage your support requests</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Support Tickets</CardTitle>
+                    <CardDescription>Manage your support requests</CardDescription>
+                  </div>
+                  <Button 
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    onClick={() => window.location.href = '/client/support'}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Support Center
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="border rounded-lg overflow-hidden">
-                      <div className="bg-slate-50 p-4 border-b">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium">Mobile App Login Issue</h3>
-                            <p className="text-sm text-slate-500 mt-1">Reported on May 1, 2025</p>
-                          </div>
-                          <Badge className="bg-amber-500">In Progress</Badge>
+                  {/* Support tickets section */}
+                  {/* Fetch client support tickets */}
+                  {(() => {
+                    // Use React query for tickets
+                    const { data: tickets = [], isLoading: isLoadingTickets, error: ticketsError } = useQuery({
+                      queryKey: ['/api/client-support-tickets', userData?.id],
+                      queryFn: async () => {
+                        try {
+                          console.log(`Fetching support tickets for dashboard - client ID: ${userData.id}`);
+                          
+                          // Check for authentication token in localStorage
+                          const token = localStorage.getItem('authToken');
+                          const refreshToken = localStorage.getItem('refreshToken');
+                          
+                          // If we have tokens, use them for authorization
+                          const headers: Record<string, string> = {
+                            'Content-Type': 'application/json',
+                          };
+                          
+                          if (token) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                          }
+                          
+                          console.log('Auth headers for ticket request:', headers);
+                          
+                          const res = await fetch(`/api/client-support-tickets/${userData.id}`, { 
+                            headers 
+                          });
+                          
+                          if (!res.ok) {
+                            console.error(`Error fetching tickets: ${res.status} ${res.statusText}`);
+                            return [];
+                          }
+                          
+                          const data = await res.json();
+                          console.log('Support tickets fetched for dashboard:', data);
+                          return data;
+                        } catch (error) {
+                          console.error('Error fetching client support tickets:', error);
+                          return [];
+                        }
+                      },
+                      enabled: !!userData?.id
+                    });
+                    
+                    if (isLoadingTickets) {
+                      return (
+                        <div className="flex justify-center items-center py-10">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                         </div>
-                      </div>
-                      <div className="p-4">
-                        <p className="text-sm text-slate-600 mb-4">
-                          I'm experiencing issues logging into the mobile application. The authentication screen keeps loading indefinitely after entering credentials.
-                        </p>
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center text-sm text-slate-500">
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            <span>3 responses</span>
-                          </div>
+                      );
+                    }
+                    
+                    if (ticketsError) {
+                      return (
+                        <div className="py-10 text-center">
+                          <p className="text-red-500">Could not load support tickets. Please try again.</p>
                           <Button 
-                            size="sm" 
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                            onClick={() => window.location.href = '/client/support/1'} // Navigate to first ticket detail
+                            variant="outline"
+                            size="sm"
+                            className="mt-2"
+                            onClick={() => window.location.href = '/client/support'}
                           >
-                            View Ticket
+                            Go to Support Center
                           </Button>
                         </div>
+                      );
+                    }
+                    
+                    if (!tickets || tickets.length === 0) {
+                      return (
+                        <div className="py-10 text-center">
+                          <p className="text-slate-500 mb-4">You don't have any support tickets yet.</p>
+                          <Button 
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            onClick={() => window.location.href = '/client/support'}
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Create New Support Ticket
+                          </Button>
+                        </div>
+                      );
+                    }
+                    
+                    // Show only the last 3 tickets for the dashboard
+                    const recentTickets = [...tickets]
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .slice(0, 3);
+                    
+                    return (
+                      <div className="space-y-4">
+                        {recentTickets.map((ticket, index) => (
+                          <div key={ticket.id || index} className="border rounded-lg overflow-hidden">
+                            <div className="bg-slate-50 p-4 border-b">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h3 className="font-medium">{ticket.subject || 'Support Request'}</h3>
+                                  <p className="text-sm text-slate-500 mt-1">
+                                    {ticket.createdAt ? formatDate(ticket.createdAt) : 'No date'}
+                                  </p>
+                                </div>
+                                <Badge className={
+                                  ticket.status === 'open' ? 'bg-blue-500' :
+                                  ticket.status === 'in-progress' ? 'bg-amber-500' :
+                                  ticket.status === 'resolved' ? 'bg-green-500' :
+                                  'bg-slate-500'
+                                }>
+                                  {ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'Unknown'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="p-4">
+                              <p className="text-sm text-slate-600 mb-4">
+                                {ticket.description ? 
+                                  ticket.description.length > 100 ? 
+                                    `${ticket.description.substring(0, 100)}...` : 
+                                    ticket.description
+                                  : 'No description provided'}
+                              </p>
+                              <div className="flex justify-end">
+                                <Button 
+                                  size="sm" 
+                                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                  onClick={() => window.location.href = `/client/support/${ticket.id}`}
+                                >
+                                  View Ticket
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {tickets.length > 3 && (
+                          <div className="mt-2 text-center">
+                            <Button 
+                              variant="link" 
+                              className="text-indigo-600"
+                              onClick={() => window.location.href = '/client/support'}
+                            >
+                              View all {tickets.length} tickets
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <Button 
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                      onClick={() => window.location.href = '/client/support'}
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Create New Support Ticket
-                    </Button>
-                  </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </TabsContent>
