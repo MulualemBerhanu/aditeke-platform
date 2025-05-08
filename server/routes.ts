@@ -694,21 +694,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Clients can't change certain fields
-      if (isClient && (
-        req.body.assignedToId !== existingTicket.assignedToId ||
-        (req.body.status === 'closed' || req.body.status === 'resolved')
-      )) {
+      if (isClient && req.body.assignedToId !== existingTicket.assignedToId) {
         return res.status(403).json({ 
-          error: "Clients cannot assign tickets or change status to closed/resolved" 
+          error: "Clients cannot assign tickets to others" 
         });
       }
       
-      // Only managers, admins or assigned staff can update status to resolved or closed
+      // Only managers, admins, assigned staff or ticket owners can update status to resolved or closed
       if (req.body.status && 
           (req.body.status === 'resolved' || req.body.status === 'closed') && 
-          !isManager && !isAdmin && !isAssignedTo) {
+          !isManager && !isAdmin && !isAssignedTo && !isTicketOwner) {
         return res.status(403).json({ 
-          error: "Only managers, admins or assigned staff can resolve or close tickets" 
+          error: "Only managers, admins, assigned staff or ticket owners can resolve or close tickets" 
         });
       }
       
