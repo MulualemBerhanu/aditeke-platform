@@ -7,7 +7,6 @@ import { initializeDatabase } from "./db-init";
 import { updateFirebaseIds } from "./update-id-schema";
 import { authenticateJWT } from "./utils/authMiddleware";
 import { verifyToken } from "./utils/jwt";
-import { generateSimpleCsrfToken } from "./utils/simpleCsrf";
 import PDFDocument from "pdfkit";
 import authRoutes from "./routes/auth-routes";
 import userRoutes from "./routes/user-routes";
@@ -2201,82 +2200,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
-    try {
-      // Use our simplified CSRF token generator
-      const token = generateSimpleCsrfToken();
+    // Check if we have a token
+    const tokenExists = !!req.cookies?.csrf_token;
+    
+    // Force generate a new token for Replit environments to ensure it's always valid
+    const isReplitEnv = req.hostname.includes('replit.dev') || 
+                        req.hostname.includes('replit.app') ||
+                        process.env.NODE_ENV === 'development';
+    
+    // If no token exists or we're in Replit, generate a new one
+    if (!tokenExists || isReplitEnv) {
+      const newToken = require('crypto').randomBytes(32).toString('hex');
       
-      // Log the process for debugging
-      console.log('Generating new CSRF token for request from:', req.ip);
-      
-      // Set the token as a cookie that is accessible from JavaScript
-      res.cookie('csrf_token', token, { 
-        httpOnly: false, 
-        secure: false, // Allow non-secure for testing
-        sameSite: 'lax',
+      // Determine cookie settings based on environment
+      const cookieSettings = {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const,
         path: '/',
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-      });
+        maxAge: 24 * 60 * 60 * 1000
+      };
       
-      // Return the token in the response for frontend usage
-      res.json({ 
-        csrfToken: token, 
-        message: "CSRF token generated successfully",
-        timestamp: new Date().toISOString()
-      });
+      // Adjust for Replit environments
+      if (isReplitEnv) {
+        cookieSettings.secure = false;
+        cookieSettings.sameSite = 'lax';
+      }
       
-      console.log('CSRF token generated and cookie set:', token.substring(0, 8) + '...');
-    } catch (error) {
-      console.error('Error generating CSRF token:', error);
-      res.status(500).json({ 
-        error: "Failed to generate CSRF token",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+      res.cookie('csrf_token', newToken, cookieSettings);
+      
+      console.log('Generated new CSRF token for client:', newToken);
+      
+      res.json({
+        message: "New CSRF token generated and set in cookie",
+        csrfToken: newToken
+      });
+    } else {
+      console.log('Using existing CSRF token from cookie:', req.cookies.csrf_token);
+      
+      res.json({
+        message: "Using existing CSRF token from cookie",
+        csrfToken: req.cookies.csrf_token
       });
     }
   });
   
   // Test endpoint that requires CSRF protection (POST) but not authentication
   app.post("/api/public/csrf-test", (req, res) => {
-    try {
-      // Log CSRF token information to help debug
-      console.log('CSRF Debug Info:');
-      console.log('- Cookie token:', req.cookies?.csrf_token);
-      console.log('- Header token:', req.headers['x-csrf-token']);
-      console.log('- Request method:', req.method);
-      console.log('- Request path:', req.path);
-      console.log('- Request body:', req.body ? JSON.stringify(req.body) : 'undefined');
-      console.log('- Raw body exists:', !!req.rawBody);
-      
-      // Parse raw body as a fallback if req.body is empty
-      let parsedBody = req.body || {};
-      if (req.rawBody && (Object.keys(req.body || {}).length === 0)) {
-        try {
-          const rawBodyStr = typeof req.rawBody === 'string' ? req.rawBody : req.rawBody.toString();
-          parsedBody = JSON.parse(rawBodyStr);
-          console.log('Parsed raw body as fallback:', parsedBody);
-        } catch (parseError) {
-          console.error('Failed to parse raw body:', parseError);
-        }
+    // Log CSRF token information to help debug
+    console.log('CSRF Debug Info:');
+    console.log('- Cookie token:', req.cookies?.csrf_token);
+    console.log('- Header token:', req.headers['x-csrf-token']);
+    console.log('- Request method:', req.method);
+    console.log('- Request path:', req.path);
+    
+    res.json({
+      success: true,
+      message: "CSRF protected POST request successful",
+      requestBody: req.body,
+      csrfInfo: {
+        cookieToken: req.cookies?.csrf_token || 'No cookie token',
+        headerToken: req.headers['x-csrf-token'] || 'No header token',
+        tokensMatch: req.cookies?.csrf_token === req.headers['x-csrf-token']
       }
-      
-      return res.json({
-        success: true,
-        message: "CSRF protected POST request successful",
-        requestBody: parsedBody,
-        csrfInfo: {
-          cookieToken: req.cookies?.csrf_token || 'No cookie token',
-          headerToken: req.headers['x-csrf-token'] || 'No header token',
-          tokensMatch: req.cookies?.csrf_token === req.headers['x-csrf-token']
-        }
-      });
-    } catch (error) {
-      console.error('Error in CSRF test POST endpoint:', error);
-      return res.status(500).json({
-        success: false,
-        message: "CSRF test failed",
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
+    });
   });
   
   // Public endpoint to get a project by ID - requires no authentication
@@ -2377,7 +2364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Client Management API routes
   // Client Communications
-  app.get('/api/client-communications/:clientId', async (req, res) => {
+  app.get('/api/client-communications/:clientId', authenticateJWT, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {
@@ -2401,31 +2388,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/client-communications', async (req, res) => {
+  app.post('/api/client-communications', authenticateJWT, async (req, res) => {
     try {
       // Log the raw request body
       console.log('RAW client communication request body:', req.body);
       
-      // Manual body parsing if the body is empty (as a fallback)
-      let newCommunication = req.body;
-      
-      // If the body is empty but we have rawBody from our middleware
-      if (Object.keys(req.body).length === 0 && req.rawBody) {
-        try {
-          console.log('Body is empty, attempting to parse from raw body:', req.rawBody);
-          newCommunication = JSON.parse(req.rawBody);
-          console.log('Successfully parsed from raw body:', newCommunication);
-        } catch (parseError) {
-          console.error('Failed to parse raw body as JSON:', parseError);
-        }
-      }
-      
-      // For debugging - log the headers to understand what's happening
-      console.log('Request headers:', req.headers);
-      
       // Get authenticated user ID from req.user
       const userId = req.user?.id;
       console.log('Authenticated user ID:', userId);
+      
+      // Create a deep copy of the request body to avoid side effects
+      let newCommunication = JSON.parse(JSON.stringify(req.body));
       
       // Force set clientId to authenticated user ID (for client role)
       if (req.user?.roleId === 1001) { // Client role
@@ -2483,7 +2456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/client-communications/:id/read', async (req, res) => {
+  app.put('/api/client-communications/:id/read', authenticateJWT, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -2515,7 +2488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Client Documents
-  app.get('/api/client-documents/:clientId', async (req, res) => {
+  app.get('/api/client-documents/:clientId', authenticateJWT, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {
@@ -2531,7 +2504,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/client-documents', async (req, res) => {
+  app.post('/api/client-documents', authenticateJWT, async (req, res) => {
     try {
       const newDocument = req.body;
       const document = await storage.uploadClientDocument(newDocument);
@@ -2542,7 +2515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/client-documents/download/:id', async (req, res) => {
+  app.get('/api/client-documents/download/:id', authenticateJWT, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -2566,7 +2539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.delete('/api/client-documents/:id', async (req, res) => {
+  app.delete('/api/client-documents/:id', authenticateJWT, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -2586,7 +2559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Client Invoices
-  app.get('/api/client-invoices/:clientId', async (req, res) => {
+  app.get('/api/client-invoices/:clientId', authenticateJWT, async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {

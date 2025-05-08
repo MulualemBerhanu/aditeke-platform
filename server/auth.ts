@@ -299,70 +299,23 @@ export function setupAuth(app: Express) {
   // Enhanced login endpoint with cross-domain JWT token support
   app.post("/api/login", (req, res, next) => {
     try {
-      // Log incoming login request for debugging
-      console.log('📝 LOGIN REQUEST RECEIVED');
-      console.log('Content-Type:', req.headers['content-type']);
-      
-      // Get raw body content for debug purposes
-      let rawBodyStr = '';
-      if (req.rawBody) {
-        rawBodyStr = typeof req.rawBody === 'string' ? req.rawBody : req.rawBody.toString();
-        console.log('Raw body available:', rawBodyStr);
-      } else {
-        console.log('No raw body available in request');
-      }
-      
-      // Try to parse credentials from multiple sources
-      let credentials = req.body || {};
-      
-      // Log the raw request body for debugging
-      console.log('Original parsed request body:', JSON.stringify(req.body, null, 2));
-      
-      // Backup plan 1: Try to parse credentials from raw body if req.body is empty
-      if ((Object.keys(credentials).length === 0 || !credentials.username || !credentials.password) && req.rawBody) {
-        try {
-          const parsedBody = JSON.parse(rawBodyStr);
-          if (parsedBody && typeof parsedBody === 'object') {
-            credentials = parsedBody;
-            console.log('Successfully parsed credentials from raw body');
-          }
-        } catch (e) {
-          console.log('Failed to parse raw body as JSON:', e);
-        }
-      }
-      
-      // Backup plan 2: Check URL parameters
-      if (!credentials.username && req.query.username) {
-        credentials.username = req.query.username;
-        console.log('Using username from query parameters');
-      }
-      if (!credentials.password && req.query.password) {
-        credentials.password = req.query.password;
-        console.log('Using password from query parameters');
-      }
-      
-      // Log credential status (safely, without showing passwords)
-      console.log('Credential status:', {
-        hasUsername: !!credentials.username,
-        usernameLength: credentials.username ? credentials.username.length : 0,
-        hasPassword: !!credentials.password,
-        passwordLength: credentials.password ? credentials.password.length : 0
+      // Enhanced logging for debugging
+      console.log("Login request received:", {
+        bodyExists: !!req.body,
+        contentType: req.header('Content-Type'),
+        hasUsername: req.body && !!req.body.username,
+        hasPassword: req.body && !!req.body.password,
+        username: req.body && req.body.username ? req.body.username.substring(0, 3) + '...' : null,
+        requestMethod: req.method,
+        requestUrl: req.originalUrl,
+        requestHeaders: req.headers['content-type']
       });
       
-      // DEVELOPMENT EMERGENCY BYPASS - only in development environment
-      if (process.env.NODE_ENV === 'development' && 
-          (!credentials.username || !credentials.password || 
-           credentials.username === 'emergency' || credentials.password === 'emergency')) {
-        console.log('⚠️ EMERGENCY AUTHENTICATION MODE ENABLED - FOR DEVELOPMENT ONLY');
-        credentials = {
-          username: credentials.username === 'emergency' ? "testadmin" : (credentials.username || "testadmin"),
-          password: credentials.password === 'emergency' ? "adminPass123" : (credentials.password || "adminPass123")
-        };
-        console.log('Using emergency credentials for development testing');
+      // Check if username and password are provided
+      if (!req.body || !req.body.username || !req.body.password) {
+        console.error("Missing credentials in request body");
+        return res.status(401).json({ message: "Missing credentials" });
       }
-      
-      // Save back to req.body for passport authentication
-      req.body = credentials;
       
       // Direct database lookup for emergency login - bypass authentication issues
       const directLogin = async () => {
@@ -580,34 +533,6 @@ export function setupAuth(app: Express) {
 
   // Middleware to verify token authentication for cross-domain requests
   const verifyTokenAuth = async (req: Request, res: Response, next: NextFunction) => {
-    // List of public paths that don't require authentication
-    const publicPaths = [
-      '/api/login',
-      '/api/register',
-      '/api/public',
-      '/api/public/csrf-test'
-    ];
-    
-    // Check if the path exactly matches any public path
-    for (const publicPath of publicPaths) {
-      if (req.path === publicPath) {
-        console.log(`⚠️ BYPASSING TOKEN AUTH for PUBLIC endpoint: ${req.path}`);
-        return next();
-      }
-    }
-    
-    // Check if path starts with any public path prefix
-    if (req.path.startsWith('/api/public/')) {
-      console.log(`⚠️ BYPASSING TOKEN AUTH for PUBLIC endpoint: ${req.path}`);
-      return next();
-    }
-    
-    // DEVELOPMENT BYPASS - Skip token auth in development for non-auth endpoints
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`⚠️ BYPASSING TOKEN AUTH for ${req.path} (development mode)`);
-      return next();
-    }
-    
     // If already authenticated via session, continue
     if (req.isAuthenticated()) {
       return next();
@@ -697,8 +622,10 @@ export function setupAuth(app: Express) {
       }
     }
     
-    // List of additional public API endpoints that should be accessible without authentication
-    const additionalPublicPaths = [
+    // List of public API endpoints that should be accessible without authentication
+    const publicPaths = [
+      '/api/login',
+      '/api/register',
       '/api/services',
       '/api/projects',
       '/api/testimonials',
@@ -709,7 +636,7 @@ export function setupAuth(app: Express) {
     
     // Check if the path starts with /api/public/ or is in the publicPaths list
     const isPublicPath = req.path.startsWith('/api/public/') || 
-                         additionalPublicPaths.includes(req.path) ||
+                         publicPaths.includes(req.path) ||
                          // Special case for blog posts, testimonials, etc. with IDs
                          req.path.match(/^\/api\/(services|projects|testimonials|blog)\/\d+$/);
     

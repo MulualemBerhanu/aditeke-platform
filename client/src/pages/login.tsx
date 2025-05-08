@@ -201,128 +201,49 @@ export default function LoginPage() {
         }
       }
       
-      // Use direct fetch with enhanced error handling to ensure reliable authentication
+      // Use direct fetch in all environments to ensure reliable authentication
       let userData;
       try {
-        // Step 1: Make sure we get a CSRF token for the secure login request
-        let csrfToken = null;
+        // Make sure we get a CSRF token for the secure login request
         try {
-          const csrfResponse = await fetch('/api/public/csrf-test', {
-            method: 'GET',
-            credentials: 'include' // Important for ensuring cookies are saved
-          });
-          
-          if (csrfResponse.ok) {
-            const csrfData = await csrfResponse.json();
-            console.log('CSRF token generated successfully:', csrfData.timestamp);
-          } else {
-            console.warn('CSRF endpoint returned error status:', csrfResponse.status);
-          }
-          
-          // Get the CSRF token from cookies that was just set
-          const cookies = document.cookie.split(';');
-          for (const cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'csrf_token') {
-              csrfToken = decodeURIComponent(value);
-              console.log('CSRF token found in cookies after prefetch');
-              break;
-            }
-          }
-        } catch (csrfError) {
-          console.warn('CSRF token prefetch failed, continuing with login attempt:', csrfError);
+          // Fetch a CSRF token first
+          await fetch('/api/public/csrf-test');
+        } catch (err) {
+          console.warn('Failed to prefetch CSRF token, but continuing with login attempt:', err);
         }
 
-        // Step 2: Debug environment detection and logging
-        const isDevelopment = window.location.hostname === 'localhost' || 
-                             window.location.hostname.includes('.replit.dev');
-                             
-        if (isDevelopment) {
-          console.log('🔐 Development login attempt with:', {
-            username: data.username,
-            role: selectedRole?.name || 'None',
-            csrfToken: csrfToken ? 'Present' : 'Missing',
-            timestamp: new Date().toISOString()
-          });
+        // Get the CSRF token from cookies if available
+        let csrfToken = null;
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'csrf_token') {
+            csrfToken = decodeURIComponent(value);
+            break;
+          }
         }
+
+        console.log('CSRF token for login request:', csrfToken ? 'Found' : 'Not found');
         
-        // Step 3: Prepare headers with all safety mechanisms
-        const headers = new Headers({
-          'Content-Type': 'application/json'
-        });
-        
-        // Add CSRF token if available
-        if (csrfToken) {
-          headers.append('X-CSRF-Token', csrfToken);
-        }
-        
-        // Step 4: Perform the login request with enhanced error handling
+        // Normal authentication flow using API
         const response = await fetch('/api/login', {
           method: 'POST',
-          headers,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
+          },
           body: JSON.stringify({
             username: data.username,
             password: data.password
           }),
-          credentials: 'include' // Always include credentials for auth requests
+          credentials: 'include'
         });
         
-        // Step 5: Handle response status with detailed error reporting
         if (!response.ok) {
-          // Get detailed error information if possible
-          let errorDetails = 'Authentication failed. Please check your credentials.';
-          let errorStatus = response.status;
-          let responseText = '';
-          
-          try {
-            // Try to parse as JSON first
-            const errorData = await response.json();
-            errorDetails = errorData.message || errorDetails;
-            console.error('Login error response:', errorData);
-          } catch (jsonError) {
-            // If JSON parsing fails, try to get raw text
-            try {
-              responseText = await response.text();
-              console.error('Login error (raw):', responseText);
-              if (responseText) {
-                errorDetails = `Server error: ${responseText.substring(0, 100)}${responseText.length > 100 ? '...' : ''}`;
-              }
-            } catch (textError) {
-              console.error('Could not read error response:', textError);
-            }
-          }
-          
-          // Specific error handling based on HTTP status
-          if (errorStatus === 401) {
-            throw new Error('Invalid username or password. Please try again.');
-          } else if (errorStatus === 403) {
-            throw new Error('Access denied. You do not have permission to log in.');
-          } else if (errorStatus >= 500) {
-            throw new Error(`Server error (${errorStatus}). Please try again later.`);
-          } else {
-            throw new Error(errorDetails);
-          }
+          throw new Error('Authentication failed. Please check your credentials.');
         }
         
-        // Step 6: Process successful response
-        try {
-          const responseData = await response.json();
-          userData = responseData;
-          console.log('Login successful, user data received');
-        } catch (parseError) {
-          console.error('Failed to parse login response:', parseError);
-          throw new Error('Server returned invalid data format. Please try again.');
-        }
-        
-        // Log success in development mode
-        if (isDevelopment && userData) {
-          console.log('Login successful!', {
-            userId: userData.id,
-            username: userData.username,
-            roleId: userData.roleId,
-            roleName: userData.roleName || 'unknown'
-          });
-        }
+        userData = await response.json();
       } catch (error) {
         // Try the context login as fallback
         if (!isDeployedEnv) {

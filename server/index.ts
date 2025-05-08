@@ -3,8 +3,7 @@ import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage, PostgresStorage } from "./storage";
-// Use our simpler CSRF implementation to avoid crypto issues
-import { setSimpleCsrfToken, validateSimpleCsrfToken } from "./utils/simpleCsrf";
+import { setCsrfToken, validateCsrfToken } from "./utils/csrf";
 import 'dotenv/config';
 
 const app = express();
@@ -60,53 +59,26 @@ app.use(express.json({
   strict: false // Allow any JSON-like input
 }));
 
-// Add raw body capture middleware for all API requests
+// Add raw body parser for debugging
 app.use((req, res, next) => {
-  // Apply to all POST requests to API endpoints
-  if (req.method === 'POST' && req.path.startsWith('/api/')) {
+  if (req.method === 'POST' && (req.path === '/api/public/contact' || req.path === '/api/client-communications')) {
     let rawData = '';
-    
-    // Listen for data events
     req.setEncoding('utf8');
+    
     req.on('data', (chunk) => {
       rawData += chunk;
     });
     
     req.on('end', () => {
-      // Store raw body for later use by route handlers
-      req.rawBody = rawData;
-      
-      // Log raw body for critical API endpoints
-      const criticalEndpoints = [
-        '/api/login',
-        '/api/client-communications',
-        '/api/public/contact',
-        '/api/public/csrf-test',
-        '/api/register'
-      ];
-      
-      if (criticalEndpoints.includes(req.path)) {
-        console.log(`Raw request body for ${req.path}:`, rawData);
-        
-        // Only try to parse if content-type is JSON or empty body
-        const contentType = req.headers['content-type'];
-        if ((contentType && contentType.toLowerCase().includes('application/json')) || 
-            Object.keys(req.body || {}).length === 0) {
-          try {
-            // Try to parse as JSON and attach to req.body if original parsing failed
-            if (!req.body || Object.keys(req.body || {}).length === 0) {
-              if (rawData.trim()) {
-                const parsedData = JSON.parse(rawData);
-                req.body = parsedData;
-                console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
-              }
-            }
-          } catch (e) {
-            console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
-          }
-        }
+      console.log(`Raw request body for ${req.path}:`, rawData);
+      try {
+        // Try to parse as JSON and attach to req.body
+        const parsedData = JSON.parse(rawData);
+        req.body = parsedData;
+        console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
+      } catch (e) {
+        console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
       }
-      
       next();
     });
   } else {
@@ -129,9 +101,9 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Parse cookies for CSRF validation
 
-// Add CSRF protection using our simplified implementation
-app.use(setSimpleCsrfToken); // Inject CSRF token into HTML responses
-app.use(validateSimpleCsrfToken); // Protect against CSRF attacks
+// Add CSRF protection
+app.use(setCsrfToken); // Inject CSRF token into HTML responses
+app.use(validateCsrfToken); // Protect against CSRF attacks
 
 app.use((req, res, next) => {
   const start = Date.now();
