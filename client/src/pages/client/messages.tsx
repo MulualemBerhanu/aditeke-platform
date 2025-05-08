@@ -320,20 +320,20 @@ const ClientMessages = () => {
   );
   
   // Filter messages by unread/read using isRead property
-  const unreadMessages = sortedMessages.filter((m: Message) => !m.isRead) || [];
+  // Only show unread messages FROM managers (received messages)
+  const unreadMessages = sortedMessages.filter((m: Message) => 
+    !m.isRead && m.fromManager === true
+  ) || [];
   
   // Determine if a message is sent by the client (outgoing)
-  // In our schema, if the client is sending a message to a manager,
-  // both clientId and managerId will be set, but messages originated from the client
-  const sentMessages = sortedMessages.filter((m: Message) => {
-    // A message is considered "sent" by a client if there's no "fromManager" flag
-    // This works because client->manager messages don't have this flag in our schema
-    return !m.fromManager && m.managerId;
-  }) || [];
+  // A message is sent by the client if fromManager is false
+  const sentMessages = sortedMessages.filter((m: Message) => 
+    m.fromManager === false
+  ) || [];
   
-  // Messages that are not sent by the client (incoming messages)
+  // Messages that are not sent by the client (incoming) and are read
   const readMessages = sortedMessages.filter((m: Message) => 
-    m.isRead && (!sentMessages.some(sent => sent.id === m.id))
+    m.isRead && m.fromManager === true
   ) || [];
   
   if (error) {
