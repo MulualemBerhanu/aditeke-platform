@@ -2388,6 +2388,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Manager Communications - get all messages for a manager
+  app.get('/api/manager-communications/:managerId', authenticateJWT, async (req, res) => {
+    try {
+      const managerId = parseInt(req.params.managerId);
+      if (isNaN(managerId)) {
+        return res.status(400).json({ error: "Invalid manager ID" });
+      }
+      
+      // Check if the user is requesting their own communications or has admin permissions
+      // Manager role = 1000, Admin role = 1002
+      console.log(`User requesting manager communications: ${req.user?.id} (role: ${req.user?.roleId}) for manager ID: ${managerId}`);
+      if (req.user?.id !== managerId && req.user?.roleId !== 1002) {
+        console.warn(`User ${req.user?.id} with role ${req.user?.roleId} attempted to access communications for manager ${managerId}`);
+        return res.status(403).json({ error: "Unauthorized to access these messages" });
+      }
+      
+      const communications = await storage.getManagerCommunications(managerId);
+      console.log(`Found ${communications.length} communications for manager ${managerId}`);
+      res.json(communications);
+    } catch (error) {
+      console.error("Error fetching manager communications:", error);
+      res.status(500).json({ error: "Failed to fetch manager communications" });
+    }
+  });
+  
   app.post('/api/client-communications', authenticateJWT, async (req, res) => {
     try {
       // Log the raw request body

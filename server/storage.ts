@@ -662,6 +662,13 @@ export class MemStorage implements IStorage {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
   
+  // Get communications for a specific manager
+  async getManagerCommunications(managerId: number): Promise<ClientCommunication[]> {
+    return Array.from(this.clientCommunications.values())
+      .filter(comm => comm.managerId === managerId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  
   async getClientCommunication(id: number): Promise<ClientCommunication | undefined> {
     return this.clientCommunications.get(id);
   }

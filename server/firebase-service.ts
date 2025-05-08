@@ -405,6 +405,24 @@ export class FirebaseStorage implements IStorage {
     }
   }
   
+  // Get communications for a specific manager
+  async getManagerCommunications(managerId: number): Promise<ClientCommunication[]> {
+    try {
+      const commRef = this.db.collection('client_communications').where('managerId', '==', managerId);
+      const snapshot = await commRef.get();
+      
+      if (snapshot.empty) {
+        return [];
+      }
+      
+      return snapshot.docs.map(doc => doc.data() as ClientCommunication)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } catch (error) {
+      console.error("Error getting manager communications from Firestore:", error);
+      throw error;
+    }
+  }
+  
   async getClientCommunication(id: number): Promise<ClientCommunication | undefined> {
     try {
       const commRef = this.db.collection('client_communications').where('id', '==', id);
