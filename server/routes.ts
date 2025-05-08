@@ -359,6 +359,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch support tickets" });
     }
   });
+
+  // Create a new client support ticket
+  app.post("/api/client-support-tickets", authenticateJWT, async (req, res) => {
+    try {
+      // Parse request body
+      const ticketData = {
+        ...req.body,
+        createdAt: new Date()
+      };
+      
+      // Ensure only clients can create tickets for themselves
+      if (req.user?.roleId === 1001) {
+        // If the user is a client, ensure clientId matches authenticated user
+        if (ticketData.clientId !== req.user.id) {
+          return res.status(403).json({ 
+            error: "You can only create tickets for yourself"
+          });
+        }
+      }
+      
+      console.log("Creating new client support ticket:", ticketData);
+      const ticket = await storage.createSupportTicket(ticketData);
+      
+      res.status(201).json(ticket);
+    } catch (error) {
+      console.error("Error creating client support ticket:", error);
+      res.status(500).json({ error: "Failed to create support ticket" });
+    }
+  });
   
   app.get("/api/support-tickets/:id", authenticateJWT, async (req, res) => {
     try {

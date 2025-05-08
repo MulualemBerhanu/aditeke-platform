@@ -196,7 +196,7 @@ const ClientSupport = () => {
       try {
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
-        const response = await apiRequest('POST', '/api/support-tickets', ticketData);
+        const response = await apiRequest('POST', '/api/client-support-tickets', ticketData);
         
         if (!response.ok) {
           const errorData = await response.json();
