@@ -204,8 +204,19 @@ const ClientSupport = () => {
         console.log(`Sending status data: ${JSON.stringify(statusData)}`);
         
         try {
-          // Use our helper with explicit JSON content
-          const postResponse = await apiRequest('POST', postEndpoint, statusData);
+          // Use direct fetch with explicit JSON content for most reliable operation
+          console.log(`POST request data: ${JSON.stringify(statusData)}`);
+          
+          const postResponse = await fetch(postEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+              'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+            },
+            body: JSON.stringify(statusData),
+            credentials: 'include'
+          });
           
           if (postResponse.ok) {
             console.log(`Successfully updated ticket ${ticketId} using POST endpoint`);
@@ -217,11 +228,23 @@ const ClientSupport = () => {
           console.warn('POST update failed:', postError);
         }
         
-        // 2. Try the PUT endpoint as a fallback
+        // 2. Try the PUT endpoint as a fallback with explicit content-type
         const putEndpoint = `/api/client-ticket-status/${ticketId}`;
         
         console.log(`Trying fallback PUT endpoint: ${putEndpoint}`);
-        const putResponse = await apiRequest('PUT', putEndpoint, statusData);
+        console.log(`PUT request data: ${JSON.stringify(statusData)}`);
+        
+        // Make sure we're sending the right content format
+        const putResponse = await fetch(putEndpoint, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+          },
+          body: JSON.stringify(statusData),
+          credentials: 'include'
+        });
         
         if (putResponse.ok) {
           console.log(`Successfully updated ticket ${ticketId} using PUT endpoint`);
@@ -906,12 +929,16 @@ const ClientSupport = () => {
                                   onClick={() => {
                                     if (!activeTicketId) return;
                                     
+                                    // Show what we're sending
                                     console.log(`Setting ticket ${activeTicketId} status to ${newStatus}`);
+                                    console.log('Status update payload:', { status: newStatus });
                                     
                                     // Use our improved mutation with multiple fallback approaches
                                     updateTicketMutation.mutate({ 
                                       ticketId: activeTicketId, 
-                                      updateData: { status: newStatus } 
+                                      updateData: { 
+                                        status: newStatus 
+                                      } 
                                     });
                                   }}
                                   disabled={updateTicketMutation.isPending}
