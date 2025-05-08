@@ -2346,7 +2346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Client Management API routes
   // Client Communications
-  app.get('/api/client-communications/:clientId', authenticateJWT, async (req, res) => {
+  app.get('/api/client-communications/:clientId', async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {
@@ -2370,7 +2370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/client-communications', authenticateJWT, async (req, res) => {
+  app.post('/api/client-communications', async (req, res) => {
     try {
       // Log the raw request body
       console.log('RAW client communication request body:', req.body);
@@ -2452,7 +2452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put('/api/client-communications/:id/read', authenticateJWT, async (req, res) => {
+  app.put('/api/client-communications/:id/read', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -2484,7 +2484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Client Documents
-  app.get('/api/client-documents/:clientId', authenticateJWT, async (req, res) => {
+  app.get('/api/client-documents/:clientId', async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {
@@ -2500,7 +2500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post('/api/client-documents', authenticateJWT, async (req, res) => {
+  app.post('/api/client-documents', async (req, res) => {
     try {
       const newDocument = req.body;
       const document = await storage.uploadClientDocument(newDocument);
@@ -2511,7 +2511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get('/api/client-documents/download/:id', authenticateJWT, async (req, res) => {
+  app.get('/api/client-documents/download/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
