@@ -267,15 +267,22 @@ const ClientSupport = () => {
       return;
     }
     
+    console.log('Creating support ticket with data:', {
+      clientId,
+      subject: newTicket.title,
+      description: newTicket.description,
+      priority: newTicket.priority,
+      category: newTicket.category
+    });
+    
     createTicketMutation.mutate({
       clientId,
-      title: newTicket.title,
+      subject: newTicket.title, // Changed from title to subject to match schema
       description: newTicket.description,
       priority: newTicket.priority,
       category: newTicket.category,
       status: 'open',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: new Date().toISOString()
     });
   };
 

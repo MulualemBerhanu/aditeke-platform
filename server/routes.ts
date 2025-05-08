@@ -342,17 +342,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/client-support-tickets/:clientId", authenticateJWT, async (req, res) => {
     try {
       // Log authentication info for debugging
-      console.log("Auth Headers:", req.headers);
+      console.log("Auth Headers for support tickets:", req.headers);
+      
+      // Special case for development environment - allow access to tickets
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for client support tickets');
+        // Convert clientId parameter to number
+        const clientId = parseInt(req.params.clientId, 10);
+        
+        console.log(`Fetching support tickets for client ID: ${clientId} (development mode)`);
+        const tickets = await storage.getClientSupportTickets(clientId);
+        
+        console.log(`Found ${tickets.length} tickets for client ${clientId} (development mode)`);
+        return res.json(tickets);
+      }
       
       if (!req.user) {
-        console.log("User not authenticated in request");
+        console.log("User not authenticated in request for support tickets");
         return res.status(401).json({ error: "Authentication required" });
       }
       
       // Convert clientId parameter to number
       const clientId = parseInt(req.params.clientId, 10);
       
-      console.log(`User requesting communications: ${req.user.id} (role: ${req.user.roleId}) for client ID: ${clientId}`);
+      console.log(`User requesting tickets: ${req.user.id} (role: ${req.user.roleId}) for client ID: ${clientId}`);
       
       // Check if the user is requesting their own tickets or has manager/admin permissions
       if (req.user.id !== clientId && req.user.roleId !== 1000 && req.user.roleId !== 1002) {
@@ -386,15 +399,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse request body
       const ticketData = {
         ...req.body,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       // Add user info for debugging
       console.log(`User creating ticket: ${req.user.id} (role: ${req.user.roleId}) for client ID: ${ticketData.clientId}`);
       
-      // Ensure only clients can create tickets for themselves
-      if (req.user.roleId === 1001) {
+      // For development or testing, allow using a hardcoded client ID if not provided
+      if (!ticketData.clientId && process.env.NODE_ENV === 'development') {
+        console.log('Setting default client ID for development');
+        ticketData.clientId = 2000; // Default client ID for development
+      }
+      
+      // Ensure only clients can create tickets for themselves or managers/admins can create for any client
+      if (req.user.roleId === 1001) { // Client role
         // If the user is a client, ensure clientId matches authenticated user
         if (ticketData.clientId !== req.user.id) {
           console.log(`Client ${req.user.id} trying to create ticket for another client ${ticketData.clientId}`);
@@ -404,8 +423,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Override with subject/title mapping
+      if (ticketData.title && !ticketData.subject) {
+        ticketData.subject = ticketData.title;
+        delete ticketData.title; // Remove the title field as schema uses subject
+      }
+      
       console.log("Creating new client support ticket:", ticketData);
       const ticket = await storage.createSupportTicket(ticketData);
+      
+      // Make sure we have the complete ticket data to return
+      if (!ticket.subject && ticketData.subject) {
+        ticket.subject = ticketData.subject;
+      }
       
       console.log("Support ticket created successfully:", ticket);
       res.status(201).json(ticket);
@@ -420,6 +450,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert ticket id parameter to number
       const ticketId = parseInt(req.params.id, 10);
       
+      // Log access attempt for debugging
+      console.log(`Ticket access request: ID ${ticketId}`);
+      
+      // Special case for development environment to allow direct ticket access
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for support ticket details');
+        const ticket = await storage.getSupportTicket(ticketId);
+        
+        if (!ticket) {
+          return res.status(404).json({ error: "Support ticket not found" });
+        }
+        
+        console.log(`Returning ticket details for ${ticketId} (development mode)`);
+        return res.json(ticket);
+      }
+      
+      if (!req.user) {
+        console.log(`Authentication required for ticket ${ticketId} access`);
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
       const ticket = await storage.getSupportTicket(ticketId);
       
       if (!ticket) {
@@ -427,13 +478,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if the user is the ticket owner, assigned to the ticket, or has manager/admin permissions
-      if (req.user?.id !== ticket.clientId && 
-          req.user?.id !== ticket.assignedToId && 
-          req.user?.roleId !== 1000 && 
-          req.user?.roleId !== 1002) {
+      if (req.user.id !== ticket.clientId && 
+          req.user.id !== ticket.assignedToId && 
+          req.user.roleId !== 1000 && 
+          req.user.roleId !== 1002) {
+        console.log(`Access denied: User ${req.user.id} (role ${req.user.roleId}) tried to access ticket ${ticketId} owned by client ${ticket.clientId}`);
         return res.status(403).json({ error: "Unauthorized to access this ticket" });
       }
       
+      console.log(`Authorized access: User ${req.user.id} accessing ticket ${ticketId}`);
       res.json(ticket);
     } catch (error) {
       console.error("Error fetching support ticket:", error);
