@@ -943,6 +943,74 @@ export class MemStorage implements IStorage {
     this.clientSupportTickets.set(id, updatedTicket);
     return updatedTicket;
   }
+  
+  async getAllSupportTickets(): Promise<ClientSupportTicket[]> {
+    return Array.from(this.clientSupportTickets.values())
+      .sort((a, b) => {
+        // Sort by status (open/in-progress first)
+        const statusOrder = { open: 0, 'in-progress': 1, resolved: 2, closed: 3 };
+        const statusA = statusOrder[a.status as keyof typeof statusOrder] || 999;
+        const statusB = statusOrder[b.status as keyof typeof statusOrder] || 999;
+        
+        if (statusA !== statusB) {
+          return statusA - statusB;
+        }
+        
+        // Then by priority
+        const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+        const priorityA = priorityOrder[a.priority as keyof typeof priorityOrder] || 999;
+        const priorityB = priorityOrder[b.priority as keyof typeof priorityOrder] || 999;
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+        
+        // Then by date (newest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+  }
+  
+  async addTicketMessage(message: { 
+    ticketId: number, 
+    userId: number, 
+    userName: string, 
+    userRole: string, 
+    message: string, 
+    createdAt: Date 
+  }): Promise<any> {
+    const ticket = await this.getSupportTicket(message.ticketId);
+    
+    if (!ticket) {
+      throw new Error('Support ticket not found');
+    }
+    
+    // Create a new message object with an ID
+    const newMessage = {
+      id: Date.now(), // Use timestamp as a simple ID
+      ...message
+    };
+    
+    // Initialize messages array if it doesn't exist
+    if (!ticket.messages) {
+      ticket.messages = [];
+    }
+    
+    // Add message to the ticket
+    ticket.messages.push(newMessage);
+    
+    // Update the ticket
+    this.clientSupportTickets.set(ticket.id, {
+      ...ticket,
+      updatedAt: new Date()
+    });
+    
+    return newMessage;
+  }
+  
+  async getUsersByRole(roleId: number): Promise<User[]> {
+    return Array.from(this.users.values())
+      .filter(user => user.roleId === roleId);
+  }
 
   // Initialize sample data methods
   private async initializeRolesAndPermissions() {
