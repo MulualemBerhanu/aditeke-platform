@@ -187,7 +187,18 @@ const ClientSupport = () => {
 
   // Helper function to try multiple approaches for ticket status updates
   const tryUpdateTicketStatus = async (ticketId: number, status: string) => {
-    console.log(`Attempting to update ticket ${ticketId} to status ${status} with multiple approaches`);
+    console.log(`🔄 Attempting to update ticket ${ticketId} to status ${status} with multiple approaches`);
+    console.log(`🔄 Current time: ${new Date().toISOString()}`);
+    console.log(`🔄 Ticket ID type: ${typeof ticketId}`);
+    
+    // Check authentication details
+    const authToken = localStorage.getItem('access_token');
+    const csrfToken = document.cookie.match(/csrf_token=([^;]+)/)?.[1] || '';
+    
+    console.log(`🔐 Auth token available: ${!!authToken}`);
+    console.log(`🔐 Auth token length: ${authToken?.length || 0}`);
+    console.log(`🔐 CSRF token available: ${!!csrfToken}`);
+    console.log(`🔐 CSRF token: ${csrfToken}`);
     
     // Prepare the status data
     const statusData = { status };
@@ -204,8 +215,8 @@ const ClientSupport = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+          'Authorization': `Bearer ${authToken}`,
+          'X-CSRF-Token': csrfToken
         },
         body: JSON.stringify(statusData),
         credentials: 'include'
@@ -232,8 +243,8 @@ const ClientSupport = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+          'Authorization': `Bearer ${authToken}`,
+          'X-CSRF-Token': csrfToken
         },
         body: JSON.stringify(statusData),
         credentials: 'include'
@@ -331,30 +342,68 @@ const ClientSupport = () => {
   const updateTicketMutation = useMutation({
     mutationFn: async ({ ticketId, updateData }: { ticketId: number, updateData: any }) => {
       try {
-        console.log(`Updating ticket ${ticketId} with data:`, updateData);
-        return await tryUpdateTicketStatus(ticketId, updateData.status);
+        console.log(`🔄 Starting status update for ticket ${ticketId}...`);
+        console.log(`🔄 Updating ticket ${ticketId} status to: ${updateData.status}`);
+        console.log(`🔄 Current time: ${new Date().toISOString()}`);
+        console.log(`🔄 Ticket ID type: ${typeof ticketId}`);
+        
+        // Log authentication state for debugging
+        console.log(`🔐 Auth token available: ${!!localStorage.getItem('access_token')}`);
+        console.log(`🔐 CSRF token available: ${!!document.cookie.match(/csrf_token=([^;]+)/)?.[1]}`);
+        
+        // Try our multi-approach update function
+        const result = await tryUpdateTicketStatus(ticketId, updateData.status);
+        console.log(`✅ Successfully updated ticket status:`, result);
+        return result;
       } catch (error) {
-        console.error('Error updating support ticket:', error);
+        console.error('❌ Error updating support ticket:', error);
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log(`✅ Status update mutation succeeded with result:`, data);
+      
+      // Invalidate queries to refresh data
+      console.log(`🔄 Refreshing ticket data for client ID ${clientId} and ticket ID ${activeTicketId}`);
       queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
       queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
+      
+      // Show success message with action-specific text
+      const ticket = getActiveTicket();
+      const statusText = ticket?.status === 'resolved' ? 'resolved' : 
+                         ticket?.status === 'closed' ? 'closed' : 
+                         ticket?.status || 'updated';
+      
       toast({
-        title: 'Support Ticket Updated',
-        description: 'Your support ticket has been updated successfully.',
+        title: 'Success',
+        description: `Your support ticket has been ${statusText} successfully.`,
       });
     },
     onError: (error) => {
-      console.error('Error details:', error);
+      console.error('❌ Error details:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+      
+      // Create descriptive error message
+      let errorMessage = 'Failed to update the ticket. ';
+      
+      if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage += 'Please check your internet connection and try again.';
+      } else if (error.message?.includes('401') || error.message?.includes('auth')) {
+        errorMessage += 'Your session may have expired. Please try logging in again.';
+      } else if (error.message?.includes('404')) {
+        errorMessage += 'The ticket could not be found. It may have been deleted.';
+      } else {
+        errorMessage += error.message || 'Please try again later.';
+      }
+      
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update support ticket. Please try again.',
+        title: 'Error Updating Ticket',
+        description: errorMessage,
         variant: 'destructive',
       });
       
-      // Invalidate queries to ensure UI is updated with latest data
+      // Invalidate queries to ensure UI is updated with latest data even after error
       queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
       queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
     }
@@ -420,8 +469,14 @@ const ClientSupport = () => {
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log(`✅ Ticket creation succeeded with result:`, data);
+      
+      // Invalidate queries to refresh data
+      console.log(`🔄 Refreshing ticket data for client ID ${clientId}`);
       queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+      
+      // Reset form and close dialog
       setCreateTicketOpen(false);
       setNewTicket({
         title: '',
@@ -429,15 +484,31 @@ const ClientSupport = () => {
         priority: 'medium',
         category: 'Technical Issue'
       });
+      
       toast({
         title: 'Support Ticket Created',
         description: 'Your support ticket has been created successfully.',
       });
     },
     onError: (error) => {
+      console.error('❌ Error creating support ticket:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+      
+      // Create descriptive error message
+      let errorMessage = 'Failed to create the ticket. ';
+      
+      if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage += 'Please check your internet connection and try again.';
+      } else if (error.message?.includes('401') || error.message?.includes('auth')) {
+        errorMessage += 'Your session may have expired. Please try logging in again.';
+      } else {
+        errorMessage += error.message || 'Please try again later.';
+      }
+      
       toast({
-        title: 'Error',
-        description: 'Failed to create support ticket. Please try again.',
+        title: 'Error Creating Ticket',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
