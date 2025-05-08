@@ -884,60 +884,40 @@ const ClientSupport = () => {
                           </Button>
                           {(() => {
                             const status = getActiveTicket()?.status;
-                            if (status !== 'closed') {
-                              const isResolved = status === 'resolved';
-                              return (
+                            if (status === 'closed') {
+                              return null;
+                            }
+                            
+                            const isResolved = status === 'resolved';
+                            const newStatus = isResolved ? 'closed' : 'resolved';
+                            
+                            return (
+                              <div className="flex items-center gap-2">
                                 <Button 
                                   variant="outline" 
                                   className={`${
                                     isResolved
-                                      ? 'text-green-600 hover:bg-green-50' 
-                                      : 'text-indigo-600 hover:bg-indigo-50'
+                                      ? 'border-red-200 text-red-600 hover:bg-red-50' 
+                                      : 'border-amber-200 text-amber-600 hover:bg-amber-50'
                                   }`}
-                                  onClick={async () => {
+                                  onClick={() => {
                                     if (!activeTicketId) return;
                                     
-                                    const newStatus = isResolved ? 'closed' : 'resolved';
                                     console.log(`Setting ticket ${activeTicketId} status to ${newStatus}`);
                                     
-                                    try {
-                                      // Try using both methods to maximize chance of success
-                                      
-                                      // 1. First try our mutation (this is what wasn't working reliably)
-                                      updateTicketMutation.mutate({ 
-                                        ticketId: activeTicketId, 
-                                        updateData: { 
-                                          status: newStatus
-                                        } 
-                                      });
-                                      
-                                      // 2. Also try our fallback method with direct GET request
-                                      console.log("ALSO TRYING FALLBACK DIRECT METHOD");
-                                      const fallbackUrl = `/api/simple-resolve-ticket/${activeTicketId}/${newStatus}`;
-                                      console.log(`Fallback URL: ${fallbackUrl}`);
-                                      
-                                      // Make a direct fetch to the fallback endpoint
-                                      const fallbackResponse = await fetch(fallbackUrl);
-                                      console.log("Fallback response:", fallbackResponse.status);
-                                      
-                                      if (fallbackResponse.ok) {
-                                        console.log("Fallback successful, refreshing data");
-                                        // Refresh our data immediately
-                                        queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
-                                        queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
-                                        
-                                        // Force a manual refetch of the active ticket
-                                        const { apiRequest } = await import('@/lib/queryClient');
-                                        apiRequest('GET', `/api/support-tickets/${activeTicketId}`);
-                                      }
-                                    } catch (error) {
-                                      console.error("Error updating ticket:", error);
-                                      // Try to refresh anyway in case server-side update worked
-                                      queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
-                                    }
+                                    // Use our improved mutation with multiple fallback approaches
+                                    updateTicketMutation.mutate({ 
+                                      ticketId: activeTicketId, 
+                                      updateData: { status: newStatus } 
+                                    });
                                   }}
                                   disabled={updateTicketMutation.isPending}
                                 >
+                                  {isResolved 
+                                    ? <Archive className="h-4 w-4 mr-2" /> 
+                                    : <CheckCircle className="h-4 w-4 mr-2" />
+                                  }
+                                  
                                   {updateTicketMutation.isPending 
                                     ? 'Updating...' 
                                     : isResolved
@@ -945,9 +925,15 @@ const ClientSupport = () => {
                                       : 'Mark as Resolved'
                                   }
                                 </Button>
-                              );
-                            }
-                            return null;
+                                
+                                {updateTicketMutation.isPending && (
+                                  <span className="text-xs flex items-center text-slate-500">
+                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                    Processing...
+                                  </span>
+                                )}
+                              </div>
+                            );
                           })()}
                         </CardFooter>
                       </>
