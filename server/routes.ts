@@ -544,11 +544,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/support-tickets", authenticateJWT, async (req, res) => {
     try {
+      // Debug request body
+      console.log('POST /api/support-tickets request body:', req.body);
+      console.log('Request body type:', typeof req.body);
+      console.log('Request body has subject?', req.body && 'subject' in req.body);
+      console.log('Request subject value:', req.body?.subject);
+      
       // Parse request body with necessary defaults
       const bodyData = req.body;
       
+      // Debug the extracted bodyData
+      console.log('Extracted bodyData:', bodyData);
+      console.log('bodyData type:', typeof bodyData);
+      console.log('bodyData has subject?', bodyData && 'subject' in bodyData);
+      console.log('bodyData subject value:', bodyData?.subject);
+      
       // Make sure required fields exist
       if (!bodyData.subject && !bodyData.title) {
+        console.log('VALIDATION FAILED: Missing subject/title field');
         return res.status(400).json({ 
           error: "Subject/title is required for support tickets" 
         });
