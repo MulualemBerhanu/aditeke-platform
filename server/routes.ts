@@ -83,6 +83,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).send(`Error: ${error.message}`);
     }
   });
+  
+  // NEW POST endpoint for ticket status updates (more reliable than PUT)
+  app.post("/api/ticket-status-update/:id", async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id, 10);
+      
+      // Get status from either body, query params, or URL
+      let status = null;
+      
+      // Check for status in the request body
+      if (req.body && req.body.status) {
+        status = req.body.status;
+      } 
+      // Check URL query parameters
+      else if (req.query && req.query.status) {
+        status = req.query.status as string;
+      }
+      
+      console.log(`TICKET-STATUS-UPDATE: Updating ticket ${ticketId} to status ${status}`);
+      console.log("Request details:", {
+        body: req.body,
+        query: req.query,
+        params: req.params,
+        contentType: req.headers['content-type']
+      });
+      
+      if (!ticketId || isNaN(ticketId)) {
+        return res.status(400).json({ error: "Invalid ticket ID" });
+      }
+      
+      if (!status) {
+        return res.status(400).json({ error: "Status is required" });
+      }
+      
+      if (!['resolved', 'closed', 'open', 'in-progress'].includes(status)) {
+        return res.status(400).json({ 
+          error: `Invalid status: ${status}. Must be 'open', 'in-progress', 'resolved' or 'closed'` 
+        });
+      }
+      
+      // Get existing ticket
+      const existingTicket = await storage.getSupportTicket(ticketId);
+      
+      if (!existingTicket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // Update the ticket
+      const updateObj = { 
+        status,
+        updatedAt: new Date() 
+      };
+      
+      const updatedTicket = await storage.updateSupportTicket(ticketId, updateObj);
+      
+      console.log(`TICKET-STATUS-UPDATE: Successfully updated ticket ${ticketId} to status ${status}`);
+      return res.status(200).json(updatedTicket);
+    } catch (error) {
+      console.error("TICKET-STATUS-UPDATE: Error updating ticket:", error);
+      return res.status(500).json({ error: "Failed to update ticket" });
+    }
+  });
 
   // Get the helper middleware for authorization
   const { requirePermission } = app.locals;

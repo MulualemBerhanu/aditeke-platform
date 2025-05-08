@@ -191,23 +191,53 @@ const ClientSupport = () => {
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
         
-        // Always use the client-specific endpoint for ticket status updates
-        // This is a simpler approach that ensures we're using the right endpoint
-        const endpoint = `/api/client-ticket-status/${ticketId}`;
+        // Try multiple approaches for better reliability
+        // 1. First try the new POST-based endpoint
+        const postEndpoint = `/api/ticket-status-update/${ticketId}`;
         
-        console.log(`Updating ticket ${ticketId} using new client-specific endpoint: ${endpoint}`);
+        console.log(`Attempting to update ticket ${ticketId} using POST endpoint: ${postEndpoint}`);
         console.log('Update data:', updateData);
         
         // Only send the status field to ensure we're sending minimal data
         const statusData = { status: updateData.status };
-        const response = await apiRequest('PUT', endpoint, statusData);
         
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to update support ticket');
+        try {
+          const postResponse = await apiRequest('POST', postEndpoint, statusData);
+          
+          if (postResponse.ok) {
+            console.log(`Successfully updated ticket ${ticketId} using POST endpoint`);
+            return await postResponse.json();
+          }
+          
+          console.warn(`POST update failed with status ${postResponse.status}, trying fallback approaches...`);
+        } catch (postError) {
+          console.warn('POST update failed:', postError);
         }
         
-        return await response.json();
+        // 2. Try the PUT endpoint as a fallback
+        const putEndpoint = `/api/client-ticket-status/${ticketId}`;
+        
+        console.log(`Trying fallback PUT endpoint: ${putEndpoint}`);
+        const putResponse = await apiRequest('PUT', putEndpoint, statusData);
+        
+        if (putResponse.ok) {
+          console.log(`Successfully updated ticket ${ticketId} using PUT endpoint`);
+          return await putResponse.json();
+        }
+        
+        // 3. Last resort: simple GET endpoint
+        const getEndpoint = `/api/simple-resolve-ticket/${ticketId}/${updateData.status}`;
+        
+        console.log(`Trying simple GET endpoint as last resort: ${getEndpoint}`);
+        const getResponse = await fetch(getEndpoint);
+        
+        if (getResponse.ok) {
+          console.log(`Successfully updated ticket ${ticketId} using simple GET endpoint`);
+          return await getResponse.json();
+        }
+        
+        // If we get here, all approaches failed
+        throw new Error('All update attempts failed');
       } catch (error) {
         console.error('Error updating support ticket:', error);
         throw error;
