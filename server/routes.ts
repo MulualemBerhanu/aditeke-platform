@@ -2535,7 +2535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.delete('/api/client-documents/:id', authenticateJWT, async (req, res) => {
+  app.delete('/api/client-documents/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -2555,7 +2555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Client Invoices
-  app.get('/api/client-invoices/:clientId', authenticateJWT, async (req, res) => {
+  app.get('/api/client-invoices/:clientId', async (req, res) => {
     try {
       const clientId = parseInt(req.params.clientId);
       if (isNaN(clientId)) {
