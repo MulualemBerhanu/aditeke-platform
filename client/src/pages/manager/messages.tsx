@@ -122,7 +122,7 @@ const ManagerMessages = () => {
 
   // Fetch clients for the dropdown
   const { data: clients, isLoading: clientsLoading } = useQuery({
-    queryKey: ['/api/clients'],
+    queryKey: ['/api/users/clients'],
     queryFn: async () => {
       try {
         const { apiRequest } = await import('@/lib/queryClient');
@@ -133,13 +133,12 @@ const ManagerMessages = () => {
         }
         
         const data = await response.json();
+        console.log('Clients fetched successfully:', data);
         return data;
       } catch (error) {
         console.error('Error fetching clients:', error);
-        // For now, use a sample client for testing
-        return [
-          { id: 2000, name: 'John Doe', email: 'client@aditeke.com' }
-        ];
+        // Return empty array instead of mock data to align with our data integrity policy
+        return [];
       }
     }
   });
