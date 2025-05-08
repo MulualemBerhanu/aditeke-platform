@@ -31,6 +31,7 @@ import {
 import {
   HelpCircle,
   LifeBuoy,
+  Loader2,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -200,8 +201,10 @@ const ClientSupport = () => {
         
         // Only send the status field to ensure we're sending minimal data
         const statusData = { status: updateData.status };
+        console.log(`Sending status data: ${JSON.stringify(statusData)}`);
         
         try {
+          // Use our helper with explicit JSON content
           const postResponse = await apiRequest('POST', postEndpoint, statusData);
           
           if (postResponse.ok) {
