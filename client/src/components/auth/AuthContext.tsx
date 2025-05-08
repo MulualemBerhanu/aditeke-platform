@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -41,6 +41,58 @@ type AuthProviderProps = {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Check if we're in a stuck login state
+  useEffect(() => {
+    const checkForStuckState = () => {
+      const loginTimestamp = localStorage.getItem('loginTimestamp');
+      const loginStatus = localStorage.getItem('loginStatus');
+      const targetRedirect = localStorage.getItem('targetRedirect');
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
+      
+      // If we have a login timestamp that's older than 10 seconds, but we're not fully redirected yet
+      if (loginTimestamp && loginStatus === 'success' && targetRedirect) {
+        const timestamp = parseInt(loginTimestamp);
+        const now = Date.now();
+        const elapsed = now - timestamp;
+        
+        // If more than 10 seconds have passed since login success
+        if (elapsed > 10000) {
+          console.log('Detected stuck login state, attempting recovery...');
+          
+          // Force the redirect
+          window.location.href = targetRedirect;
+        }
+      }
+      
+      // Check for authentication token expiration
+      if (isAuthenticated === 'true') {
+        try {
+          // Attempt to refresh the token
+          fetch('/api/user', {
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          }).catch(() => {
+            console.log('Silent token refresh attempt');
+          });
+        } catch (e) {
+          // Ignore fetch errors in background refresh
+        }
+      }
+    };
+    
+    // Check immediately
+    checkForStuckState();
+    
+    // Set interval to check every 5 seconds
+    const interval = setInterval(checkForStuckState, 5000);
+    
+    // Clean up
+    return () => clearInterval(interval);
+  }, []);
 
   // Query to get the current user
   const { 

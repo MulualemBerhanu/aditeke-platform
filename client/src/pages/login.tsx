@@ -334,10 +334,22 @@ export default function LoginPage() {
       
       // Force a small delay to give time for localStorage to update
       setTimeout(() => {
-        // Skip React routing entirely and use direct browser navigation
+        // Skip React routing entirely and use direct browser navigation with forced reload
         // This ensures we completely reload the page and avoid any React state issues
-        window.location.href = redirectUrl;
-      }, 800); // Slightly longer delay for deployed environments
+        if (redirectUrl.includes('/client/')) {
+          console.log('Redirecting to client dashboard with special handling');
+          
+          // For client dashboard, use an extra flag to help with redirection
+          sessionStorage.setItem('redirectAfterLoad', 'true');
+          sessionStorage.setItem('redirectUrl', redirectUrl);
+          
+          // Add timestamp to URL to avoid caching issues during redirection
+          window.location.href = redirectUrl + '?ts=' + Date.now();
+        } else {
+          // Standard redirect for other roles
+          window.location.href = redirectUrl;
+        }
+      }, 1000); // Longer delay for more reliable redirection
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion
