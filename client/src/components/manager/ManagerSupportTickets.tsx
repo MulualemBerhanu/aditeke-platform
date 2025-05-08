@@ -301,7 +301,7 @@ const ManagerSupportTickets: React.FC<ManagerSupportTicketsProps> = ({ selectedC
       setNewReply('');
       
       // Refresh ticket data
-      queryClient.invalidateQueries({ queryKey: ['/api/manager-support-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/all-support-tickets'] });
       queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
     },
     onError: (error: Error) => {

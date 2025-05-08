@@ -123,6 +123,9 @@ export interface IStorage {
   getSupportTicket(id: number): Promise<ClientSupportTicket | undefined>;
   createSupportTicket(ticket: InsertClientSupportTicket): Promise<ClientSupportTicket>;
   updateSupportTicket(id: number, ticketData: Partial<InsertClientSupportTicket>): Promise<ClientSupportTicket>;
+  getAllSupportTickets(): Promise<ClientSupportTicket[]>; 
+  addTicketMessage(message: { ticketId: number, userId: number, userName: string, userRole: string, message: string, createdAt: Date }): Promise<any>;
+  getUsersByRole(roleId: number): Promise<User[]>;
 }
 
 export class MemStorage implements IStorage {
