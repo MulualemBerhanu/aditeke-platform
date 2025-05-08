@@ -78,55 +78,22 @@ app.use((req, res, next) => {
       // Store raw body for later use
       req.rawBody = rawData;
       
-      // List of routes that might need special handling for request body
-      const specialRoutes = [
-        '/api/client-communications',
-        '/api/public/contact',
-        '/api/login',
-        '/api/logout',
-        '/api/register',
-        '/api/firebase/login',
-        '/api/refresh-token'
-      ];
-      
       // Special handling for problematic routes
-      if (specialRoutes.includes(req.path) || req.path.startsWith('/api/messages')) {
-        // Only log non-sensitive routes
-        if (req.path !== '/api/login' && req.path !== '/api/register') {
-          console.log(`Raw request body for ${req.path}:`, rawData);
-        }
+      if (req.path === '/api/client-communications' || req.path === '/api/public/contact') {
+        console.log(`Raw request body for ${req.path}:`, rawData);
         
-        // Only try to parse if content-type is JSON or missing (some clients omit it)
+        // Only try to parse if content-type is JSON
         const contentType = req.headers['content-type'];
-        if (!contentType || contentType.includes('application/json') || contentType.includes('text/plain')) {
+        if (contentType && contentType.includes('application/json')) {
           try {
-            // If the body is empty or parsing previously failed, try to parse the raw data
-            if (!req.body || Object.keys(req.body || {}).length === 0) {
-              try {
-                const parsedData = JSON.parse(rawData);
-                req.body = parsedData;
-                console.log(`Successfully parsed raw data into JSON for ${req.path}`);
-              } catch (parseError) {
-                // If it's not valid JSON but we have data, try to use it as-is for certain routes
-                if (rawData && (req.path === '/api/login' || req.path === '/api/register')) {
-                  try {
-                    // Try to extract username/password from raw data
-                    const matches = rawData.match(/username=([^&]*)&password=([^&]*)/);
-                    if (matches && matches.length >= 3) {
-                      req.body = {
-                        username: decodeURIComponent(matches[1].replace(/\+/g, ' ')),
-                        password: decodeURIComponent(matches[2].replace(/\+/g, ' '))
-                      };
-                      console.log(`Extracted credentials from form data for ${req.path}`);
-                    }
-                  } catch (formError) {
-                    console.error(`Failed to extract form data for ${req.path}:`, formError);
-                  }
-                }
-              }
+            // Try to parse as JSON and attach to req.body if original parsing failed
+            if (Object.keys(req.body || {}).length === 0) {
+              const parsedData = JSON.parse(rawData);
+              req.body = parsedData;
+              console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
             }
           } catch (e) {
-            console.error(`Error handling request body for ${req.path}:`, e);
+            console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
           }
         }
       }

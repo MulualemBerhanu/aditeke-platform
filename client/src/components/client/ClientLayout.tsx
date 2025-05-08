@@ -104,26 +104,6 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check for post-login redirection
-  useEffect(() => {
-    // Check if we need to handle a post-login redirect
-    const redirectAfterLoad = sessionStorage.getItem('redirectAfterLoad');
-    const redirectUrl = sessionStorage.getItem('redirectUrl');
-    
-    if (redirectAfterLoad === 'true' && redirectUrl) {
-      console.log('Processing post-login redirect to:', redirectUrl);
-      
-      // Clear the redirect flags from session storage
-      sessionStorage.removeItem('redirectAfterLoad');
-      sessionStorage.removeItem('redirectUrl');
-      
-      // Force a reload to ensure authentication is fully processed
-      if (window.location.pathname !== redirectUrl) {
-        window.location.href = redirectUrl;
-      }
-    }
-  }, []);
-
   // Close mobile sidebar on navigation
   useEffect(() => {
     if (isMobile) {

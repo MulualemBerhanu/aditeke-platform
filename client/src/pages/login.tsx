@@ -225,40 +225,25 @@ export default function LoginPage() {
 
         console.log('CSRF token for login request:', csrfToken ? 'Found' : 'Not found');
         
-        // Normal authentication flow using API with enhanced error handling
+        // Normal authentication flow using API
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
             ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
           },
           body: JSON.stringify({
             username: data.username,
-            password: data.password,
-            requestTime: Date.now() // Add timestamp to avoid caching issues
+            password: data.password
           }),
           credentials: 'include'
         });
         
         if (!response.ok) {
-          // Try to get error details from response
-          try {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Authentication failed. Please check your credentials.');
-          } catch (parseError) {
-            // If we can't parse the error, throw a generic one
-            throw new Error(`Authentication failed (${response.status}). Please check your credentials.`);
-          }
+          throw new Error('Authentication failed. Please check your credentials.');
         }
         
-        try {
-          userData = await response.json();
-          console.log('Authentication successful, received user data');
-        } catch (jsonError) {
-          console.error('Error parsing login response:', jsonError);
-          throw new Error('Server returned invalid data. Please try again.');
-        }
+        userData = await response.json();
       } catch (error) {
         // Try the context login as fallback
         if (!isDeployedEnv) {
@@ -349,22 +334,10 @@ export default function LoginPage() {
       
       // Force a small delay to give time for localStorage to update
       setTimeout(() => {
-        // Skip React routing entirely and use direct browser navigation with forced reload
+        // Skip React routing entirely and use direct browser navigation
         // This ensures we completely reload the page and avoid any React state issues
-        if (redirectUrl.includes('/client/')) {
-          console.log('Redirecting to client dashboard with special handling');
-          
-          // For client dashboard, use an extra flag to help with redirection
-          sessionStorage.setItem('redirectAfterLoad', 'true');
-          sessionStorage.setItem('redirectUrl', redirectUrl);
-          
-          // Add timestamp to URL to avoid caching issues during redirection
-          window.location.href = redirectUrl + '?ts=' + Date.now();
-        } else {
-          // Standard redirect for other roles
-          window.location.href = redirectUrl;
-        }
-      }, 1000); // Longer delay for more reliable redirection
+        window.location.href = redirectUrl;
+      }, 800); // Slightly longer delay for deployed environments
       
     } catch (error) {
       // Remove any auth-related localStorage items to prevent confusion

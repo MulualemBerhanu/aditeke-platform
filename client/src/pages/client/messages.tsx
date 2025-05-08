@@ -313,28 +313,12 @@ const ClientMessages = () => {
     return messages?.find((m: Message) => m.id === activeMessageId);
   };
 
-  // Sort messages by createdAt date (newest first)
-  const sortedMessages = messages ? 
-    [...messages].sort((a: Message, b: Message) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) 
-    : [];
-    
   // Filter messages by unread/read using isRead property
-  const unreadMessages = sortedMessages.filter((m: Message) => !m.isRead) || [];
-  const readMessages = sortedMessages.filter((m: Message) => m.isRead) || [];
+  const unreadMessages = messages?.filter((m: Message) => !m.isRead) || [];
+  const readMessages = messages?.filter((m: Message) => m.isRead) || [];
   
-  // Sent messages are client-initiated messages (where clientId === user's ID and managerId exists)
-  // This will identify messages sent by the client to managers
-  const sentMessages = sortedMessages.filter((m: Message) => {
-    // A message is considered "sent" if it was created by the client
-    // We can identify this by looking at the most recent ones with the client's ID
-    // and a timestamp that's very recent (last 5 minutes)
-    const messageTime = new Date(m.createdAt).getTime();
-    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000); // 5 minutes in milliseconds
-    
-    // If the message is less than 5 minutes old, consider it "sent"
-    return messageTime > fiveMinutesAgo;
-  });
+  // Sent messages would be from client to manager (not implemented yet)
+  const sentMessages = [] // Will implement this with real data when available
   
   if (error) {
     toast({
@@ -558,9 +542,9 @@ const ClientMessages = () => {
 
                     <TabsContent value="all" className="m-0 mt-2">
                       <ScrollArea className="h-[500px]">
-                        {sortedMessages.length > 0 ? (
+                        {messages.length > 0 ? (
                           <div className="space-y-1">
-                            {sortedMessages.map((message: Message) => (
+                            {messages.map((message: Message) => (
                               <div
                                 key={message.id}
                                 onClick={() => handleMessageClick(message.id)}
@@ -601,45 +585,9 @@ const ClientMessages = () => {
                     </TabsContent>
 
                     <TabsContent value="sent" className="m-0 mt-2">
-                      <ScrollArea className="h-[500px]">
-                        {sentMessages.length > 0 ? (
-                          <div className="space-y-1">
-                            {sentMessages.map((message: Message) => (
-                              <div
-                                key={message.id}
-                                onClick={() => handleMessageClick(message.id)}
-                                className={`p-3 cursor-pointer hover:bg-slate-50 rounded-md transition-colors ${
-                                  activeMessageId === message.id ? 'bg-slate-100' : ''
-                                }`}
-                              >
-                                <div className="flex items-start space-x-3">
-                                  <Avatar>
-                                    <AvatarFallback className="bg-green-100 text-green-600">
-                                      {user?.name?.[0] || user?.username?.[0] || 'U'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <p className="font-medium text-sm truncate">
-                                        {message.subject || 'No Subject'}
-                                      </p>
-                                      <Send className="h-3 w-3 text-green-600 flex-shrink-0" />
-                                    </div>
-                                    <p className="text-xs text-slate-500 truncate">{message.message}</p>
-                                    <p className="text-xs text-slate-400 mt-1">
-                                      {formatDistance(new Date(message.createdAt), new Date(), { addSuffix: true })}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="p-6 text-center">
-                            <p className="text-slate-500">No sent messages</p>
-                          </div>
-                        )}
-                      </ScrollArea>
+                      <div className="p-6 text-center">
+                        <p className="text-slate-500">Sent messages feature coming soon</p>
+                      </div>
                     </TabsContent>
                   </Tabs>
                 </CardHeader>
