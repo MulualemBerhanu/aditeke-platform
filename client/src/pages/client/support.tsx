@@ -186,7 +186,16 @@ const ClientSupport = () => {
   });
 
   // Helper function to try multiple approaches for ticket status updates
-  const tryUpdateTicketStatus = async (ticketId: number, status: string) => {
+  const tryUpdateTicketStatus = async (ticketId: number, status: string): Promise<any> => {
+    // Input validation
+    if (!ticketId || typeof ticketId !== 'number') {
+      throw new Error(`Invalid ticket ID: ${ticketId} (${typeof ticketId})`);
+    }
+    
+    if (!status || typeof status !== 'string') {
+      throw new Error(`Invalid status: ${status} (${typeof status})`);
+    }
+    
     console.log(`🔄 Attempting to update ticket ${ticketId} to status ${status} with multiple approaches`);
     console.log(`🔄 Current time: ${new Date().toISOString()}`);
     console.log(`🔄 Ticket ID type: ${typeof ticketId}`);
@@ -230,8 +239,9 @@ const ClientSupport = () => {
         errors.push(`POST approach failed: ${postResponse.status} - ${errorText}`);
         console.warn(`⚠️ POST approach failed: ${postResponse.status}`, errorText);
       }
-    } catch (error) {
-      errors.push(`POST approach error: ${error.message}`);
+    } catch (err) {
+      const error = err as Error;
+      errors.push(`POST approach error: ${error.message || 'Unknown error'}`);
       console.warn(`⚠️ POST approach error:`, error);
     }
     
@@ -258,8 +268,9 @@ const ClientSupport = () => {
         errors.push(`PUT approach failed: ${putResponse.status} - ${errorText}`);
         console.warn(`⚠️ PUT approach failed: ${putResponse.status}`, errorText);
       }
-    } catch (error) {
-      errors.push(`PUT approach error: ${error.message}`);
+    } catch (err) {
+      const error = err as Error;
+      errors.push(`PUT approach error: ${error.message || 'Unknown error'}`);
       console.warn(`⚠️ PUT approach error:`, error);
     }
     
@@ -277,8 +288,9 @@ const ClientSupport = () => {
         errors.push(`GET approach failed: ${getResponse.status} - ${errorText}`);
         console.warn(`⚠️ GET approach failed: ${getResponse.status}`, errorText);
       }
-    } catch (error) {
-      errors.push(`GET approach error: ${error.message}`);
+    } catch (err) {
+      const error = err as Error;
+      errors.push(`GET approach error: ${error.message || 'Unknown error'}`);
       console.warn(`⚠️ GET approach error:`, error);
     }
     
@@ -289,8 +301,8 @@ const ClientSupport = () => {
       const minimalResponse = await fetch(`/api/minimal-ticket-update/${ticketId}/${status}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+          'Authorization': `Bearer ${authToken}`,
+          'X-CSRF-Token': csrfToken
         },
         credentials: 'include'
       });
@@ -303,8 +315,9 @@ const ClientSupport = () => {
         errors.push(`Minimal endpoint approach failed: ${minimalResponse.status} - ${errorText}`);
         console.warn(`⚠️ Minimal endpoint approach failed: ${minimalResponse.status}`, errorText);
       }
-    } catch (error) {
-      errors.push(`Minimal endpoint approach error: ${error.message}`);
+    } catch (err) {
+      const error = err as Error;
+      errors.push(`Minimal endpoint approach error: ${error.message || 'Unknown error'}`);
       console.warn(`⚠️ Minimal endpoint approach error:`, error);
     }
     
@@ -315,8 +328,8 @@ const ClientSupport = () => {
       const queryResponse = await fetch(`/api/ticket-status-update/${ticketId}?status=${status}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-          'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+          'Authorization': `Bearer ${authToken}`,
+          'X-CSRF-Token': csrfToken
         },
         credentials: 'include'
       });
@@ -429,12 +442,20 @@ const ClientSupport = () => {
           };
           
           console.log('Using raw endpoint for ticket creation:', ticketPayload);
+          // Get current auth tokens
+          const authToken = localStorage.getItem('access_token');
+          const csrfToken = document.cookie.match(/csrf_token=([^;]+)/)?.[1] || '';
+          
+          console.log(`🔐 Auth token available for ticket creation: ${!!authToken}`);
+          console.log(`🔐 Auth token length: ${authToken?.length || 0}`);
+          console.log(`🔐 CSRF token available: ${!!csrfToken}`);
+          
           const rawResponse = await fetch('/api/raw-support-tickets', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-              'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+              'Authorization': `Bearer ${authToken}`,
+              'X-CSRF-Token': csrfToken
             },
             body: JSON.stringify(ticketPayload),
             credentials: 'include'
