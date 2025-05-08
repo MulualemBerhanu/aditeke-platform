@@ -342,8 +342,9 @@ const ClientSupport = () => {
         errors.push(`Query param approach failed: ${queryResponse.status} - ${errorText}`);
         console.warn(`⚠️ Query param approach failed: ${queryResponse.status}`, errorText);
       }
-    } catch (error) {
-      errors.push(`Query param approach error: ${error.message}`);
+    } catch (err) {
+      const error = err as Error;
+      errors.push(`Query param approach error: ${error.message || 'Unknown error'}`);
       console.warn(`⚠️ Query param approach error:`, error);
     }
     
