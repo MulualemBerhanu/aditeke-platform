@@ -693,11 +693,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Client ${req.user.id} updating ticket ${ticketId} status to ${status}`);
       
-      // Update the ticket status
+      // Update the ticket status (only use status field without updatedAt)
       const updatedTicket = await storage.updateSupportTicket(ticketId, {
-        status,
-        updatedAt: new Date()
+        status
       });
+      
+      // Manually update our ticket's updatedAt field - note this is handled automatically by
+      // the updateSupportTicket method so we don't need to pass it explicitly
       
       console.log(`Ticket ${ticketId} status successfully updated to ${status}`);
       res.json(updatedTicket);

@@ -183,13 +183,23 @@ const ClientSupport = () => {
     retry: 2, // Increase retries for authentication issues
   });
 
-  // Update ticket mutation
+  // Update ticket mutation - with client-specific endpoint for status updates
   const updateTicketMutation = useMutation({
     mutationFn: async ({ ticketId, updateData }: { ticketId: number, updateData: any }) => {
       try {
         // Use the apiRequest helper which handles authentication properly
         const { apiRequest } = await import('@/lib/queryClient');
-        const response = await apiRequest('PUT', `/api/support-tickets/${ticketId}`, updateData);
+        
+        // Use our new client-specific endpoint if this is just a status update
+        const isStatusOnlyUpdate = Object.keys(updateData).length === 1 && 'status' in updateData;
+        const endpoint = isStatusOnlyUpdate 
+          ? `/api/client-ticket-status/${ticketId}`
+          : `/api/support-tickets/${ticketId}`;
+        
+        console.log(`Updating ticket ${ticketId} using endpoint: ${endpoint}`);
+        console.log('Update data:', updateData);
+        
+        const response = await apiRequest('PUT', endpoint, updateData);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -211,11 +221,16 @@ const ClientSupport = () => {
       });
     },
     onError: (error) => {
+      console.error('Error details:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update support ticket. Please try again.',
+        description: error.message || 'Failed to update support ticket. Please try again.',
         variant: 'destructive',
       });
+      
+      // Invalidate queries to ensure UI is updated with latest data
+      queryClient.invalidateQueries({ queryKey: ['/api/client-support-tickets', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
     }
   });
   
