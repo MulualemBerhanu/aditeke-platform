@@ -54,12 +54,12 @@ app.use((req, res, next) => {
 
 // Configure JSON parser to be more permissive with content types
 app.use(express.json({
-  type: ['application/json', 'application/json; charset=utf-8', '+json', '*/json', 'application/json; charset=UTF-8, application/json; charset=UTF-8'],
+  type: ['application/json', 'application/json; charset=utf-8', '+json', '*/json', 'application/json; charset=UTF-8', 'application/json, application/json'],
   limit: '10mb',
   strict: false // Allow any JSON-like input
 }));
 
-// Add raw body parser for debugging
+// Add raw body parser for debugging certain APIs
 app.use((req, res, next) => {
   if (req.method === 'POST' && (req.path === '/api/public/contact' || req.path === '/api/client-communications')) {
     let rawData = '';
@@ -78,6 +78,37 @@ app.use((req, res, next) => {
         console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
       } catch (e) {
         console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
+      }
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
+// Special parser for support tickets to handle content-type issues
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.path.includes('support-tickets') && !req.body && req.headers['content-type']) {
+    console.log('Special handling for support tickets with content-type:', req.headers['content-type']);
+    
+    let rawData = '';
+    req.setEncoding('utf8');
+    
+    req.on('data', (chunk) => {
+      rawData += chunk;
+    });
+    
+    req.on('end', () => {
+      console.log(`Raw support ticket data (${req.path}):`, rawData);
+      if (rawData) {
+        try {
+          // Try to parse as JSON and attach to req.body
+          const parsedData = JSON.parse(rawData);
+          req.body = parsedData;
+          console.log(`Successfully parsed support ticket data:`, parsedData);
+        } catch (e) {
+          console.error(`Failed to parse support ticket data as JSON:`, e);
+        }
       }
       next();
     });
