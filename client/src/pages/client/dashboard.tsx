@@ -667,7 +667,11 @@ export default function ClientDashboard() {
                             <MessageSquare className="h-4 w-4 mr-1" />
                             <span>3 responses</span>
                           </div>
-                          <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                          <Button 
+                            size="sm" 
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            onClick={() => window.location.href = '/client/support/1'} // Navigate to first ticket detail
+                          >
                             View Ticket
                           </Button>
                         </div>
@@ -676,7 +680,10 @@ export default function ClientDashboard() {
                   </div>
 
                   <div className="mt-6">
-                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button 
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                      onClick={() => window.location.href = '/client/support'}
+                    >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Create New Support Ticket
                     </Button>

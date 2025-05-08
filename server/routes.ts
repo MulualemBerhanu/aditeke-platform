@@ -341,18 +341,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Client Support Tickets endpoints
   app.get("/api/client-support-tickets/:clientId", authenticateJWT, async (req, res) => {
     try {
+      // Log authentication info for debugging
+      console.log("Auth Headers:", req.headers);
+      
+      if (!req.user) {
+        console.log("User not authenticated in request");
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
       // Convert clientId parameter to number
       const clientId = parseInt(req.params.clientId, 10);
       
+      console.log(`User requesting communications: ${req.user.id} (role: ${req.user.roleId}) for client ID: ${clientId}`);
+      
       // Check if the user is requesting their own tickets or has manager/admin permissions
-      if (req.user?.id !== clientId && req.user?.roleId !== 1000 && req.user?.roleId !== 1002) {
+      if (req.user.id !== clientId && req.user.roleId !== 1000 && req.user.roleId !== 1002) {
         // 1000 is manager role, 1002 is admin role
+        console.log(`Access denied - user ${req.user.id} (role: ${req.user.roleId}) trying to access client ${clientId} tickets`);
         return res.status(403).json({ error: "Unauthorized to access these tickets" });
       }
       
       console.log(`Fetching support tickets for client ID: ${clientId}`);
       const tickets = await storage.getClientSupportTickets(clientId);
       
+      console.log(`Found ${tickets.length} tickets for client ${clientId}`);
       res.json(tickets);
     } catch (error) {
       console.error("Error fetching client support tickets:", error);
@@ -363,16 +375,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new client support ticket
   app.post("/api/client-support-tickets", authenticateJWT, async (req, res) => {
     try {
+      // Debug authentication info
+      console.log("Auth Headers for create ticket:", req.headers);
+      
+      if (!req.user) {
+        console.log("User not authenticated in request for ticket creation");
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
       // Parse request body
       const ticketData = {
         ...req.body,
-        createdAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
+      // Add user info for debugging
+      console.log(`User creating ticket: ${req.user.id} (role: ${req.user.roleId}) for client ID: ${ticketData.clientId}`);
+      
       // Ensure only clients can create tickets for themselves
-      if (req.user?.roleId === 1001) {
+      if (req.user.roleId === 1001) {
         // If the user is a client, ensure clientId matches authenticated user
         if (ticketData.clientId !== req.user.id) {
+          console.log(`Client ${req.user.id} trying to create ticket for another client ${ticketData.clientId}`);
           return res.status(403).json({ 
             error: "You can only create tickets for yourself"
           });
@@ -382,6 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating new client support ticket:", ticketData);
       const ticket = await storage.createSupportTicket(ticketData);
       
+      console.log("Support ticket created successfully:", ticket);
       res.status(201).json(ticket);
     } catch (error) {
       console.error("Error creating client support ticket:", error);
