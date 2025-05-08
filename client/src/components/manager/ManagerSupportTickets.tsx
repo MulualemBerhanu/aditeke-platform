@@ -122,7 +122,7 @@ const ManagerSupportTickets: React.FC<ManagerSupportTicketsProps> = ({ selectedC
     isLoading: isLoadingTickets, 
     error: ticketsError
   } = useQuery({
-    queryKey: ['/api/manager-support-tickets', selectedClientId],
+    queryKey: ['/api/all-support-tickets', selectedClientId],
     queryFn: async () => {
       try {
         console.log('Fetching support tickets for manager view');
@@ -234,7 +234,7 @@ const ManagerSupportTickets: React.FC<ManagerSupportTicketsProps> = ({ selectedC
       });
       
       // Refresh ticket data
-      queryClient.invalidateQueries({ queryKey: ['/api/manager-support-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/all-support-tickets'] });
       queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
     },
     onError: (error: Error) => {
@@ -266,7 +266,7 @@ const ManagerSupportTickets: React.FC<ManagerSupportTicketsProps> = ({ selectedC
       });
       
       // Refresh ticket data
-      queryClient.invalidateQueries({ queryKey: ['/api/manager-support-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/all-support-tickets'] });
       queryClient.invalidateQueries({ queryKey: ['/api/support-tickets', activeTicketId] });
     },
     onError: (error: Error) => {
