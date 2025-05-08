@@ -709,7 +709,7 @@ export function setupAuth(app: Express) {
     
     // Check if the path starts with /api/public/ or is in the publicPaths list
     const isPublicPath = req.path.startsWith('/api/public/') || 
-                         publicPaths.includes(req.path) ||
+                         additionalPublicPaths.includes(req.path) ||
                          // Special case for blog posts, testimonials, etc. with IDs
                          req.path.match(/^\/api\/(services|projects|testimonials|blog)\/\d+$/);
     
