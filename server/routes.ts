@@ -395,31 +395,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (process.env.NODE_ENV === 'development' || true) { // Always use development mode for now
         console.log('Development mode: Skipping auth for support ticket creation');
         
-        // Parse request body
+        // Parse request body with necessary defaults
+        const bodyData = req.body;
+        
+        // Make sure required fields exist
+        if (!bodyData.subject && !bodyData.title) {
+          return res.status(400).json({ 
+            error: "Subject/title is required for support tickets" 
+          });
+        }
+        
+        if (!bodyData.description) {
+          return res.status(400).json({ 
+            error: "Description is required for support tickets" 
+          });
+        }
+        
+        // Build complete ticket data
         const ticketData = {
-          ...req.body,
-          createdAt: new Date().toISOString()
+          // Required fields
+          clientId: bodyData.clientId || 2000, // Default client ID for development
+          subject: bodyData.subject || bodyData.title,
+          description: bodyData.description,
+          
+          // Optional fields with defaults
+          status: bodyData.status || 'open',
+          priority: bodyData.priority || 'medium',
+          category: bodyData.category || 'Technical Issue',
+          createdAt: new Date().toISOString(),
         };
-        
-        // For development or testing, allow using a hardcoded client ID if not provided
-        if (!ticketData.clientId) {
-          console.log('Setting default client ID for development');
-          ticketData.clientId = 2000; // Default client ID for development
-        }
-        
-        // Override with subject/title mapping
-        if (ticketData.title && !ticketData.subject) {
-          ticketData.subject = ticketData.title;
-          delete ticketData.title; // Remove the title field as schema uses subject
-        }
         
         console.log("Creating new client support ticket (development mode):", ticketData);
         const ticket = await storage.createSupportTicket(ticketData);
-        
-        // Make sure we have the complete ticket data to return
-        if (!ticket.subject && ticketData.subject) {
-          ticket.subject = ticketData.subject;
-        }
         
         console.log("Support ticket created successfully (development mode):", ticket);
         return res.status(201).json(ticket);
@@ -431,17 +438,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Authentication required" });
       }
       
-      // Parse request body
+      // Parse request body with necessary defaults
+      const bodyData = req.body;
+      
+      // Make sure required fields exist
+      if (!bodyData.subject && !bodyData.title) {
+        return res.status(400).json({ 
+          error: "Subject/title is required for support tickets" 
+        });
+      }
+      
+      if (!bodyData.description) {
+        return res.status(400).json({ 
+          error: "Description is required for support tickets" 
+        });
+      }
+      
+      // Build complete ticket data
       const ticketData = {
-        ...req.body,
-        createdAt: new Date().toISOString()
+        // Required fields
+        clientId: bodyData.clientId || req.user?.id,
+        subject: bodyData.subject || bodyData.title,
+        description: bodyData.description,
+        
+        // Optional fields with defaults
+        status: bodyData.status || 'open',
+        priority: bodyData.priority || 'medium',
+        category: bodyData.category || 'Technical Issue',
+        createdAt: new Date().toISOString(),
       };
       
       // Add user info for debugging
-      console.log(`User creating ticket: ${req.user.id} (role: ${req.user.roleId}) for client ID: ${ticketData.clientId}`);
+      console.log(`User creating ticket: ${req.user?.id} (role: ${req.user?.roleId}) for client ID: ${ticketData.clientId}`);
       
       // Ensure only clients can create tickets for themselves or managers/admins can create for any client
-      if (req.user.roleId === 1001) { // Client role
+      if (req.user?.roleId === 1001) { // Client role
         // If the user is a client, ensure clientId matches authenticated user
         if (ticketData.clientId !== req.user.id) {
           console.log(`Client ${req.user.id} trying to create ticket for another client ${ticketData.clientId}`);
@@ -451,19 +482,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Override with subject/title mapping
-      if (ticketData.title && !ticketData.subject) {
-        ticketData.subject = ticketData.title;
-        delete ticketData.title; // Remove the title field as schema uses subject
-      }
-      
       console.log("Creating new client support ticket:", ticketData);
       const ticket = await storage.createSupportTicket(ticketData);
-      
-      // Make sure we have the complete ticket data to return
-      if (!ticket.subject && ticketData.subject) {
-        ticket.subject = ticketData.subject;
-      }
       
       console.log("Support ticket created successfully:", ticket);
       res.status(201).json(ticket);
@@ -524,9 +544,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/support-tickets", authenticateJWT, async (req, res) => {
     try {
-      // Parse request body
+      // Parse request body with necessary defaults
+      const bodyData = req.body;
+      
+      // Make sure required fields exist
+      if (!bodyData.subject && !bodyData.title) {
+        return res.status(400).json({ 
+          error: "Subject/title is required for support tickets" 
+        });
+      }
+      
+      if (!bodyData.description) {
+        return res.status(400).json({ 
+          error: "Description is required for support tickets" 
+        });
+      }
+      
+      // Build complete ticket data
       const ticketData = {
-        ...req.body,
+        // Required fields
+        clientId: bodyData.clientId || req.user?.id,
+        subject: bodyData.subject || bodyData.title,
+        description: bodyData.description,
+        
+        // Optional fields with defaults
+        status: bodyData.status || 'open',
+        priority: bodyData.priority || 'medium',
+        category: bodyData.category || 'Technical Issue',
         createdAt: new Date()
       };
       
