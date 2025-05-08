@@ -2201,43 +2201,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
     try {
-      // Check if we have a token
-      const tokenExists = !!req.cookies?.csrf_token;
+      // Simple, reliable implementation that always generates a new token for testing
+      const newToken = require('crypto').randomBytes(16).toString('hex');
       
-      // Force generate a new token for Replit environments to ensure it's always valid
-      const isReplitEnv = req.hostname.includes('replit.dev') || 
-                          req.hostname.includes('replit.app') ||
-                          process.env.NODE_ENV === 'development';
+      // Use simple cookie settings that will work in all environments
+      res.cookie('csrf_token', newToken, {
+        httpOnly: false,
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000
+      });
       
-      // If no token exists or we're in Replit, generate a new one
-      if (!tokenExists || isReplitEnv) {
-        const newToken = require('crypto').randomBytes(32).toString('hex');
-        
-        // Determine cookie settings based on environment
-        const cookieSettings = {
-          httpOnly: false,
-          secure: false, // Always false for testing
-          sameSite: 'lax' as const,
-          path: '/',
-          maxAge: 24 * 60 * 60 * 1000
-        };
-        
-        res.cookie('csrf_token', newToken, cookieSettings);
-        
-        console.log('Generated new CSRF token for client:', newToken);
-        
-        return res.json({
-          message: "New CSRF token generated and set in cookie",
-          csrfToken: newToken
-        });
-      } else {
-        console.log('Using existing CSRF token from cookie:', req.cookies.csrf_token);
-        
-        return res.json({
-          message: "Using existing CSRF token from cookie",
-          csrfToken: req.cookies.csrf_token
-        });
-      }
+      console.log('Generated new CSRF token:', newToken);
+      
+      return res.json({
+        message: "New CSRF token generated and set in cookie",
+        csrfToken: newToken
+      });
     } catch (error) {
       console.error('Error in CSRF test endpoint:', error);
       return res.status(500).json({
