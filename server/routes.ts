@@ -2200,10 +2200,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
-    // Simplified CSRF token generator - always returns a new token with minimal logic
-    const token = require('crypto').randomBytes(8).toString('hex');
-    res.cookie('csrf_token', token, { httpOnly: false, path: '/' });
-    res.json({ csrfToken: token });
+    try {
+      // Simplified CSRF token generator - always returns a new token with minimal logic
+      const token = require('crypto').randomBytes(8).toString('hex');
+      res.cookie('csrf_token', token, { httpOnly: false, path: '/' });
+      res.json({ csrfToken: token, message: "CSRF token generated successfully" });
+    } catch (error) {
+      console.error('Error generating CSRF token:', error);
+      res.status(500).json({ 
+        error: "Failed to generate CSRF token",
+        message: error.message || "Unknown error" 
+      });
+    }
   });
   
   // Test endpoint that requires CSRF protection (POST) but not authentication
@@ -2215,14 +2223,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('- Header token:', req.headers['x-csrf-token']);
       console.log('- Request method:', req.method);
       console.log('- Request path:', req.path);
-      console.log('- Request body:', req.body);
+      console.log('- Request body:', req.body ? JSON.stringify(req.body) : 'undefined');
       console.log('- Raw body exists:', !!req.rawBody);
       
       // Parse raw body as a fallback if req.body is empty
-      let parsedBody = req.body;
-      if (req.rawBody && Object.keys(req.body || {}).length === 0) {
+      let parsedBody = req.body || {};
+      if (req.rawBody && (Object.keys(req.body || {}).length === 0)) {
         try {
-          parsedBody = JSON.parse(req.rawBody);
+          const rawBodyStr = typeof req.rawBody === 'string' ? req.rawBody : req.rawBody.toString();
+          parsedBody = JSON.parse(rawBodyStr);
           console.log('Parsed raw body as fallback:', parsedBody);
         } catch (parseError) {
           console.error('Failed to parse raw body:', parseError);
@@ -2232,7 +2241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({
         success: true,
         message: "CSRF protected POST request successful",
-        requestBody: parsedBody || req.body,
+        requestBody: parsedBody,
         csrfInfo: {
           cookieToken: req.cookies?.csrf_token || 'No cookie token',
           headerToken: req.headers['x-csrf-token'] || 'No header token',
@@ -2242,7 +2251,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in CSRF test POST endpoint:', error);
       return res.status(500).json({
-        message: "Error processing CSRF test",
+        success: false,
+        message: "CSRF test failed",
         error: error instanceof Error ? error.message : String(error)
       });
     }
