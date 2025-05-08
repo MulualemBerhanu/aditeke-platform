@@ -206,8 +206,10 @@ const ClientMessages = () => {
     
     // Send to manager (using manager ID 50000 as found in database)
     // We use the clientCommunications schema format now
+    // IMPORTANT: We should NOT include clientId in the request body
+    // The server will automatically set it based on the authenticated user
     sendMessageMutation.mutate({
-      clientId: clientId,
+      // Remove clientId from request to avoid permissions issues
       managerId: 50000, // Manager ID from our database
       subject: newMessage.urgent ? `[URGENT] ${newMessage.subject}` : newMessage.subject,
       message: newMessage.content,
@@ -274,9 +276,12 @@ const ClientMessages = () => {
     // Ensure we have a valid numeric clientId (using 2000 as a direct reference for testing if needed)
     const finalClientId = clientId || 2000;
     
-    // Send reply to same manager as the original message
+    // Create a properly formatted message object
+    // IMPORTANT: We should NOT include clientId in the request body
+    // The server will automatically set it based on the authenticated user
     sendMessageMutation.mutate({
-      clientId: finalClientId,
+      // Remove clientId from request to avoid permissions issues
+      // The server will automatically use the authenticated user's ID
       managerId: activeMessage.managerId, // Reply to the same manager
       subject: replyMessage.urgent ? `[URGENT] ${replyMessage.subject}` : replyMessage.subject,
       message: replyMessage.content,
