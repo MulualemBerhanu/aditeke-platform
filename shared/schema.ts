@@ -294,6 +294,7 @@ export const clientCommunications = pgTable("client_communications", {
   subject: text("subject"),
   type: text("type").notNull().default("email"), // email, call, meeting, etc.
   attachments: json("attachments"), // JSON array of attachment URLs
+  fromManager: boolean("from_manager").notNull().default(false), // Flag to indicate if sent by manager
 });
 
 export const insertClientCommunicationSchema = createInsertSchema(clientCommunications).pick({
@@ -304,6 +305,7 @@ export const insertClientCommunicationSchema = createInsertSchema(clientCommunic
   type: true,
   attachments: true,
   isRead: true,
+  fromManager: true,
 });
 
 // Client Documents schema

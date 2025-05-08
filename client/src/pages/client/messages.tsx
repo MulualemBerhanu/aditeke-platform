@@ -38,6 +38,7 @@ interface Message {
   type: string;
   attachments?: any;
   senderName?: string; // UI-only field, populated from user data
+  fromManager?: boolean; // Indicates if the message is from manager to client
   senderRole?: string; // UI-only field, populated from role data
 }
 
@@ -313,12 +314,27 @@ const ClientMessages = () => {
     return messages?.find((m: Message) => m.id === activeMessageId);
   };
 
-  // Filter messages by unread/read using isRead property
-  const unreadMessages = messages?.filter((m: Message) => !m.isRead) || [];
-  const readMessages = messages?.filter((m: Message) => m.isRead) || [];
+  // Sort messages by date (newest first)
+  const sortedMessages = [...(messages || [])].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
   
-  // Sent messages would be from client to manager (not implemented yet)
-  const sentMessages = [] // Will implement this with real data when available
+  // Filter messages by unread/read using isRead property
+  const unreadMessages = sortedMessages.filter((m: Message) => !m.isRead) || [];
+  
+  // Determine if a message is sent by the client (outgoing)
+  // In our schema, if the client is sending a message to a manager,
+  // both clientId and managerId will be set, but messages originated from the client
+  const sentMessages = sortedMessages.filter((m: Message) => {
+    // A message is considered "sent" by a client if there's no "fromManager" flag
+    // This works because client->manager messages don't have this flag in our schema
+    return !m.fromManager && m.managerId;
+  }) || [];
+  
+  // Messages that are not sent by the client (incoming messages)
+  const readMessages = sortedMessages.filter((m: Message) => 
+    m.isRead && (!sentMessages.some(sent => sent.id === m.id))
+  ) || [];
   
   if (error) {
     toast({
@@ -486,16 +502,21 @@ const ClientMessages = () => {
             <div className="md:col-span-1">
               <Card>
                 <CardHeader className="pb-2">
-                  <Tabs defaultValue="unread">
+                  <Tabs defaultValue="all">
                     <TabsList className="w-full">
+                      <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
                       <TabsTrigger value="unread" className="flex-1">
                         Unread
                         {unreadMessages.length > 0 && (
                           <Badge className="ml-2 bg-indigo-600 text-white">{unreadMessages.length}</Badge>
                         )}
                       </TabsTrigger>
-                      <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-                      <TabsTrigger value="sent" className="flex-1">Sent</TabsTrigger>
+                      <TabsTrigger value="sent" className="flex-1">
+                        Sent
+                        {sentMessages.length > 0 && (
+                          <Badge className="ml-2 bg-blue-600 text-white">{sentMessages.length}</Badge>
+                        )}
+                      </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="unread" className="m-0 mt-2">
@@ -542,9 +563,9 @@ const ClientMessages = () => {
 
                     <TabsContent value="all" className="m-0 mt-2">
                       <ScrollArea className="h-[500px]">
-                        {messages.length > 0 ? (
+                        {sortedMessages.length > 0 ? (
                           <div className="space-y-1">
-                            {messages.map((message: Message) => (
+                            {sortedMessages.map((message: Message) => (
                               <div
                                 key={message.id}
                                 onClick={() => handleMessageClick(message.id)}
@@ -554,14 +575,15 @@ const ClientMessages = () => {
                               >
                                 <div className="flex items-start space-x-3">
                                   <Avatar>
-                                    <AvatarFallback className="bg-indigo-100 text-indigo-600">
-                                      {message.senderName?.[0] || 'U'}
+                                    <AvatarFallback className={`${!message.fromManager ? 'bg-blue-100 text-blue-600' : 'bg-indigo-100 text-indigo-600'}`}>
+                                      {!message.fromManager ? 'Y' : (message.senderName?.[0] || 'M')}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
                                       <p className={`text-sm truncate ${message.isRead ? 'font-normal' : 'font-medium'}`}>
                                         {message.subject || 'No Subject'}
+                                        {!message.fromManager && <span className="text-xs text-blue-600 ml-2">(Sent)</span>}
                                       </p>
                                       {!message.isRead && (
                                         <AlertCircle className="h-3 w-3 text-indigo-600 flex-shrink-0" />
@@ -585,9 +607,45 @@ const ClientMessages = () => {
                     </TabsContent>
 
                     <TabsContent value="sent" className="m-0 mt-2">
-                      <div className="p-6 text-center">
-                        <p className="text-slate-500">Sent messages feature coming soon</p>
-                      </div>
+                      <ScrollArea className="h-[500px]">
+                        {sentMessages.length > 0 ? (
+                          <div className="space-y-1">
+                            {sentMessages.map((message: Message) => (
+                              <div
+                                key={message.id}
+                                onClick={() => handleMessageClick(message.id)}
+                                className={`p-3 cursor-pointer hover:bg-slate-50 rounded-md transition-colors ${
+                                  activeMessageId === message.id ? 'bg-slate-100' : ''
+                                }`}
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <Avatar>
+                                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                                      Y
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <p className="text-sm font-medium truncate">
+                                        {message.subject || 'No Subject'}
+                                        <span className="text-xs text-blue-600 ml-1">(Sent)</span>
+                                      </p>
+                                    </div>
+                                    <p className="text-xs text-slate-500 truncate">{message.message}</p>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                      {formatDistance(new Date(message.createdAt), new Date(), { addSuffix: true })}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-6 text-center">
+                            <p className="text-slate-500">No sent messages found</p>
+                          </div>
+                        )}
+                      </ScrollArea>
                     </TabsContent>
                   </Tabs>
                 </CardHeader>
