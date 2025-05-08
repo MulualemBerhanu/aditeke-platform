@@ -577,7 +577,7 @@ const ClientSupport = () => {
                         <CardHeader className="pb-2 border-b">
                           <div className="flex justify-between items-start">
                             <div>
-                              <CardTitle>{getActiveTicket()?.title}</CardTitle>
+                              <CardTitle>{getActiveTicket()?.title || getActiveTicket()?.subject || 'Support Request'}</CardTitle>
                               <CardDescription className="mt-1">
                                 <div className="flex items-center flex-wrap gap-2">
                                   <Badge className={`${
@@ -587,18 +587,30 @@ const ClientSupport = () => {
                                     'bg-slate-500'
                                   }`}>
                                     {getActiveTicket()?.status === 'in-progress' ? 'In Progress' : 
-                                     getActiveTicket()?.status.charAt(0).toUpperCase() + getActiveTicket()?.status.slice(1)}
+                                     getActiveTicket()?.status && typeof getActiveTicket()?.status === 'string' 
+                                       ? getActiveTicket()?.status.charAt(0).toUpperCase() + getActiveTicket()?.status.slice(1)
+                                       : 'Open'}
                                   </Badge>
-                                  <Badge className={`${
-                                    getActiveTicket()?.priority === 'urgent' ? 'bg-red-500' :
-                                    getActiveTicket()?.priority === 'high' ? 'bg-amber-500' :
-                                    getActiveTicket()?.priority === 'medium' ? 'bg-indigo-500' :
-                                    'bg-green-500'
-                                  }`}>
-                                    {getActiveTicket()?.priority.charAt(0).toUpperCase() + getActiveTicket()?.priority.slice(1)} Priority
-                                  </Badge>
+                                  {getActiveTicket()?.priority && (
+                                    <Badge className={`${
+                                      getActiveTicket()?.priority === 'urgent' ? 'bg-red-500' :
+                                      getActiveTicket()?.priority === 'high' ? 'bg-amber-500' :
+                                      getActiveTicket()?.priority === 'medium' ? 'bg-indigo-500' :
+                                      'bg-green-500'
+                                    }`}>
+                                      {typeof getActiveTicket()?.priority === 'string'
+                                        ? getActiveTicket()?.priority.charAt(0).toUpperCase() + getActiveTicket()?.priority.slice(1)
+                                        : 'Normal'} Priority
+                                    </Badge>
+                                  )}
                                   <span className="text-sm text-slate-500">
-                                    Created {formatDistance(new Date(getActiveTicket()?.createdAt), new Date(), { addSuffix: true })}
+                                    Created {getActiveTicket()?.createdAt
+                                      ? formatDistance(
+                                          new Date(getActiveTicket()?.createdAt || new Date()), 
+                                          new Date(), 
+                                          { addSuffix: true }
+                                        )
+                                      : 'recently'}
                                   </span>
                                 </div>
                               </CardDescription>
@@ -607,7 +619,7 @@ const ClientSupport = () => {
                         </CardHeader>
                         <CardContent className="pt-4">
                           <div className="prose max-w-none text-slate-700">
-                            <p>{getActiveTicket()?.description}</p>
+                            <p>{getActiveTicket()?.description || 'No additional details provided.'}</p>
                           </div>
                           
                           {getActiveTicket()?.assignedTo && (
@@ -626,39 +638,49 @@ const ClientSupport = () => {
                           
                           <div className="mt-6 pt-4 border-t border-slate-100">
                             <p className="text-sm font-medium mb-2">Ticket Updates</p>
-                            {getActiveTicket()?.status === 'open' ? (
-                              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-700">
-                                <p className="text-sm">Your ticket has been received and is pending review.</p>
-                                <div className="mt-3 flex space-x-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="text-amber-700 border-amber-300 hover:bg-amber-100"
-                                    onClick={() => {
-                                      if (!activeTicketId) return;
-                                      updateTicketMutation.mutate({ 
-                                        ticketId: activeTicketId, 
-                                        updateData: { 
-                                          status: 'closed',
-                                          updatedAt: new Date().toISOString()
-                                        } 
-                                      });
-                                    }}
-                                    disabled={updateTicketMutation.isPending}
-                                  >
-                                    {updateTicketMutation.isPending ? 'Updating...' : 'Cancel Ticket'}
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : getActiveTicket()?.status === 'in-progress' ? (
-                              <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3 text-indigo-700">
-                                <p className="text-sm">A support representative is currently working on your ticket.</p>
-                              </div>
-                            ) : (
-                              <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-700">
-                                <p className="text-sm">This ticket has been resolved. Please let us know if you need further assistance.</p>
-                              </div>
-                            )}
+                            {(() => {
+                              const status = getActiveTicket()?.status;
+                              
+                              if (status === 'open') {
+                                return (
+                                  <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-700">
+                                    <p className="text-sm">Your ticket has been received and is pending review.</p>
+                                    <div className="mt-3 flex space-x-2">
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="text-amber-700 border-amber-300 hover:bg-amber-100"
+                                        onClick={() => {
+                                          if (!activeTicketId) return;
+                                          updateTicketMutation.mutate({ 
+                                            ticketId: activeTicketId, 
+                                            updateData: { 
+                                              status: 'closed',
+                                              updatedAt: new Date().toISOString()
+                                            } 
+                                          });
+                                        }}
+                                        disabled={updateTicketMutation.isPending}
+                                      >
+                                        {updateTicketMutation.isPending ? 'Updating...' : 'Cancel Ticket'}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              } else if (status === 'in-progress') {
+                                return (
+                                  <div className="bg-indigo-50 border border-indigo-200 rounded-md p-3 text-indigo-700">
+                                    <p className="text-sm">A support representative is currently working on your ticket.</p>
+                                  </div>
+                                );
+                              } else {
+                                return (
+                                  <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-700">
+                                    <p className="text-sm">This ticket has been resolved. Please let us know if you need further assistance.</p>
+                                  </div>
+                                );
+                              }
+                            })()}
                           </div>
                         </CardContent>
                         <CardFooter className="border-t pt-4 flex justify-between">
@@ -666,39 +688,44 @@ const ClientSupport = () => {
                             <MessageSquare className="h-4 w-4 mr-2" />
                             Add Comment
                           </Button>
-                          {getActiveTicket()?.status !== 'closed' && (
-                            <Button 
-                              variant="outline" 
-                              className={`${
-                                getActiveTicket()?.status === 'resolved' 
-                                  ? 'text-green-600 hover:bg-green-50' 
-                                  : 'text-indigo-600 hover:bg-indigo-50'
-                              }`}
-                              onClick={() => {
-                                if (!activeTicketId) return;
-                                
-                                const newStatus = getActiveTicket()?.status === 'resolved' 
-                                  ? 'closed' 
-                                  : 'resolved';
-                                
-                                updateTicketMutation.mutate({ 
-                                  ticketId: activeTicketId, 
-                                  updateData: { 
-                                    status: newStatus,
-                                    updatedAt: new Date().toISOString()
-                                  } 
-                                });
-                              }}
-                              disabled={updateTicketMutation.isPending}
-                            >
-                              {updateTicketMutation.isPending 
-                                ? 'Updating...' 
-                                : getActiveTicket()?.status === 'resolved' 
-                                  ? 'Close Ticket' 
-                                  : 'Mark as Resolved'
-                              }
-                            </Button>
-                          )}
+                          {(() => {
+                            const status = getActiveTicket()?.status;
+                            if (status !== 'closed') {
+                              const isResolved = status === 'resolved';
+                              return (
+                                <Button 
+                                  variant="outline" 
+                                  className={`${
+                                    isResolved
+                                      ? 'text-green-600 hover:bg-green-50' 
+                                      : 'text-indigo-600 hover:bg-indigo-50'
+                                  }`}
+                                  onClick={() => {
+                                    if (!activeTicketId) return;
+                                    
+                                    const newStatus = isResolved ? 'closed' : 'resolved';
+                                    
+                                    updateTicketMutation.mutate({ 
+                                      ticketId: activeTicketId, 
+                                      updateData: { 
+                                        status: newStatus,
+                                        updatedAt: new Date().toISOString()
+                                      } 
+                                    });
+                                  }}
+                                  disabled={updateTicketMutation.isPending}
+                                >
+                                  {updateTicketMutation.isPending 
+                                    ? 'Updating...' 
+                                    : isResolved
+                                      ? 'Close Ticket' 
+                                      : 'Mark as Resolved'
+                                  }
+                                </Button>
+                              );
+                            }
+                            return null;
+                          })()}
                         </CardFooter>
                       </>
                     ) : (
