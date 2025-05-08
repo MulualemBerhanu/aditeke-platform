@@ -315,12 +315,12 @@ export default function LoginPage() {
         }
         
         // Log success in development mode
-        if (isDevelopment && responseData) {
+        if (isDevelopment && userData) {
           console.log('Login successful!', {
-            userId: responseData.id,
-            username: responseData.username,
-            roleId: responseData.roleId,
-            roleName: responseData.roleName || 'unknown'
+            userId: userData.id,
+            username: userData.username,
+            roleId: userData.roleId,
+            roleName: userData.roleName || 'unknown'
           });
         }
       } catch (error) {

@@ -2201,21 +2201,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint for CSRF protection (public, no authentication required)
   app.get("/api/public/csrf-test", (req, res) => {
     try {
-      // Generate a secure CSRF token
-      const crypto = require('crypto');
-      const token = crypto.randomBytes(16).toString('hex');
+      // Use a simpler approach for token generation to avoid issues with crypto
+      // Create a random token using Math.random (not for production-critical uses)
+      const timestamp = Date.now().toString();
+      const random = Math.random().toString(36).substring(2, 15);
+      const token = timestamp + '-' + random;
       
       // Log the process for debugging
       console.log('Generating new CSRF token for request from:', req.ip);
       
       // Set the token as a cookie that is accessible from JavaScript
       const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-      const isCustomDomain = req.hostname.includes('aditeke.com');
       
       res.cookie('csrf_token', token, { 
         httpOnly: false, 
-        secure: isSecure || process.env.NODE_ENV === 'production',
-        sameSite: isCustomDomain ? 'none' : 'lax',
+        secure: false, // Allow non-secure for testing
+        sameSite: 'lax',
         path: '/',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       });
@@ -2227,7 +2228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString()
       });
       
-      console.log('CSRF token generated and cookie set');
+      console.log('CSRF token generated and cookie set:', token.substring(0, 8) + '...');
     } catch (error) {
       console.error('Error generating CSRF token:', error);
       res.status(500).json({ 
