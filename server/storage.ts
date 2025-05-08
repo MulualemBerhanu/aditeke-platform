@@ -1792,6 +1792,10 @@ export class PostgresStorage implements IStorage {
     return await this.db.select().from(clientCommunications).where(eq(clientCommunications.clientId, clientId));
   }
   
+  async getManagerCommunications(managerId: number): Promise<ClientCommunication[]> {
+    return await this.db.select().from(clientCommunications).where(eq(clientCommunications.managerId, managerId));
+  }
+  
   async getClientCommunication(id: number): Promise<ClientCommunication | undefined> {
     const result = await this.db.select().from(clientCommunications).where(eq(clientCommunications.id, id)).limit(1);
     return result.length > 0 ? result[0] : undefined;

@@ -149,6 +149,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
+  
+  // Get all users with client role (1001) for manager to select from
+  app.get('/api/users/clients', authenticateJWT, async (req, res) => {
+    try {
+      // Verify user has manager or admin role
+      if (req.user?.roleId !== 1000 && req.user?.roleId !== 1002) {
+        return res.status(403).json({ error: "Unauthorized to access client list" });
+      }
+      
+      // Get all users
+      const users = await storage.getAllUsers();
+      
+      // Filter to only return clients (role 1001)
+      const clients = users.filter(user => user.roleId === 1001);
+      
+      // Return only necessary fields for privacy
+      const clientData = clients.map(client => {
+        const { password, ...clientWithoutPassword } = client;
+        return {
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          username: client.username,
+          profilePicture: client.profilePicture
+        };
+      });
+      
+      return res.json(clientData);
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   app.get("/api/users/:id", async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
