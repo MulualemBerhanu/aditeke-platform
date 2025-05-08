@@ -1,10 +1,9 @@
-import { User } from '@shared/schema';
+import { Request } from 'express';
 
-// Extend Express Request type to include user property
 declare global {
   namespace Express {
     interface Request {
-      user?: Partial<User>;
+      rawBody?: string;
     }
   }
 }

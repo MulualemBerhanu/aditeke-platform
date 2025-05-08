@@ -2393,12 +2393,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the raw request body
       console.log('RAW client communication request body:', req.body);
       
+      // Manual body parsing if the body is empty (as a fallback)
+      let newCommunication = req.body;
+      
+      // If the body is empty but we have rawBody from our middleware
+      if (Object.keys(req.body).length === 0 && req.rawBody) {
+        try {
+          console.log('Body is empty, attempting to parse from raw body:', req.rawBody);
+          newCommunication = JSON.parse(req.rawBody);
+          console.log('Successfully parsed from raw body:', newCommunication);
+        } catch (parseError) {
+          console.error('Failed to parse raw body as JSON:', parseError);
+        }
+      }
+      
+      // For debugging - log the headers to understand what's happening
+      console.log('Request headers:', req.headers);
+      
       // Get authenticated user ID from req.user
       const userId = req.user?.id;
       console.log('Authenticated user ID:', userId);
-      
-      // Create a deep copy of the request body to avoid side effects
-      let newCommunication = JSON.parse(JSON.stringify(req.body));
       
       // Force set clientId to authenticated user ID (for client role)
       if (req.user?.roleId === 1001) { // Client role

@@ -59,26 +59,45 @@ app.use(express.json({
   strict: false // Allow any JSON-like input
 }));
 
-// Add raw body parser for debugging
+// Add raw body capture middleware
 app.use((req, res, next) => {
-  if (req.method === 'POST' && (req.path === '/api/public/contact' || req.path === '/api/client-communications')) {
+  // Only capture raw body for certain POST routes that might have issues
+  if (req.method === 'POST') {
     let rawData = '';
-    req.setEncoding('utf8');
     
+    // Save the original data
+    const originalBody = req.body;
+    
+    // Listen for data events
+    req.setEncoding('utf8');
     req.on('data', (chunk) => {
       rawData += chunk;
     });
     
     req.on('end', () => {
-      console.log(`Raw request body for ${req.path}:`, rawData);
-      try {
-        // Try to parse as JSON and attach to req.body
-        const parsedData = JSON.parse(rawData);
-        req.body = parsedData;
-        console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
-      } catch (e) {
-        console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
+      // Store raw body for later use
+      req.rawBody = rawData;
+      
+      // Special handling for problematic routes
+      if (req.path === '/api/client-communications' || req.path === '/api/public/contact') {
+        console.log(`Raw request body for ${req.path}:`, rawData);
+        
+        // Only try to parse if content-type is JSON
+        const contentType = req.headers['content-type'];
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            // Try to parse as JSON and attach to req.body if original parsing failed
+            if (Object.keys(req.body || {}).length === 0) {
+              const parsedData = JSON.parse(rawData);
+              req.body = parsedData;
+              console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
+            }
+          } catch (e) {
+            console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
+          }
+        }
       }
+      
       next();
     });
   } else {
