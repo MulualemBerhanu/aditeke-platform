@@ -225,25 +225,40 @@ export default function LoginPage() {
 
         console.log('CSRF token for login request:', csrfToken ? 'Found' : 'Not found');
         
-        // Normal authentication flow using API
+        // Normal authentication flow using API with enhanced error handling
         const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
           },
           body: JSON.stringify({
             username: data.username,
-            password: data.password
+            password: data.password,
+            requestTime: Date.now() // Add timestamp to avoid caching issues
           }),
           credentials: 'include'
         });
         
         if (!response.ok) {
-          throw new Error('Authentication failed. Please check your credentials.');
+          // Try to get error details from response
+          try {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Authentication failed. Please check your credentials.');
+          } catch (parseError) {
+            // If we can't parse the error, throw a generic one
+            throw new Error(`Authentication failed (${response.status}). Please check your credentials.`);
+          }
         }
         
-        userData = await response.json();
+        try {
+          userData = await response.json();
+          console.log('Authentication successful, received user data');
+        } catch (jsonError) {
+          console.error('Error parsing login response:', jsonError);
+          throw new Error('Server returned invalid data. Please try again.');
+        }
       } catch (error) {
         // Try the context login as fallback
         if (!isDeployedEnv) {
