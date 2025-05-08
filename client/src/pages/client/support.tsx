@@ -39,7 +39,8 @@ import {
   ExternalLink,
   ChevronRight,
   Search,
-  BookOpen
+  BookOpen,
+  Archive
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistance } from 'date-fns';
@@ -650,17 +651,26 @@ const ClientSupport = () => {
                                   >
                                     <div className="flex items-start">
                                       <div className="mr-3 mt-0.5">
-                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        {ticket.status === 'resolved' ? (
+                                          <CheckCircle className="h-5 w-5 text-amber-500" />
+                                        ) : (
+                                          <Archive className="h-5 w-5 text-slate-500" />
+                                        )}
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm mb-1 truncate">
                                           {ticket.title || ticket.subject || 'Support Request'}
                                         </p>
                                         <div className="flex items-center">
-                                          <Badge variant="outline" className="mr-2 text-slate-500 border-slate-200">
-                                            {ticket.status && typeof ticket.status === 'string'
-                                              ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)
-                                              : 'Unknown'}
+                                          <Badge 
+                                            variant={ticket.status === 'resolved' ? 'default' : 'outline'} 
+                                            className={`mr-2 ${
+                                              ticket.status === 'resolved' 
+                                                ? 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200' 
+                                                : 'text-slate-500 border-slate-200'
+                                            }`}
+                                          >
+                                            {ticket.status === 'resolved' ? 'Resolved' : 'Closed'}
                                           </Badge>
                                           <p className="text-xs text-slate-500">
                                             {ticket.updatedAt
@@ -700,7 +710,7 @@ const ClientSupport = () => {
                                   <Badge className={`${
                                     getActiveTicket()?.status === 'open' ? 'bg-amber-500' :
                                     getActiveTicket()?.status === 'in-progress' ? 'bg-indigo-500' :
-                                    getActiveTicket()?.status === 'resolved' ? 'bg-green-500' :
+                                    getActiveTicket()?.status === 'resolved' ? 'bg-amber-500 text-amber-950' :
                                     'bg-slate-500'
                                   }`}>
                                     {(() => {
