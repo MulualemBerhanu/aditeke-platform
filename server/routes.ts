@@ -126,6 +126,336 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // API endpoint to get all support tickets (manager view)
+  app.get("/api/all-support-tickets", async (req, res) => {
+    try {
+      console.log("Request for all support tickets (manager view)");
+      
+      // In development mode, allow access without auth
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for all support tickets');
+        const tickets = await storage.getAllSupportTickets();
+        
+        // Add client names to tickets if available
+        const ticketsWithClientInfo = await Promise.all(tickets.map(async (ticket) => {
+          try {
+            const client = await storage.getUser(ticket.clientId);
+            return {
+              ...ticket,
+              clientName: client?.name || client?.username || `Client #${ticket.clientId}`,
+              clientEmail: client?.email,
+              clientCompany: client?.company
+            };
+          } catch (err) {
+            // If client can't be found, just return the ticket as is
+            return ticket;
+          }
+        }));
+        
+        console.log(`Returning ${ticketsWithClientInfo.length} support tickets (development mode)`);
+        return res.json(ticketsWithClientInfo);
+      }
+      
+      // Check if user is authorized (manager or admin only)
+      if (!req.user || (req.user.roleId !== 1000 && req.user.roleId !== 1002)) {
+        console.log(`Access denied: User ${req.user?.id} with role ${req.user?.roleId} tried to access all support tickets`);
+        return res.status(403).json({ error: "Unauthorized to access all support tickets" });
+      }
+      
+      // Get all support tickets
+      const tickets = await storage.getAllSupportTickets();
+      
+      // Add client names to tickets if available
+      const ticketsWithClientInfo = await Promise.all(tickets.map(async (ticket) => {
+        try {
+          const client = await storage.getUser(ticket.clientId);
+          return {
+            ...ticket,
+            clientName: client?.name || client?.username || `Client #${ticket.clientId}`,
+            clientEmail: client?.email,
+            clientCompany: client?.company
+          };
+        } catch (err) {
+          // If client can't be found, just return the ticket as is
+          return ticket;
+        }
+      }));
+      
+      console.log(`Returning ${ticketsWithClientInfo.length} support tickets for manager view`);
+      res.json(ticketsWithClientInfo);
+    } catch (error) {
+      console.error("Error fetching all support tickets:", error);
+      res.status(500).json({ error: "Failed to fetch support tickets" });
+    }
+  });
+  
+  // API endpoint to update a support ticket
+  app.put("/api/support-tickets/:id", async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id);
+      
+      if (isNaN(ticketId)) {
+        return res.status(400).json({ error: "Invalid ticket ID" });
+      }
+      
+      // Get the existing ticket
+      const ticket = await storage.getSupportTicket(ticketId);
+      if (!ticket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // In development mode, allow updates without auth
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for ticket update');
+        
+        // Update the ticket (only allow specific fields to be updated)
+        const allowedFields = ['status', 'priority', 'subject', 'category', 'assignedToId'];
+        const updateData: Record<string, any> = {};
+        
+        allowedFields.forEach(field => {
+          if (req.body[field] !== undefined) {
+            updateData[field] = req.body[field];
+          }
+        });
+        
+        // Set updatedAt to current time
+        updateData.updatedAt = new Date();
+        
+        // If status is changed to 'resolved', set resolvedAt
+        if (req.body.status === 'resolved' && ticket.status !== 'resolved') {
+          updateData.resolvedAt = new Date();
+        }
+        
+        const updatedTicket = await storage.updateSupportTicket(ticketId, updateData);
+        
+        console.log(`Updated ticket ${ticketId} with fields: ${Object.keys(updateData).join(', ')} (development mode)`);
+        return res.json(updatedTicket);
+      }
+      
+      // Check user authorization
+      if (!req.user || (req.user.id !== ticket.clientId && req.user.roleId !== 1000 && req.user.roleId !== 1002)) {
+        console.log(`Access denied: User ${req.user?.id} tried to update ticket ${ticketId}`);
+        return res.status(403).json({ error: "Unauthorized to update this ticket" });
+      }
+      
+      // Update the ticket (only allow specific fields to be updated)
+      const allowedFields = ['status', 'priority', 'subject', 'category', 'assignedToId'];
+      const updateData: Record<string, any> = {};
+      
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      });
+      
+      // Set updatedAt to current time
+      updateData.updatedAt = new Date();
+      
+      // If status is changed to 'resolved', set resolvedAt
+      if (req.body.status === 'resolved' && ticket.status !== 'resolved') {
+        updateData.resolvedAt = new Date();
+      }
+      
+      const updatedTicket = await storage.updateSupportTicket(ticketId, updateData);
+      
+      console.log(`Updated ticket ${ticketId} with fields: ${Object.keys(updateData).join(', ')}`);
+      res.json(updatedTicket);
+    } catch (error) {
+      console.error("Error updating support ticket:", error);
+      res.status(500).json({ error: "Failed to update support ticket" });
+    }
+  });
+  
+  // API endpoint to assign a ticket to a team member
+  app.put("/api/support-tickets/:id/assign", async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id);
+      const assignedToId = req.body.assignedToId ? parseInt(req.body.assignedToId) : null;
+      
+      if (isNaN(ticketId)) {
+        return res.status(400).json({ error: "Invalid ticket ID" });
+      }
+      
+      // Get the existing ticket
+      const ticket = await storage.getSupportTicket(ticketId);
+      if (!ticket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // In development mode, allow assignment without auth
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for ticket assignment');
+        
+        // Update the ticket assignment
+        const updateData: Record<string, any> = {
+          assignedToId: assignedToId,
+          updatedAt: new Date()
+        };
+        
+        // Also set status to 'in-progress' if it was 'open'
+        if (ticket.status === 'open' && assignedToId) {
+          updateData.status = 'in-progress';
+        }
+        
+        const updatedTicket = await storage.updateSupportTicket(ticketId, updateData);
+        
+        console.log(`Assigned ticket ${ticketId} to user ${assignedToId || 'None (unassigned)'} (development mode)`);
+        return res.json(updatedTicket);
+      }
+      
+      // Check if user is authorized (manager or admin only)
+      if (!req.user || (req.user.roleId !== 1000 && req.user.roleId !== 1002)) {
+        console.log(`Access denied: User ${req.user?.id} with role ${req.user?.roleId} tried to assign ticket ${ticketId}`);
+        return res.status(403).json({ error: "Unauthorized to assign tickets" });
+      }
+      
+      // Update the ticket assignment
+      const updateData: Record<string, any> = {
+        assignedToId: assignedToId,
+        updatedAt: new Date()
+      };
+      
+      // Also set status to 'in-progress' if it was 'open'
+      if (ticket.status === 'open' && assignedToId) {
+        updateData.status = 'in-progress';
+      }
+      
+      const updatedTicket = await storage.updateSupportTicket(ticketId, updateData);
+      
+      console.log(`Assigned ticket ${ticketId} to user ${assignedToId || 'None (unassigned)'}`);
+      res.json(updatedTicket);
+    } catch (error) {
+      console.error("Error assigning support ticket:", error);
+      res.status(500).json({ error: "Failed to assign support ticket" });
+    }
+  });
+  
+  // API endpoint to add a reply to a support ticket
+  app.post("/api/support-tickets/:id/reply", async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id);
+      const message = req.body.message;
+      
+      if (isNaN(ticketId) || !message) {
+        return res.status(400).json({ error: "Invalid ticket ID or missing message" });
+      }
+      
+      // Get the existing ticket
+      const ticket = await storage.getSupportTicket(ticketId);
+      if (!ticket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // In development mode, allow replies without auth
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for ticket reply');
+        
+        // Create the ticket message
+        const ticketMessage = {
+          ticketId,
+          userId: req.user?.id || 9999, // Use a dummy user ID if not authenticated
+          userName: req.user?.name || req.user?.username || 'Developer',
+          userRole: 'staff',
+          message,
+          createdAt: new Date()
+        };
+        
+        const savedMessage = await storage.addTicketMessage(ticketMessage);
+        
+        // Also update the ticket to show it has a new reply
+        await storage.updateSupportTicket(ticketId, { 
+          updatedAt: new Date(),
+          // If replying to a 'resolved' ticket, set it back to 'in-progress'
+          status: ticket.status === 'resolved' ? 'in-progress' : ticket.status
+        });
+        
+        console.log(`Added reply to ticket ${ticketId} (development mode)`);
+        return res.status(201).json(savedMessage);
+      }
+      
+      // Check user authorization
+      if (!req.user || (req.user.id !== ticket.clientId && req.user.roleId !== 1000 && req.user.roleId !== 1002)) {
+        console.log(`Access denied: User ${req.user?.id} tried to reply to ticket ${ticketId}`);
+        return res.status(403).json({ error: "Unauthorized to reply to this ticket" });
+      }
+      
+      // Create the ticket message
+      const ticketMessage = {
+        ticketId,
+        userId: req.user.id,
+        userName: req.user.name || req.user.username,
+        userRole: req.user.roleId === 1001 ? 'client' : 'staff',
+        message,
+        createdAt: new Date()
+      };
+      
+      const savedMessage = await storage.addTicketMessage(ticketMessage);
+      
+      // Also update the ticket to show it has a new reply
+      await storage.updateSupportTicket(ticketId, { 
+        updatedAt: new Date(),
+        // If a manager responds to a 'resolved' ticket, set it back to 'in-progress'
+        status: (req.user.roleId !== 1001 && ticket.status === 'resolved') ? 'in-progress' : ticket.status
+      });
+      
+      console.log(`Added reply to ticket ${ticketId} from user ${req.user.id}`);
+      res.status(201).json(savedMessage);
+    } catch (error) {
+      console.error("Error adding reply to support ticket:", error);
+      res.status(500).json({ error: "Failed to add reply" });
+    }
+  });
+  
+  // API endpoint to get team members for ticket assignment
+  app.get("/api/team-members", async (req, res) => {
+    try {
+      console.log("Request for team members list");
+      
+      // In development mode, allow access without auth
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: Skipping auth for team members');
+        
+        // Create a dummy list of team members
+        const teamMembers = [
+          {
+            id: 50000,
+            name: 'Manager User',
+            username: 'manager@aditeke.com',
+            email: 'manager@aditeke.com',
+            role: 'manager'
+          }
+        ];
+        
+        console.log(`Returning ${teamMembers.length} team members (development mode)`);
+        return res.json(teamMembers);
+      }
+      
+      // Check if user is authorized (manager or admin only)
+      if (!req.user || (req.user.roleId !== 1000 && req.user.roleId !== 1002)) {
+        console.log(`Access denied: User ${req.user?.id} with role ${req.user?.roleId} tried to access team members`);
+        return res.status(403).json({ error: "Unauthorized to access team members" });
+      }
+      
+      // Get users with manager role (roleId 1000)
+      const managers = await storage.getUsersByRole(1000);
+      
+      // Simplify the data we return
+      const teamMembers = managers.map(user => ({
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: 'manager'
+      }));
+      
+      console.log(`Returning ${teamMembers.length} team members`);
+      res.json(teamMembers);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      res.status(500).json({ error: "Failed to fetch team members" });
+    }
+  });
+  
   app.post("/api/ticket-status-update/:id", async (req, res) => {
     try {
       const ticketId = parseInt(req.params.id, 10);
