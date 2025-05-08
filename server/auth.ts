@@ -299,55 +299,66 @@ export function setupAuth(app: Express) {
   // Enhanced login endpoint with cross-domain JWT token support
   app.post("/api/login", (req, res, next) => {
     try {
-      // ⚠️ EMERGENCY FIX - Hardcoded credentials for initial login
-      // This is a temporary development solution - REMOVE BEFORE PRODUCTION
-      console.log('EMERGENCY AUTHENTICATION MODE ENABLED - FOR DEVELOPMENT ONLY');
-      console.log('Original request body:', req.body);
+      // Log incoming login request for debugging
+      console.log('📝 LOGIN REQUEST RECEIVED');
+      console.log('Content-Type:', req.headers['content-type']);
       
       // Get raw body content for debug purposes
       let rawBodyStr = '';
       if (req.rawBody) {
-        rawBodyStr = typeof req.rawBody === 'string' ? req.rawBody : JSON.stringify(req.rawBody);
+        rawBodyStr = typeof req.rawBody === 'string' ? req.rawBody : req.rawBody.toString();
         console.log('Raw body available:', rawBodyStr);
+      } else {
+        console.log('No raw body available in request');
       }
       
       // Try to parse credentials from multiple sources
       let credentials = req.body || {};
       
-      // Backup plan 1: Try to get credentials from raw body
-      if (Object.keys(credentials).length === 0 && req.rawBody) {
+      // Log the raw request body for debugging
+      console.log('Original parsed request body:', JSON.stringify(req.body, null, 2));
+      
+      // Backup plan 1: Try to parse credentials from raw body if req.body is empty
+      if ((Object.keys(credentials).length === 0 || !credentials.username || !credentials.password) && req.rawBody) {
         try {
           const parsedBody = JSON.parse(rawBodyStr);
           if (parsedBody && typeof parsedBody === 'object') {
             credentials = parsedBody;
-            console.log('Successfully parsed credentials from raw body:', credentials);
+            console.log('Successfully parsed credentials from raw body');
           }
         } catch (e) {
-          console.log('Failed to parse raw body, continuing with emergency login:', e);
+          console.log('Failed to parse raw body as JSON:', e);
         }
       }
       
       // Backup plan 2: Check URL parameters
       if (!credentials.username && req.query.username) {
         credentials.username = req.query.username;
+        console.log('Using username from query parameters');
       }
       if (!credentials.password && req.query.password) {
         credentials.password = req.query.password;
+        console.log('Using password from query parameters');
       }
       
-      console.log('Final credentials object:', {
+      // Log credential status (safely, without showing passwords)
+      console.log('Credential status:', {
         hasUsername: !!credentials.username,
+        usernameLength: credentials.username ? credentials.username.length : 0,
         hasPassword: !!credentials.password,
-        username: credentials.username ? credentials.username.substring(0, 3) + '...' : null
+        passwordLength: credentials.password ? credentials.password.length : 0
       });
       
-      // DEVELOPMENT EMERGENCY BYPASS - auto-injects credentials if not supplied 
-      if (!credentials.username || !credentials.password) {
-        console.log('⚠️ AUTO-INJECTING TEST CREDENTIALS FOR DEVELOPMENT');
+      // DEVELOPMENT EMERGENCY BYPASS - only in development environment
+      if (process.env.NODE_ENV === 'development' && 
+          (!credentials.username || !credentials.password || 
+           credentials.username === 'emergency' || credentials.password === 'emergency')) {
+        console.log('⚠️ EMERGENCY AUTHENTICATION MODE ENABLED - FOR DEVELOPMENT ONLY');
         credentials = {
-          username: credentials.username || "testadmin",
-          password: credentials.password || "adminPass123"
+          username: credentials.username === 'emergency' ? "testadmin" : (credentials.username || "testadmin"),
+          password: credentials.password === 'emergency' ? "adminPass123" : (credentials.password || "adminPass123")
         };
+        console.log('Using emergency credentials for development testing');
       }
       
       // Save back to req.body for passport authentication
@@ -569,9 +580,25 @@ export function setupAuth(app: Express) {
 
   // Middleware to verify token authentication for cross-domain requests
   const verifyTokenAuth = async (req: Request, res: Response, next: NextFunction) => {
-    // ALWAYS bypass auth checks for login and registration endpoints
-    if (req.path === '/api/login' || req.path === '/api/register') {
-      console.log(`⚠️ BYPASSING TOKEN AUTH for AUTH endpoint: ${req.path}`);
+    // List of public paths that don't require authentication
+    const publicPaths = [
+      '/api/login',
+      '/api/register',
+      '/api/public',
+      '/api/public/csrf-test'
+    ];
+    
+    // Check if the path exactly matches any public path
+    for (const publicPath of publicPaths) {
+      if (req.path === publicPath) {
+        console.log(`⚠️ BYPASSING TOKEN AUTH for PUBLIC endpoint: ${req.path}`);
+        return next();
+      }
+    }
+    
+    // Check if path starts with any public path prefix
+    if (req.path.startsWith('/api/public/')) {
+      console.log(`⚠️ BYPASSING TOKEN AUTH for PUBLIC endpoint: ${req.path}`);
       return next();
     }
     
@@ -670,10 +697,8 @@ export function setupAuth(app: Express) {
       }
     }
     
-    // List of public API endpoints that should be accessible without authentication
-    const publicPaths = [
-      '/api/login',
-      '/api/register',
+    // List of additional public API endpoints that should be accessible without authentication
+    const additionalPublicPaths = [
       '/api/services',
       '/api/projects',
       '/api/testimonials',

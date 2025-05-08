@@ -141,10 +141,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.log('Using standard authentication flow for all environments');
         
         // Regular API login for all other cases
-        // Make sure we get a CSRF token for secure requests
+        // First, try to get a fresh CSRF token
         try {
-          // Fetch a CSRF token first
-          await fetch('/api/public/csrf-test');
+          console.log('Fetching fresh CSRF token before login attempt...');
+          const csrfResponse = await fetch('/api/public/csrf-test');
+          const csrfData = await csrfResponse.json();
+          console.log('CSRF token response:', csrfData.message || 'Token received');
         } catch (err) {
           console.warn('Failed to prefetch CSRF token, but continuing with login attempt:', err);
         }
@@ -162,12 +164,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         console.log('CSRF token for login request:', csrfToken ? 'Found' : 'Not found');
 
+        // Prepare request headers with content type
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Add CSRF token if available
+        if (csrfToken) {
+          headers['X-CSRF-Token'] = csrfToken;
+          console.log('Added CSRF token to request headers');
+        }
+        
+        console.log('Sending login request with credentials...');
         const response = await fetch('/api/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
-          },
+          headers,
           body: JSON.stringify(loginData),
           credentials: 'include',
         });
