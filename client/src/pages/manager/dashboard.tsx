@@ -17,7 +17,7 @@ import {
   Download, Search, DollarSign, MessageSquare, PlusCircle,
   CheckCircle, FolderPlus, Upload, Folder, FileIcon as FileIconLucide,
   Info, Send, Download as FileDownIcon, ChevronUp, ChevronDown, 
-  Phone, Briefcase as BriefcaseIcon, BarChart2 
+  Phone, Briefcase as BriefcaseIcon, BarChart2, ChevronLeft
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Project, User } from '@shared/schema';
 import ClientProfileView from '@/components/shared/ClientProfileView';
+import ManagerSupportTickets from '@/components/manager/ManagerSupportTickets';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
@@ -886,10 +887,29 @@ export default function ManagerDashboard() {
           <TabsContent value="clients" className="mt-6">
             {selectedClientId ? (
               <div className="mb-6">
-                <ClientProfileView 
-                  clientId={selectedClientId} 
-                  onClose={() => setSelectedClientId(null)} 
-                />
+                <Tabs defaultValue="profile" className="w-full">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="profile">Profile</TabsTrigger>
+                    <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="profile">
+                    <ClientProfileView 
+                      clientId={selectedClientId} 
+                      onClose={() => setSelectedClientId(null)} 
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="tickets">
+                    <div className="mb-2 flex justify-between">
+                      <h2 className="text-2xl font-bold">Client Support Tickets</h2>
+                      <Button variant="outline" onClick={() => setSelectedClientId(null)}>
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Back to Clients
+                      </Button>
+                    </div>
+                    <ManagerSupportTickets selectedClientId={selectedClientId} />
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               <Card>
@@ -912,6 +932,20 @@ export default function ManagerDashboard() {
                     >
                       <UserPlus className="h-4 w-4" />
                       Add Client
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="gap-1"
+                      onClick={() => {
+                        const supportSection = document.getElementById('support-tickets-section');
+                        if (supportSection) {
+                          supportSection.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      View Support Tickets
                     </Button>
                   </div>
                 </CardHeader>
