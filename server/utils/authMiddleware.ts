@@ -2,6 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken, getUserIdFromToken, isTokenAboutToExpire, generateAccessToken, generateRefreshToken } from './jwt';
 import { storage } from '../storage';
 
+// Add this to help with debugging
+declare global {
+  namespace Express {
+    interface Request {
+      rawBody?: string;
+    }
+  }
+}
+
 /**
  * Middleware to authenticate requests using JWT tokens
  * This middleware checks for JWT in Authorization header, cookies, or query param
