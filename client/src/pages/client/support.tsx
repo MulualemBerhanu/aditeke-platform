@@ -626,8 +626,14 @@ const ClientSupport = () => {
                                     getActiveTicket()?.status === 'resolved' ? 'bg-green-500' :
                                     'bg-slate-500'
                                   }`}>
-                                    {getActiveTicket()?.status === 'in-progress' ? 'In Progress' : 
-                                    (getActiveTicket()?.status ? getActiveTicket()?.status.charAt(0).toUpperCase() + getActiveTicket()?.status.slice(1) : 'Open')}
+                                    {(() => {
+                                      const status = getActiveTicket()?.status;
+                                      if (status === 'in-progress') return 'In Progress';
+                                      if (status && typeof status === 'string') {
+                                        return status.charAt(0).toUpperCase() + status.slice(1);
+                                      }
+                                      return 'Open';
+                                    })()}
                                   </Badge>
                                   <Badge className={`${
                                     getActiveTicket()?.priority === 'urgent' ? 'bg-red-500' :
@@ -635,17 +641,22 @@ const ClientSupport = () => {
                                     getActiveTicket()?.priority === 'medium' ? 'bg-indigo-500' :
                                     'bg-green-500'
                                   }`}>
-                                    {getActiveTicket()?.priority ? 
-                                      getActiveTicket()?.priority.charAt(0).toUpperCase() + getActiveTicket()?.priority.slice(1) : 'Normal'} Priority
+                                    {(() => {
+                                      const priority = getActiveTicket()?.priority;
+                                      if (priority && typeof priority === 'string') {
+                                        return priority.charAt(0).toUpperCase() + priority.slice(1);
+                                      }
+                                      return 'Normal';
+                                    })()} Priority
                                   </Badge>
                                   <span className="text-sm text-slate-500">
-                                    Created {getActiveTicket()?.createdAt
-                                      ? formatDistance(
-                                          new Date(getActiveTicket()?.createdAt), 
-                                          new Date(), 
-                                          { addSuffix: true }
-                                        )
-                                      : 'recently'}
+                                    Created {(() => {
+                                      const createdAt = getActiveTicket()?.createdAt;
+                                      if (createdAt && typeof createdAt === 'string') {
+                                        return formatDistance(new Date(createdAt), new Date(), { addSuffix: true });
+                                      }
+                                      return 'recently';
+                                    })()}
                                   </span>
                                 </div>
                               </CardDescription>
