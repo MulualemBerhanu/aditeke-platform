@@ -54,13 +54,14 @@ import {
 interface SupportTicket {
   id: number;
   clientId: number;
-  title: string;
-  description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  category: string;
+  title?: string;
+  subject?: string; // For backward compatibility with API
+  description?: string;
+  status?: 'open' | 'in-progress' | 'resolved' | 'closed';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  category?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string | null;
   assignedTo?: number;
   assigneeName?: string;
 }
@@ -296,7 +297,7 @@ const ClientSupport = () => {
     setActiveTicketId(ticketId);
   };
 
-  const getActiveTicket = () => {
+  const getActiveTicket = (): SupportTicket | null | undefined => {
     // Use the fetched ticket data if available, otherwise fall back to the ticket from the list
     return activeTicketData || tickets?.find((t: SupportTicket) => t.id === activeTicketId);
   };
@@ -487,7 +488,7 @@ const ClientSupport = () => {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <p className="font-medium text-sm mb-1 truncate">
-                                          {ticket.title}
+                                          {ticket.title || ticket.subject || 'Support Request'}
                                         </p>
                                         <div className="flex items-center">
                                           <Badge className={`mr-2 ${
@@ -496,10 +497,14 @@ const ClientSupport = () => {
                                             ticket.priority === 'medium' ? 'bg-indigo-500' :
                                             'bg-green-500'
                                           }`}>
-                                            {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                                            {ticket.priority && typeof ticket.priority === 'string' 
+                                              ? ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)
+                                              : 'Normal'}
                                           </Badge>
                                           <p className="text-xs text-slate-500">
-                                            {formatDistance(new Date(ticket.createdAt), new Date(), { addSuffix: true })}
+                                            {ticket.createdAt 
+                                              ? formatDistance(new Date(ticket.createdAt), new Date(), { addSuffix: true })
+                                              : 'Recently'}
                                           </p>
                                         </div>
                                       </div>
@@ -533,14 +538,18 @@ const ClientSupport = () => {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm mb-1 truncate">
-                                          {ticket.title}
+                                          {ticket.title || ticket.subject || 'Support Request'}
                                         </p>
                                         <div className="flex items-center">
                                           <Badge variant="outline" className="mr-2 text-slate-500 border-slate-200">
-                                            {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                                            {ticket.status && typeof ticket.status === 'string'
+                                              ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)
+                                              : 'Unknown'}
                                           </Badge>
                                           <p className="text-xs text-slate-500">
-                                            {formatDistance(new Date(ticket.updatedAt), new Date(), { addSuffix: true })}
+                                            {ticket.updatedAt
+                                              ? formatDistance(new Date(ticket.updatedAt), new Date(), { addSuffix: true })
+                                              : 'Recently'}
                                           </p>
                                         </div>
                                       </div>
