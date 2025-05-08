@@ -48,7 +48,13 @@ const ClientMessages = () => {
   const [clientId, setClientId] = useState<number | null>(null);
   const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [replyMessageOpen, setReplyMessageOpen] = useState(false);
   const [newMessage, setNewMessage] = useState({
+    subject: '',
+    content: '',
+    urgent: false
+  });
+  const [replyMessage, setReplyMessage] = useState({
     subject: '',
     content: '',
     urgent: false
