@@ -709,19 +709,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/client-ticket-status/:id", authenticateJWT, async (req, res) => {
     console.log("Client ticket status update endpoint hit", {
       body: req.body,
+      rawBody: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
       params: req.params,
+      contentType: req.headers['content-type'],
       auth: req.user ? { id: req.user.id, role: req.user.roleId } : "Not authenticated"
     });
     
     try {
       const ticketId = parseInt(req.params.id, 10);
-      const { status } = req.body;
+      
+      // Handle different body formats for better robustness
+      let status;
+      
+      if (typeof req.body === 'string') {
+        try {
+          const parsedBody = JSON.parse(req.body);
+          status = parsedBody.status;
+        } catch (e) {
+          console.error("Failed to parse request body as JSON:", e);
+        }
+      } else if (req.body && typeof req.body === 'object') {
+        status = req.body.status;
+      }
       
       console.log(`CLIENT-TICKET-STATUS: Received request to update ticket ${ticketId} status to ${status}`);
       
       if (!status) {
-        console.log("CLIENT-TICKET-STATUS: Missing status field in request");
-        return res.status(400).json({ error: "Status field is required" });
+        // Check URL parameters as a fallback
+        if (req.query && req.query.status) {
+          status = req.query.status;
+          console.log(`CLIENT-TICKET-STATUS: Using status from query params: ${status}`);
+        } else {
+          console.log("CLIENT-TICKET-STATUS: Missing status field in request");
+          return res.status(400).json({ error: "Status field is required" });
+        }
       }
       
       // Safety check for authentication
