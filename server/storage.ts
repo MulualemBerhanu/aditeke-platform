@@ -91,6 +91,7 @@ export interface IStorage {
   
   // Client Communications methods
   getClientCommunications(clientId: number): Promise<ClientCommunication[]>;
+  getManagerCommunications(managerId: number): Promise<ClientCommunication[]>;
   getClientCommunication(id: number): Promise<ClientCommunication | undefined>;
   createClientCommunication(communication: InsertClientCommunication): Promise<ClientCommunication>;
   markCommunicationAsRead(id: number): Promise<ClientCommunication>;
