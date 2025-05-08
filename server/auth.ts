@@ -299,23 +299,40 @@ export function setupAuth(app: Express) {
   // Enhanced login endpoint with cross-domain JWT token support
   app.post("/api/login", (req, res, next) => {
     try {
+      // Try to parse raw body if req.body is empty
+      let credentials = req.body;
+      
+      // If body is empty but we have rawBody from middleware
+      if ((!req.body || Object.keys(req.body).length === 0) && req.rawBody) {
+        try {
+          console.log('Login request: body empty, attempting to parse from raw body');
+          credentials = JSON.parse(req.rawBody);
+          console.log('Successfully parsed login credentials from raw body');
+        } catch (parseError) {
+          console.error('Failed to parse raw body for login:', parseError);
+        }
+      }
+      
       // Enhanced logging for debugging
       console.log("Login request received:", {
-        bodyExists: !!req.body,
+        bodyExists: !!credentials,
         contentType: req.header('Content-Type'),
-        hasUsername: req.body && !!req.body.username,
-        hasPassword: req.body && !!req.body.password,
-        username: req.body && req.body.username ? req.body.username.substring(0, 3) + '...' : null,
+        hasUsername: credentials && !!credentials.username,
+        hasPassword: credentials && !!credentials.password,
+        username: credentials && credentials.username ? credentials.username.substring(0, 3) + '...' : null,
         requestMethod: req.method,
         requestUrl: req.originalUrl,
         requestHeaders: req.headers['content-type']
       });
       
       // Check if username and password are provided
-      if (!req.body || !req.body.username || !req.body.password) {
-        console.error("Missing credentials in request body");
+      if (!credentials || !credentials.username || !credentials.password) {
+        console.error("Missing credentials in request");
         return res.status(401).json({ message: "Missing credentials" });
       }
+      
+      // Save parsed credentials back to req.body
+      req.body = credentials;
       
       // Direct database lookup for emergency login - bypass authentication issues
       const directLogin = async () => {

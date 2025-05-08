@@ -59,14 +59,11 @@ app.use(express.json({
   strict: false // Allow any JSON-like input
 }));
 
-// Add raw body capture middleware
+// Add raw body capture middleware for all API requests
 app.use((req, res, next) => {
-  // Only capture raw body for certain POST routes that might have issues
-  if (req.method === 'POST') {
+  // Apply to all POST requests to API endpoints
+  if (req.method === 'POST' && req.path.startsWith('/api/')) {
     let rawData = '';
-    
-    // Save the original data
-    const originalBody = req.body;
     
     // Listen for data events
     req.setEncoding('utf8');
@@ -75,22 +72,33 @@ app.use((req, res, next) => {
     });
     
     req.on('end', () => {
-      // Store raw body for later use
+      // Store raw body for later use by route handlers
       req.rawBody = rawData;
       
-      // Special handling for problematic routes
-      if (req.path === '/api/client-communications' || req.path === '/api/public/contact') {
+      // Log raw body for critical API endpoints
+      const criticalEndpoints = [
+        '/api/login',
+        '/api/client-communications',
+        '/api/public/contact',
+        '/api/public/csrf-test',
+        '/api/register'
+      ];
+      
+      if (criticalEndpoints.includes(req.path)) {
         console.log(`Raw request body for ${req.path}:`, rawData);
         
-        // Only try to parse if content-type is JSON
+        // Only try to parse if content-type is JSON or empty body
         const contentType = req.headers['content-type'];
-        if (contentType && contentType.includes('application/json')) {
+        if ((contentType && contentType.toLowerCase().includes('application/json')) || 
+            Object.keys(req.body || {}).length === 0) {
           try {
             // Try to parse as JSON and attach to req.body if original parsing failed
-            if (Object.keys(req.body || {}).length === 0) {
-              const parsedData = JSON.parse(rawData);
-              req.body = parsedData;
-              console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
+            if (!req.body || Object.keys(req.body || {}).length === 0) {
+              if (rawData.trim()) {
+                const parsedData = JSON.parse(rawData);
+                req.body = parsedData;
+                console.log(`Successfully parsed raw data into JSON for ${req.path}:`, parsedData);
+              }
             }
           } catch (e) {
             console.error(`Failed to parse raw data as JSON for ${req.path}:`, e);
