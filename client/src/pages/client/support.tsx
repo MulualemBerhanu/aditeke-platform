@@ -227,20 +227,53 @@ const ClientSupport = () => {
         const { apiRequest } = await import('@/lib/queryClient');
         console.log('Sending ticket data to API:', ticketData);
         
-        // Use the fixed endpoint instead of client-support-tickets
-        const response = await apiRequest('POST', '/api/support-tickets', {
-          ...ticketData,
-          // Ensure we're sending the right fields
-          subject: ticketData.title || ticketData.subject,
-          description: ticketData.description
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to create support ticket');
+        // Try our new raw endpoint first
+        try {
+          // Prepare the ticket data with the proper field names
+          const ticketPayload = {
+            ...ticketData,
+            subject: ticketData.title || ticketData.subject,
+            description: ticketData.description,
+            status: 'open',
+            createdAt: new Date().toISOString()
+          };
+          
+          console.log('Using raw endpoint for ticket creation:', ticketPayload);
+          const rawResponse = await fetch('/api/raw-support-tickets', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+              'X-CSRF-Token': document.cookie.match(/csrf_token=([^;]+)/)?.[1] || ''
+            },
+            body: JSON.stringify(ticketPayload),
+            credentials: 'include'
+          });
+          
+          if (!rawResponse.ok) {
+            throw new Error(`Raw endpoint failed: ${rawResponse.status}`);
+          }
+          
+          return await rawResponse.json();
+        } catch (rawError) {
+          console.error('Raw endpoint failed:', rawError);
+          console.log('Falling back to standard endpoint...');
+          
+          // Fall back to the standard endpoint if raw fails
+          const response = await apiRequest('POST', '/api/support-tickets', {
+            ...ticketData,
+            // Ensure we're sending the right fields
+            subject: ticketData.title || ticketData.subject,
+            description: ticketData.description
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create support ticket');
+          }
+          
+          return await response.json();
         }
-        
-        return await response.json();
       } catch (error) {
         console.error('Error creating support ticket:', error);
         throw error;

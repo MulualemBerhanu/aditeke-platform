@@ -542,6 +542,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Special alternative raw support ticket endpoint to bypass JSON parse issues
+  app.post("/api/raw-support-tickets", authenticateJWT, async (req, res) => {
+    try {
+      let rawData = '';
+      req.setEncoding('utf8');
+      
+      req.on('data', (chunk) => {
+        rawData += chunk;
+      });
+      
+      req.on('end', async () => {
+        console.log(`Raw support ticket data:`, rawData);
+        
+        // Attempt to parse the raw data
+        try {
+          const bodyData = JSON.parse(rawData);
+          console.log('Successfully parsed raw data:', bodyData);
+          
+          // Validate required fields
+          if (!bodyData.subject && !bodyData.title) {
+            return res.status(400).json({ 
+              error: "Subject/title is required for support tickets" 
+            });
+          }
+          
+          if (!bodyData.description) {
+            return res.status(400).json({ 
+              error: "Description is required for support tickets" 
+            });
+          }
+          
+          // Build complete ticket data with defaults
+          const ticketData = {
+            clientId: bodyData.clientId || req.user?.id || 2000,
+            subject: bodyData.subject || bodyData.title,
+            description: bodyData.description,
+            status: bodyData.status || 'open',
+            priority: bodyData.priority || 'medium',
+            category: bodyData.category || 'Technical Issue',
+            createdAt: new Date()
+          };
+          
+          console.log("Creating support ticket from raw data:", ticketData);
+          const ticket = await storage.createSupportTicket(ticketData);
+          return res.status(201).json(ticket);
+          
+        } catch (parseError) {
+          console.error('Failed to parse raw support ticket data:', parseError);
+          return res.status(400).json({ error: "Invalid JSON data" });
+        }
+      });
+    } catch (error) {
+      console.error("Error in raw support ticket endpoint:", error);
+      res.status(500).json({ error: "Failed to process support ticket request" });
+    }
+  });
+  
   app.post("/api/support-tickets", authenticateJWT, async (req, res) => {
     try {
       // Debug request body
@@ -549,6 +606,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Request body type:', typeof req.body);
       console.log('Request body has subject?', req.body && 'subject' in req.body);
       console.log('Request subject value:', req.body?.subject);
+      
+      // If body is empty, redirect to the raw endpoint
+      if (!req.body || Object.keys(req.body).length === 0) {
+        console.log('Empty request body detected, redirecting to raw endpoint');
+        
+        // Forward this request to the raw endpoint
+        return res.redirect(307, '/api/raw-support-tickets');
+      }
       
       // Parse request body with necessary defaults
       const bodyData = req.body;
