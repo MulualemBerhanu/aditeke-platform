@@ -190,6 +190,12 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/client/support/:id">
+        <ProtectedRoute requiredRole="client">
+          <ClientSupport />
+        </ProtectedRoute>
+      </Route>
+      
       <Route path="/client/downloads">
         <ProtectedRoute requiredRole="client">
           <ClientDownloads />
