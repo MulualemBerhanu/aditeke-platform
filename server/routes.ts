@@ -669,6 +669,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Simple dedicated endpoint for clients to update their ticket status
+  app.put("/api/client-ticket-status/:id", authenticateJWT, async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id, 10);
+      const { status } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ error: "Status field is required" });
+      }
+      
+      // Get existing ticket
+      const existingTicket = await storage.getSupportTicket(ticketId);
+      
+      if (!existingTicket) {
+        return res.status(404).json({ error: "Support ticket not found" });
+      }
+      
+      // Verify the client owns this ticket
+      if (req.user.id !== existingTicket.clientId) {
+        return res.status(403).json({ error: "You can only update your own tickets" });
+      }
+      
+      console.log(`Client ${req.user.id} updating ticket ${ticketId} status to ${status}`);
+      
+      // Update the ticket status
+      const updatedTicket = await storage.updateSupportTicket(ticketId, {
+        status,
+        updatedAt: new Date()
+      });
+      
+      console.log(`Ticket ${ticketId} status successfully updated to ${status}`);
+      res.json(updatedTicket);
+    } catch (error) {
+      console.error("Error updating ticket status:", error);
+      res.status(500).json({ error: "Failed to update ticket status" });
+    }
+  });
+
   app.put("/api/support-tickets/:id", authenticateJWT, async (req, res) => {
     try {
       // Convert ticket id parameter to number
